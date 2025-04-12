@@ -6,7 +6,6 @@ import {
   Heading,
   Text,
   Stack,
-  Image,
   VStack,
   useColorModeValue,
   Input,
@@ -15,6 +14,9 @@ import Link from "next/link";
 import styled from "styled-components";
 
 import theme from "@/theme/theme";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 const StyledText = styled.span`
   color: ${theme.colors.semantic.primary};
@@ -39,6 +41,41 @@ const ContactLink = styled(Link)`
 `;
 
 export default function Home() {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [fieldError, setFieldError] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFieldError(false);
+
+    if (email.trim() === "" || password.trim() === "" || password.length < 8) {
+      setFieldError(true);
+
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await auth?.authenticate(email, password);
+    } catch (e) {
+      console.error(e);
+      setFieldError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!auth?.isLoggedIn) return;
+
+    router.push("/dashboard");
+  }, [auth?.isLoggedIn, router]);
+
   return (
     <Box>
       <Box
@@ -126,9 +163,29 @@ export default function Home() {
             <form>
               <FormContainer>
                 <Heading size="sm">Login or Sign up</Heading>
-                <Input type="email" name="email" placeholder="Email" />
-                <Input type="password" name="password" placeholder="Password" />
-                <Button type="submit" variant={"solid"} width="100%">
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  onChange={(e) => setEmail(e.target.value)}
+                  isInvalid={fieldError}
+                />
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  onChange={(e) => setPassword(e.target.value)}
+                  isInvalid={fieldError}
+                />
+                <Button
+                  type="button"
+                  variant={"solid"}
+                  width="100%"
+                  onClick={handleSubmit}
+                  isDisabled={loading}
+                  isLoading={loading}
+                  loadingText="Processing ..."
+                >
                   Get started
                 </Button>
                 <Text fontSize={"xs"} color={"gray.400"} textAlign={"center"}>
