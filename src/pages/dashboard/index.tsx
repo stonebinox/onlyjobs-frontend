@@ -21,6 +21,9 @@ import StatCard from "../../components/Dashboard/StatCard";
 import JobListing, {
   JobListingProps,
 } from "../../components/Dashboard/JobListing";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 // Dummy data
 const jobListings: JobListingProps[] = [
@@ -65,6 +68,15 @@ const jobListings: JobListingProps[] = [
 ];
 
 const Dashboard = () => {
+  const auth = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!auth?.isLoggedIn) {
+      router.push("/");
+    }
+  }, [auth?.isLoggedIn, router]);
+
   return (
     <DashboardLayout>
       <Box>
