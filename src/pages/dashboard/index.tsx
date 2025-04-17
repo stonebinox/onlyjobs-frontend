@@ -71,9 +71,10 @@ const jobListings: JobListingProps[] = [
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
+  const [activeUserCount, setActiveUserCount] = useState<number>(0);
   const auth = useAuth();
   const router = useRouter();
-  const { getAvailableJobsCount } = useApi();
+  const { getAvailableJobsCount, getActiveUserCount } = useApi();
 
   useEffect(() => {
     if (!auth?.isLoggedIn) {
@@ -89,6 +90,16 @@ const Dashboard = () => {
       }
     };
 
+    const fetchActiveUserCount = async () => {
+      try {
+        const count: number = await getActiveUserCount();
+        setActiveUserCount(count);
+      } catch (error) {
+        console.error("Error fetching active user count:", error);
+      }
+    };
+
+    fetchActiveUserCount();
     fetchAvailableJobsCount();
   }, [auth?.isLoggedIn, getAvailableJobsCount, router]);
 
@@ -103,12 +114,12 @@ const Dashboard = () => {
         >
           <StatCard
             title="Active Candidates"
-            stat="1,284"
+            stat={new Intl.NumberFormat("en-US").format(activeUserCount)}
             icon={<FiUsers size="3em" />}
           />
           <StatCard
             title="Job Listings"
-            stat={availableJobsCount.toString()}
+            stat={new Intl.NumberFormat("en-US").format(availableJobsCount)}
             icon={<FiBriefcase size="3em" />}
           />
           <StatCard
