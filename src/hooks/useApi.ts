@@ -109,10 +109,41 @@ export const useApi = () => {
     }
   };
 
+  const uploadCV = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/cv`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("onlyjobs_token")}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to upload CV");
+      }
+
+      const data = await response.json();
+
+      return data;
+    } catch (error) {
+      console.error("CV upload error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
     getAvailableJobsCount,
     getActiveUserCount,
+    uploadCV,
   };
 };

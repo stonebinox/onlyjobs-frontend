@@ -9,12 +9,27 @@ import {
   TabPanels,
   Tab,
   TabPanel,
+  Button,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  Input,
+  Alert,
+  AlertIcon,
 } from "@chakra-ui/react";
 import {
   FiUsers,
   FiBriefcase,
   FiCheckCircle,
   FiTrendingUp,
+  FiUpload,
 } from "react-icons/fi";
 
 import DashboardLayout from "../../components/Layout/DashboardLayout";
@@ -72,9 +87,14 @@ const jobListings: JobListingProps[] = [
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
   const [activeUserCount, setActiveUserCount] = useState<number>(0);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
-  const { getAvailableJobsCount, getActiveUserCount } = useApi();
+  const { getAvailableJobsCount, getActiveUserCount, uploadCV } = useApi();
 
   useEffect(() => {
     if (!auth?.isLoggedIn) {
@@ -101,66 +121,207 @@ const Dashboard = () => {
 
     fetchActiveUserCount();
     fetchAvailableJobsCount();
-  }, [auth?.isLoggedIn, getAvailableJobsCount, router]);
+  }, [auth?.isLoggedIn, getActiveUserCount, getAvailableJobsCount, router]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setUploadedFile(file);
+    setUploadSuccess(false);
+    setUploadError(null);
+  };
+
+  const handleCVUpload = async () => {
+    if (!uploadedFile) {
+      setUploadError("Please select a file to upload");
+      return;
+    }
+
+    // Check file type (PDF, DOC, DOCX)
+    const validTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!validTypes.includes(uploadedFile.type)) {
+      setUploadError("Please upload a PDF or Word document");
+
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      setUploadError(null);
+
+      const response = await uploadCV(uploadedFile);
+      if (!response) {
+        setUploadError("Failed to upload CV. Please try again.");
+
+        return;
+      }
+
+      if (response.error) {
+        setUploadError(response.error);
+
+        return;
+      }
+
+      setUploadSuccess(true);
+      setUploadedFile(null);
+
+      // Reset the file input (optional)
+      const fileInput = document.getElementById(
+        "cv-upload"
+      ) as HTMLInputElement;
+
+      if (fileInput) fileInput.value = "";
+
+      setTimeout(() => {
+        onClose();
+        setUploadSuccess(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error uploading CV:", error);
+      setUploadError("Failed to upload CV. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
-    <DashboardLayout>
-      <Box>
-        <Heading mb={5}>Dashboard</Heading>
+    <>
+      <DashboardLayout>
+        <Box>
+          <Heading mb={5}>Dashboard</Heading>
 
-        <SimpleGrid
-          columns={{ base: 1, md: 2, lg: 4 }}
-          spacing={{ base: 5, lg: 8 }}
-        >
-          <StatCard
-            title="Active Candidates"
-            stat={new Intl.NumberFormat("en-US").format(activeUserCount)}
-            icon={<FiUsers size="3em" />}
-          />
-          <StatCard
-            title="Job Listings"
-            stat={new Intl.NumberFormat("en-US").format(availableJobsCount)}
-            icon={<FiBriefcase size="3em" />}
-          />
-          <StatCard
-            title="Successful Matches"
-            stat="156"
-            icon={<FiCheckCircle size="3em" />}
-          />
-          <StatCard
-            title="Monthly Growth"
-            stat="15%"
-            icon={<FiTrendingUp size="3em" />}
-          />
-        </SimpleGrid>
+          <SimpleGrid
+            columns={{ base: 1, md: 2, lg: 4 }}
+            spacing={{ base: 5, lg: 8 }}
+          >
+            <StatCard
+              title="Active Candidates"
+              stat={new Intl.NumberFormat("en-US").format(activeUserCount)}
+              icon={<FiUsers size="3em" />}
+            />
+            <StatCard
+              title="Job Listings"
+              stat={new Intl.NumberFormat("en-US").format(availableJobsCount)}
+              icon={<FiBriefcase size="3em" />}
+            />
+            <StatCard
+              title="Successful Matches"
+              stat="156"
+              icon={<FiCheckCircle size="3em" />}
+            />
+            <Box
+              p={5}
+              shadow="md"
+              borderWidth="1px"
+              borderRadius="lg"
+              bg="white"
+              display="flex"
+              flexDirection="column"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Button
+                leftIcon={<FiTrendingUp size="1.5em" />}
+                colorScheme="blue"
+                variant="solid"
+                size="sm"
+                onClick={onOpen}
+                w="100%"
+              >
+                Upload Your CV
+              </Button>
+              <Text fontSize="sm" mt={2} color="gray.500" textAlign="center">
+                Improve your match rate
+              </Text>
+            </Box>
+          </SimpleGrid>
+          <Box mt={10}>
+            <Tabs colorScheme="blue">
+              <TabList>
+                <Tab>Recent Jobs</Tab>
+                <Tab>Recent Candidates</Tab>
+                <Tab>Recent Matches</Tab>
+              </TabList>
 
-        <Box mt={10}>
-          <Tabs colorScheme="blue">
-            <TabList>
-              <Tab>Recent Jobs</Tab>
-              <Tab>Recent Candidates</Tab>
-              <Tab>Recent Matches</Tab>
-            </TabList>
-
-            <TabPanels>
-              <TabPanel>
-                <Flex direction="column" gap={4}>
-                  {jobListings.map((job) => (
-                    <JobListing key={job.id} {...job} />
-                  ))}
-                </Flex>
-              </TabPanel>
-              <TabPanel>
-                <Text>Recent candidates will appear here.</Text>
-              </TabPanel>
-              <TabPanel>
-                <Text>Recent matches will appear here.</Text>
-              </TabPanel>
-            </TabPanels>
-          </Tabs>
+              <TabPanels>
+                <TabPanel>
+                  <Flex direction="column" gap={4}>
+                    {jobListings.map((job) => (
+                      <JobListing key={job.id} {...job} />
+                    ))}
+                  </Flex>
+                </TabPanel>
+                <TabPanel>
+                  <Text>Recent candidates will appear here.</Text>
+                </TabPanel>
+                <TabPanel>
+                  <Text>Recent matches will appear here.</Text>
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
+          </Box>
         </Box>
-      </Box>
-    </DashboardLayout>
+      </DashboardLayout>
+      {/* CV Upload Modal */}
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Upload Your CV</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            {uploadSuccess && (
+              <Alert status="success" mb={4}>
+                <AlertIcon />
+                CV uploaded successfully!
+              </Alert>
+            )}
+
+            {uploadError && (
+              <Alert status="error" mb={4}>
+                <AlertIcon />
+                {uploadError}
+              </Alert>
+            )}
+
+            <FormControl>
+              <FormLabel htmlFor="cv-upload">
+                Select your CV (PDF or Word document)
+              </FormLabel>
+              <Input
+                id="cv-upload"
+                type="file"
+                py={1}
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileChange}
+              />
+              <Text mt={2} fontSize="sm" color="gray.500">
+                Supported formats: PDF, DOC, DOCX
+              </Text>
+            </FormControl>
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              onClick={handleCVUpload}
+              isLoading={isUploading}
+              loadingText="Uploading"
+              leftIcon={<FiUpload />}
+              isDisabled={!uploadedFile || uploadSuccess}
+            >
+              Upload
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 
