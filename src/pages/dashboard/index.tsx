@@ -16,14 +16,16 @@ import {
   FiCheckCircle,
   FiTrendingUp,
 } from "react-icons/fi";
+
 import DashboardLayout from "../../components/Layout/DashboardLayout";
 import StatCard from "../../components/Dashboard/StatCard";
 import JobListing, {
   JobListingProps,
 } from "../../components/Dashboard/JobListing";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useApi } from "@/hooks/useApi";
 
 // Dummy data
 const jobListings: JobListingProps[] = [
@@ -68,14 +70,27 @@ const jobListings: JobListingProps[] = [
 ];
 
 const Dashboard = () => {
+  const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
   const auth = useAuth();
   const router = useRouter();
+  const { getAvailableJobsCount } = useApi();
 
   useEffect(() => {
     if (!auth?.isLoggedIn) {
       router.push("/");
     }
-  }, [auth?.isLoggedIn, router]);
+
+    const fetchAvailableJobsCount = async () => {
+      try {
+        const count: number = await getAvailableJobsCount();
+        setAvailableJobsCount(count);
+      } catch (error) {
+        console.error("Error fetching available jobs count:", error);
+      }
+    };
+
+    fetchAvailableJobsCount();
+  }, [auth?.isLoggedIn, getAvailableJobsCount, router]);
 
   return (
     <DashboardLayout>
@@ -93,7 +108,7 @@ const Dashboard = () => {
           />
           <StatCard
             title="Job Listings"
-            stat="42"
+            stat={availableJobsCount.toString()}
             icon={<FiBriefcase size="3em" />}
           />
           <StatCard

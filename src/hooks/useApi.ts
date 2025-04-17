@@ -59,8 +59,33 @@ export const useApi = () => {
     }
   };
 
+  const getAvailableJobsCount = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/jobs/available-count`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch job count");
+      }
+
+      const data = await response.json();
+
+      return data.count;
+    } catch (error) {
+      console.error("Fetch job count error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
+    getAvailableJobsCount,
   };
 };
