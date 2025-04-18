@@ -163,10 +163,10 @@ export const useApi = () => {
     }
   };
 
-  const getMatches = async () => {
+  const getMatches = async (minScore: number = 0) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/matches`,
+        `${process.env.NEXT_PUBLIC_API_URL}/matches?minMatchScore=${minScore}`,
         {
           method: "GET",
           headers: getHeaders(),

@@ -231,7 +231,7 @@ const Dashboard = () => {
           </Box>
         </Box>
       </DashboardLayout>
-      {/* CV Upload Modal */}
+
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>

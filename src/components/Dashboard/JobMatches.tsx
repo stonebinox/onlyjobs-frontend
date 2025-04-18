@@ -15,6 +15,7 @@ const StyledSkeleton = styled(Skeleton)`
 export const JobMatches = () => {
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [minScore, setMinScore] = useState<number>(0);
   const { getMatches } = useApi();
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export const JobMatches = () => {
     const fetchMatches = async () => {
       try {
         setLoading(true);
-        const response = await getMatches();
+        const response = await getMatches(minScore);
 
         if (response.error) {
           console.error("Error fetching matches:", response.error);

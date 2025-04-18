@@ -2,6 +2,7 @@ import { useApi } from "@/hooks/useApi";
 import { JobResult } from "@/types/JobResult";
 import { Salary } from "@/types/Salary";
 import { formatDate } from "@/utils/date-formatter";
+import { numberFormatter } from "@/utils/text-formatter";
 import {
   Box,
   Badge,
@@ -59,15 +60,17 @@ const JobListing = ({ job }: JobListingProps) => {
 
   const getSalaryString = (salary: Salary) => {
     if (salary.min && salary.max) {
-      return `${salary.currency} ${salary.min} - ${salary.max} per year ${
+      return `${salary.currency} ${numberFormatter(
+        salary.min
+      )} - ${numberFormatter(salary.max)} per year ${
         salary.estimated ? "(estimated)" : ""
       }`;
     } else if (salary.min) {
-      return `${salary.currency} ${salary.min}+ per year ${
+      return `${salary.currency} ${numberFormatter(salary.min)}+ per year ${
         salary.estimated ? "(estimated)" : ""
       }`;
     } else if (salary.max) {
-      return `Max ${salary.currency} ${salary.max} per year ${
+      return `Max ${salary.currency} ${numberFormatter(salary.max)} per year ${
         salary.estimated ? "(estimated)" : ""
       }`;
     }
