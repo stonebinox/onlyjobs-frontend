@@ -12,6 +12,7 @@ import {
   VStack,
   Flex,
   Button,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import {
@@ -197,9 +198,30 @@ const JobListing = ({ job }: JobListingProps) => {
         <HStack>
           <FiClock />
           <Text fontSize="xs">Posted {formatDate(new Date(postedDate))}</Text>
-          <Badge colorScheme="blue" fontSize={"xs"}>
-            {getListingFreshness(new Date(postedDate))}
-          </Badge>
+          <Tooltip
+            label={
+              getListingFreshness(new Date(postedDate)) === "Fresh"
+                ? "Posted less than a week ago"
+                : getListingFreshness(new Date(postedDate)) === "Warm"
+                ? "Posted 1-2 weeks ago"
+                : "Posted more than 2 weeks ago"
+            }
+            placement="top"
+            hasArrow
+          >
+            <Badge
+              colorScheme={
+                getListingFreshness(new Date(postedDate)) === "Fresh"
+                  ? "green"
+                  : getListingFreshness(new Date(postedDate)) === "Warm"
+                  ? "orange"
+                  : "gray"
+              }
+              fontSize={"xs"}
+            >
+              {getListingFreshness(new Date(postedDate))}
+            </Badge>
+          </Tooltip>
         </HStack>
         <HStack>
           {(clicked || viewed) && (
