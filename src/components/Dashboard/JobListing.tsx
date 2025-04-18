@@ -1,3 +1,4 @@
+import { useApi } from "@/hooks/useApi";
 import { JobResult } from "@/types/JobResult";
 import { Salary } from "@/types/Salary";
 import { formatDate } from "@/utils/date-formatter";
@@ -32,6 +33,8 @@ export interface JobListingProps {
 
 const JobListing = ({ job }: JobListingProps) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [viewed, setViewed] = useState<boolean>(false);
+  const { markMatchClick } = useApi();
 
   if (!job.job) return <></>;
 
@@ -39,6 +42,8 @@ const JobListing = ({ job }: JobListingProps) => {
     matchScore,
     verdict,
     reasoning,
+    _id: matchId,
+    clicked,
     job: {
       title,
       company,
@@ -76,9 +81,10 @@ const JobListing = ({ job }: JobListingProps) => {
     return lines.map((line, index) => <p key={index}>{line}</p>);
   };
 
-  const handleApplyClick = () => {
+  const handleApplyClick = async () => {
     window.open(url, "_blank");
-    // we log this to the backend when ready
+    setViewed(true);
+    await markMatchClick(matchId);
   };
 
   const getListingFreshness = (date: Date) => {
@@ -187,6 +193,11 @@ const JobListing = ({ job }: JobListingProps) => {
           </Badge>
         </HStack>
         <HStack>
+          {(clicked || viewed) && (
+            <Badge colorScheme="green" fontSize={"sm"}>
+              Visited
+            </Badge>
+          )}
           <Button
             size="sm"
             variant="outline"

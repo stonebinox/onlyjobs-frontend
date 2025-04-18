@@ -187,6 +187,29 @@ export const useApi = () => {
     }
   };
 
+  const markMatchClick = async (matchId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/click`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ matchId }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to mark match as clicked");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Mark match click error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -195,5 +218,6 @@ export const useApi = () => {
     uploadCV,
     getMatchCount,
     getMatches,
+    markMatchClick,
   };
 };
