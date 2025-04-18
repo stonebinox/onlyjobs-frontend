@@ -28,73 +28,6 @@ import JobListing, {
   JobListingProps,
 } from "../../components/Dashboard/JobListing";
 
-// Dummy data
-const jobListings: JobListingProps[] = [
-  {
-    id: "1",
-    title: "Senior Frontend Developer",
-    company: "TechCorp Inc.",
-    location: "San Francisco, CA",
-    salary: "$120,000 - $150,000",
-    type: "Full-time",
-    description:
-      "We are looking for an experienced Frontend Developer to join our team. The ideal candidate should have 5+ years of experience with React and modern JavaScript.",
-    postedDate: "2 days ago",
-    applicants: 12,
-    isHot: true,
-  },
-  {
-    id: "2",
-    title: "Product Manager",
-    company: "InnovateTech",
-    location: "Remote",
-    salary: "$110,000 - $130,000",
-    type: "Full-time",
-    description:
-      "InnovateTech is seeking a Product Manager to lead our product development efforts. You will work closely with engineering, design, and marketing teams.",
-    postedDate: "1 week ago",
-    applicants: 24,
-  },
-  {
-    id: "3",
-    title: "DevOps Engineer",
-    company: "CloudSys Solutions",
-    location: "New York, NY",
-    salary: "$130,000 - $160,000",
-    type: "Full-time",
-    description:
-      "Join our DevOps team to build and maintain our cloud infrastructure. Experience with AWS, Kubernetes, and CI/CD pipelines is required.",
-    postedDate: "3 days ago",
-    applicants: 8,
-    isHot: true,
-  },
-  {
-    id: "4",
-    title: "UX/UI Designer",
-    company: "DesignPro Agency",
-    location: "Chicago, IL",
-    salary: "$90,000 - $110,000",
-    type: "Full-time",
-    description:
-      "We are looking for a creative UX/UI Designer to join our design team. You will create user-centered designs for web and mobile applications.",
-    postedDate: "1 week ago",
-    applicants: 19,
-  },
-  {
-    id: "5",
-    title: "Data Scientist",
-    company: "DataInsights",
-    location: "Remote",
-    salary: "$140,000 - $170,000",
-    type: "Full-time",
-    description:
-      "We are seeking a Data Scientist with expertise in machine learning and statistical modeling to join our analytics team.",
-    postedDate: "5 days ago",
-    applicants: 15,
-    isHot: true,
-  },
-];
-
 const JobsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("");
@@ -137,19 +70,7 @@ const JobsPage = () => {
     });
   };
 
-  const filteredJobs = jobListings.filter((job) => {
-    const matchesSearch =
-      searchTerm === "" ||
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.description.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesType = filterType === "" || job.type === filterType;
-    const matchesLocation =
-      filterLocation === "" || job.location.includes(filterLocation);
-
-    return matchesSearch && matchesType && matchesLocation;
-  });
+  const filteredJobs: any[] = [];
 
   return (
     <DashboardLayout>
