@@ -15,7 +15,7 @@ export const useApi = () => {
   const authenticateUser = async (email: string, password: string) => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/users/authenticate`,
+        `${process.env.NEXT_PUBLIC_API_URL}/users/auth`,
         {
           method: "POST",
           headers: {
