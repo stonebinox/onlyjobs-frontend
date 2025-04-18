@@ -35,9 +35,10 @@ export interface JobListingProps {
 const JobListing = ({ job }: JobListingProps) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [viewed, setViewed] = useState<boolean>(false);
-  const { markMatchClick } = useApi();
+  const [skippedLocally, setSkippedLocally] = useState<boolean>(false);
+  const { markMatchClick, markMatchAsSkipped } = useApi();
 
-  if (!job.job) return <></>;
+  if (!job.job || job.skipped || skippedLocally) return <></>;
 
   const {
     matchScore,
@@ -57,6 +58,11 @@ const JobListing = ({ job }: JobListingProps) => {
       url,
     },
   } = job;
+
+  const skipMatch = async (matchId: string) => {
+    setSkippedLocally(true);
+    await markMatchAsSkipped(matchId);
+  };
 
   const getSalaryString = (salary: Salary) => {
     if (salary.min && salary.max) {
@@ -201,6 +207,13 @@ const JobListing = ({ job }: JobListingProps) => {
               Visited
             </Badge>
           )}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => skipMatch(matchId)}
+          >
+            Skip
+          </Button>
           <Button
             size="sm"
             variant="outline"

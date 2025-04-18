@@ -10,5 +10,6 @@ export type JobResult = {
   clicked: boolean;
   createdAt: string;
   updatedAt: string;
+  skipped: boolean;
   job: Job | null;
 };
