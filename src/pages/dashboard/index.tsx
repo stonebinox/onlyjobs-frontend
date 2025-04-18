@@ -22,6 +22,7 @@ import {
   Input,
   Alert,
   AlertIcon,
+  HStack,
 } from "@chakra-ui/react";
 import {
   FiUsers,
@@ -29,6 +30,7 @@ import {
   FiCheckCircle,
   FiTrendingUp,
   FiUpload,
+  FiMessageSquare,
 } from "react-icons/fi";
 
 import DashboardLayout from "../../components/Layout/DashboardLayout";
@@ -38,6 +40,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import { JobMatches } from "@/components/Dashboard/JobMatches";
+import { QADrawer } from "@/components/Dashboard/QADrawer";
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
@@ -47,6 +50,7 @@ const Dashboard = () => {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
@@ -152,6 +156,7 @@ const Dashboard = () => {
       setTimeout(() => {
         onClose();
         setUploadSuccess(false);
+        setIsDrawerOpen(true); // we prompt users to update their Q&A
       }, 2000);
     } catch (error) {
       console.error("Error uploading CV:", error);
@@ -197,16 +202,28 @@ const Dashboard = () => {
               alignItems="center"
               justifyContent="center"
             >
-              <Button
-                leftIcon={<FiTrendingUp size="1.5em" />}
-                colorScheme="blue"
-                variant="solid"
-                size="sm"
-                onClick={onOpen}
-                w="100%"
-              >
-                Upload Your CV
-              </Button>
+              <HStack gap={4} width={"100%"}>
+                <Button
+                  leftIcon={<FiTrendingUp size="1.5em" />}
+                  colorScheme="blue"
+                  variant="solid"
+                  size="sm"
+                  onClick={onOpen}
+                  w="100%"
+                >
+                  Upload Your CV
+                </Button>
+                <Button
+                  leftIcon={<FiMessageSquare size="1.5em" />}
+                  colorScheme="blue"
+                  variant="solid"
+                  size="sm"
+                  onClick={() => setIsDrawerOpen(true)}
+                  w="100%"
+                >
+                  Update Q&amp;A
+                </Button>
+              </HStack>
               <Text fontSize="sm" mt={2} color="gray.500" textAlign="center">
                 Improve your match rate
               </Text>
@@ -286,6 +303,7 @@ const Dashboard = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+      <QADrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
     </>
   );
 };
