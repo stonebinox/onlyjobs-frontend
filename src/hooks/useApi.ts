@@ -139,11 +139,36 @@ export const useApi = () => {
     }
   };
 
+  const getMatchCount = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/count`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch match count");
+      }
+
+      const data = await response.json();
+
+      return data.matchCount;
+    } catch (error) {
+      console.error("Fetch match count error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
     getAvailableJobsCount,
     getActiveUserCount,
     uploadCV,
+    getMatchCount,
   };
 };

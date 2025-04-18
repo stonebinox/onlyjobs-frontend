@@ -87,6 +87,7 @@ const jobListings: JobListingProps[] = [
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
   const [activeUserCount, setActiveUserCount] = useState<number>(0);
+  const [matchCount, setMatchCount] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
@@ -94,7 +95,8 @@ const Dashboard = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
-  const { getAvailableJobsCount, getActiveUserCount, uploadCV } = useApi();
+  const { getAvailableJobsCount, getActiveUserCount, uploadCV, getMatchCount } =
+    useApi();
 
   useEffect(() => {
     if (!auth?.isLoggedIn) {
@@ -119,9 +121,25 @@ const Dashboard = () => {
       }
     };
 
+    const fetchMatchCount = async () => {
+      try {
+        const count: number = await getMatchCount();
+        setMatchCount(count);
+      } catch (error) {
+        console.error("Error fetching match count:", error);
+      }
+    };
+
+    fetchMatchCount();
     fetchActiveUserCount();
     fetchAvailableJobsCount();
-  }, [auth?.isLoggedIn, getActiveUserCount, getAvailableJobsCount, router]);
+  }, [
+    auth?.isLoggedIn,
+    getActiveUserCount,
+    getAvailableJobsCount,
+    getMatchCount,
+    router,
+  ]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -210,7 +228,7 @@ const Dashboard = () => {
             />
             <StatCard
               title="Successful Matches"
-              stat="156"
+              stat={new Intl.NumberFormat("en-US").format(matchCount)}
               icon={<FiCheckCircle size="3em" />}
             />
             <Box
