@@ -1,3 +1,6 @@
+import { JobResult } from "@/types/JobResult";
+import { Salary } from "@/types/Salary";
+import { formatDate } from "@/utils/date-formatter";
 import {
   Box,
   Badge,
@@ -7,50 +10,101 @@ import {
   VStack,
   Flex,
   Button,
-  useColorModeValue,
 } from "@chakra-ui/react";
-import { FiMapPin, FiClock, FiBriefcase, FiDollarSign } from "react-icons/fi";
+import { useState } from "react";
+import {
+  FiMapPin,
+  FiClock,
+  FiDollarSign,
+  FiTag,
+  FiGlobe,
+  FiTarget,
+  FiCheckCircle,
+  FiThumbsUp,
+  FiAlertCircle,
+  FiXCircle,
+  FiExternalLink,
+} from "react-icons/fi";
 
 export interface JobListingProps {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  salary: string;
-  type: string;
-  description: string;
-  postedDate: string;
-  applicants: number;
-  isHot?: boolean;
+  job: JobResult;
 }
 
-const JobListing = ({
-  title,
-  company,
-  location,
-  salary,
-  type,
-  description,
-  postedDate,
-  applicants,
-  isHot = false,
-}: JobListingProps) => {
+const JobListing = ({ job }: JobListingProps) => {
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+
+  if (!job.job) return <></>;
+
+  const {
+    matchScore,
+    verdict,
+    reasoning,
+    job: {
+      title,
+      company,
+      location,
+      salary,
+      tags,
+      source,
+      description,
+      postedDate,
+      url,
+    },
+  } = job;
+
+  const getSalaryString = (salary: Salary) => {
+    if (salary.min && salary.max) {
+      return `${salary.currency} ${salary.min} - ${salary.max} per year ${
+        salary.estimated ? "(estimated)" : ""
+      }`;
+    } else if (salary.min) {
+      return `${salary.currency} ${salary.min}+ per year ${
+        salary.estimated ? "(estimated)" : ""
+      }`;
+    } else if (salary.max) {
+      return `Max ${salary.currency} ${salary.max} per year ${
+        salary.estimated ? "(estimated)" : ""
+      }`;
+    }
+
+    return "Not specified";
+  };
+
+  const formatDescription = (description: string) => {
+    const lines = description.split("\n");
+
+    return lines.map((line, index) => <p key={index}>{line}</p>);
+  };
+
+  const handleApplyClick = () => {
+    window.open(url, "_blank");
+    // we log this to the backend when ready
+  };
+
+  const getListingFreshness = (date: Date) => {
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 7) {
+      return `Fresh`;
+    } else if (diffDays < 14) {
+      return `Warm`;
+    } else {
+      return `Stale`;
+    }
+  };
+
   return (
     <Box
       p={5}
       shadow="md"
       borderWidth="1px"
       borderRadius="lg"
-      bg={useColorModeValue("white", "gray.700")}
+      bg={"white"}
       position="relative"
       overflow="hidden"
     >
-      {isHot && (
-        <Badge colorScheme="red" position="absolute" top={2} right={2}>
-          Hot Job
-        </Badge>
-      )}
-
       <Flex direction={{ base: "column", md: "row" }} justify="space-between">
         <VStack align="start" spacing={2}>
           <Heading as="h3" size="md">
@@ -59,43 +113,94 @@ const JobListing = ({
           <Text fontWeight="bold" color="gray.500">
             {company}
           </Text>
-
           <HStack spacing={4} mt={2}>
             <HStack>
               <FiMapPin />
-              <Text fontSize="sm">{location}</Text>
+              <Text fontSize="sm">{location.join(", ")}</Text>
             </HStack>
-
             <HStack>
-              <FiBriefcase />
-              <Text fontSize="sm">{type}</Text>
+              <FiTag />
+              <Text fontSize="sm">{tags.join(", ")}</Text>
             </HStack>
-
             <HStack>
               <FiDollarSign />
-              <Text fontSize="sm">{salary}</Text>
+              <Text fontSize="sm">{getSalaryString(salary)}</Text>
+            </HStack>
+            <HStack>
+              <FiTarget />
+              <Text fontSize="sm" fontWeight={"bold"}>
+                {matchScore}% match
+              </Text>
+            </HStack>
+            <HStack>
+              <FiGlobe />
+              <Text fontSize="sm">{source}</Text>
             </HStack>
           </HStack>
-
-          <Text noOfLines={2} color="gray.600" mt={2}>
-            {description}
+          <Text noOfLines={isExpanded ? undefined : 2} color="gray.600" mt={2}>
+            {formatDescription(description)}
           </Text>
         </VStack>
       </Flex>
+      <Flex justify="space-between" align="center" mt={4} color={"white"}>
+        <Box
+          px={4}
+          py={2}
+          borderRadius="md"
+          width="100%"
+          bg={
+            verdict === "Strong match"
+              ? "green.500"
+              : verdict === "Mild match"
+              ? "blue.500"
+              : verdict === "Weak match"
+              ? "orange.500"
+              : "red.500"
+          }
+        >
+          <Flex justifyContent="space-between" alignItems="center">
+            <HStack spacing={2}>
+              {verdict === "Strong match" ? (
+                <FiCheckCircle />
+              ) : verdict === "Mild match" ? (
+                <FiThumbsUp />
+              ) : verdict === "Weak match" ? (
+                <FiAlertCircle />
+              ) : (
+                <FiXCircle />
+              )}
+              <Text fontWeight="bold">{verdict}</Text>
+            </HStack>
+          </Flex>
 
+          <Text mt={2} fontSize="sm">
+            {reasoning}
+          </Text>
+        </Box>
+      </Flex>
       <Flex justify="space-between" align="center" mt={4}>
         <HStack>
           <FiClock />
-          <Text fontSize="xs">
-            Posted {postedDate} • {applicants} applicants
-          </Text>
+          <Text fontSize="xs">Posted {formatDate(new Date(postedDate))}</Text>
+          <Badge colorScheme="blue" fontSize={"xs"}>
+            {getListingFreshness(new Date(postedDate))}
+          </Badge>
         </HStack>
-
         <HStack>
-          <Button size="sm" variant="outline">
-            View Details
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? "Show Less" : "Show More"}
           </Button>
-          <Button size="sm" colorScheme="blue">
+          <Button
+            size="sm"
+            colorScheme="blue"
+            onClick={handleApplyClick}
+            gap={2}
+          >
+            <FiExternalLink />
             Apply
           </Button>
         </HStack>

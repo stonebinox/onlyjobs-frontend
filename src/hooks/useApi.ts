@@ -163,6 +163,30 @@ export const useApi = () => {
     }
   };
 
+  const getMatches = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch matches");
+      }
+
+      const data = await response.json();
+
+      return data;
+    } catch (error) {
+      console.error("Fetch matches error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -170,5 +194,6 @@ export const useApi = () => {
     getActiveUserCount,
     uploadCV,
     getMatchCount,
+    getMatches,
   };
 };
