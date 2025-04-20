@@ -182,7 +182,7 @@ const Dashboard = () => {
               icon={<FiUsers size="3em" />}
             />
             <StatCard
-              title="Job Listings"
+              title="Job Listings (in the last 30 days)"
               stat={new Intl.NumberFormat("en-US").format(availableJobsCount)}
               icon={<FiBriefcase size="3em" />}
             />

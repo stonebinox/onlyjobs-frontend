@@ -233,6 +233,30 @@ export const useApi = () => {
     }
   };
 
+  const getQuestion = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/question`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch question");
+      }
+
+      const data = await response.json();
+
+      return data.question;
+    } catch (error) {
+      console.error("Fetch question error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -243,5 +267,6 @@ export const useApi = () => {
     getMatches,
     markMatchClick,
     markMatchAsSkipped,
+    getQuestion,
   };
 };
