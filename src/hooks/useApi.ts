@@ -323,6 +323,32 @@ export const useApi = () => {
     }
   };
 
+  const getAnsweredQuestions = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/answers`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Failed to fetch answered questions"
+        );
+      }
+
+      const data = await response.json();
+
+      return data.answeredQuestions;
+    } catch (error) {
+      console.error("Fetch answered questions error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -336,5 +362,6 @@ export const useApi = () => {
     getQuestion,
     postAnswer,
     uploadAudio,
+    getAnsweredQuestions,
   };
 };

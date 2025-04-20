@@ -30,6 +30,8 @@ import {
 import { useApi } from "@/hooks/useApi";
 import theme from "@/theme/theme";
 import { Question } from "@/types/Question";
+import { AnsweredQuestion } from "@/types/AnsweredQuestion";
+import { AnsweredQuestions } from "./AnsweredQuestions";
 
 interface QADrawerProps {
   isOpen: boolean;
@@ -37,9 +39,11 @@ interface QADrawerProps {
 }
 
 export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
-  const { getQuestion, postAnswer, uploadAudio } = useApi();
+  const { getQuestion, postAnswer, uploadAudio, getAnsweredQuestions } =
+    useApi();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [answersLoading, setAnswersLoading] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [textAnswer, setTextAnswer] = useState<string>("");
@@ -50,6 +54,9 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
   );
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [isRecording, setIsRecording] = useState<boolean>(false);
+  const [answeredQuestions, setAnsweredQuestions] = useState<
+    AnsweredQuestion[]
+  >([]);
 
   const startConversationClick = async () => {
     try {
@@ -177,6 +184,18 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     }
   };
 
+  const fetchAnsweredQuestions = async () => {
+    try {
+      setAnswersLoading(true);
+      const response = await getAnsweredQuestions();
+      setAnsweredQuestions(response);
+    } catch (error) {
+      console.error("Error fetching answered questions:", error);
+    } finally {
+      setAnswersLoading(false);
+    }
+  };
+
   const resetAll = () => {
     setCurrentQuestion(null);
     setIsLoading(false);
@@ -188,7 +207,15 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     setMediaRecorder(null);
     setAudioBlob(null);
     setIsRecording(false);
+    setAnsweredQuestions([]);
+    setAnswersLoading(false);
   };
+
+  useEffect(() => {
+    if (!currentQuestion) return;
+
+    fetchAnsweredQuestions();
+  }, [currentQuestion]);
 
   useEffect(() => {
     if (isTyping) {
@@ -205,6 +232,8 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
   useEffect(() => {
     if (!isOpen) {
       resetAll();
+    } else {
+      fetchAnsweredQuestions();
     }
   }, [isOpen]);
 
@@ -290,6 +319,7 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                       fontSize="sm"
                       color={theme.colors.brand[500]}
                       textAlign={"center"}
+                      mb={4}
                     >
                       Your answers will be auto-refined by AI. Don't worry about
                       your accent or grammar.
@@ -421,6 +451,10 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                 )}
               </>
             )}
+          </Skeleton>
+          <Divider />
+          <Skeleton isLoaded={!answersLoading}>
+            <AnsweredQuestions answeredQuestions={answeredQuestions} />
           </Skeleton>
         </DrawerBody>
       </DrawerContent>
