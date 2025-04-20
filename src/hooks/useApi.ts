@@ -292,6 +292,37 @@ export const useApi = () => {
     }
   };
 
+  const uploadAudio = async (file: File, questionId: string) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("questionId", questionId);
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/answer-audio`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("onlyjobs_token")}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to upload audio");
+      }
+
+      const data = await response.json();
+
+      return data;
+    } catch (error) {
+      console.error("Audio upload error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -304,5 +335,6 @@ export const useApi = () => {
     markMatchAsSkipped,
     getQuestion,
     postAnswer,
+    uploadAudio,
   };
 };

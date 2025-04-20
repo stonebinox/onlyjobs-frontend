@@ -9,20 +9,20 @@ import {
   DrawerBody,
   DrawerCloseButton,
   DrawerContent,
-  DrawerFooter,
   DrawerHeader,
   DrawerOverlay,
   HStack,
+  IconButton,
   Skeleton,
   Text,
   Textarea,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { FiEdit, FiMessageCircle, FiMic, FiSend } from "react-icons/fi";
 
 import { useApi } from "@/hooks/useApi";
 import theme from "@/theme/theme";
 import { Question } from "@/types/Question";
-import { FiEdit, FiMessageCircle, FiMic } from "react-icons/fi";
 
 interface QADrawerProps {
   isOpen: boolean;
@@ -30,13 +30,19 @@ interface QADrawerProps {
 }
 
 export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
-  const { getQuestion, postAnswer } = useApi();
+  const { getQuestion, postAnswer, uploadAudio } = useApi();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [textAnswer, setTextAnswer] = useState<string>("");
   const [answerError, setAnswerError] = useState<string | null>(null);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
+    null
+  );
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
 
   const startConversationClick = async () => {
     try {
@@ -80,6 +86,90 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     }
   };
 
+  const startRecording = async () => {
+    if (!currentQuestion) return;
+
+    setAudioError(null);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      setMediaRecorder(recorder);
+
+      const chunks: BlobPart[] = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        setAudioBlob(blob);
+        setIsRecording(false);
+        // Stop all audio tracks
+        stream.getAudioTracks().forEach((track) => track.stop());
+      };
+
+      recorder.start();
+
+      setIsRecording(true);
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+      setAudioError(
+        "Could not access microphone. Please ensure you've granted permission."
+      );
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const submitAudioAnswer = async () => {
+    if (!audioBlob || !currentQuestion || isRecording) return;
+
+    setAnswerError(null);
+
+    try {
+      setIsLoading(true);
+
+      // Convert the Blob to a File object
+      const audioFile = new File([audioBlob], "recording.webm", {
+        type: "audio/webm",
+      });
+
+      // Use the uploadAudio function to upload the audio file
+      const uploadResponse = await uploadAudio(
+        audioFile,
+        currentQuestion.questionId
+      );
+
+      if (uploadResponse.error) {
+        setAnswerError(uploadResponse.error);
+        return;
+      }
+
+      if (uploadResponse.success) {
+        setCurrentQuestion(null);
+        setAudioBlob(null);
+        await startConversationClick();
+      } else {
+        setAnswerError(
+          uploadResponse.message || "Failed to process your answer"
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting audio answer:", error);
+      setAnswerError("Error submitting audio response.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const resetAll = () => {
     setCurrentQuestion(null);
     setIsLoading(false);
@@ -87,6 +177,10 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     setIsSpeaking(false);
     setTextAnswer("");
     setAnswerError(null);
+    setAudioError(null);
+    setMediaRecorder(null);
+    setAudioBlob(null);
+    setIsRecording(false);
   };
 
   useEffect(() => {
@@ -260,15 +354,60 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                     </Button>
                   </>
                 )}
+                {isSpeaking && (
+                  <>
+                    <HStack
+                      width={"100%"}
+                      justifyContent="center"
+                      mb={4}
+                      mt={4}
+                    >
+                      <IconButton
+                        icon={<FiMic />}
+                        variant="outline"
+                        size="lg"
+                        rounded="full"
+                        width={"100px"}
+                        height={"100px"}
+                        fontSize="2xl"
+                        aria-label="Start talking"
+                        onClick={isRecording ? stopRecording : startRecording}
+                      />
+                    </HStack>
+                    <Button
+                      size="md"
+                      colorScheme="blue"
+                      mt={4}
+                      width="100%"
+                      onClick={submitAudioAnswer}
+                      leftIcon={<FiSend />}
+                      disabled={
+                        audioError !== null || !audioBlob || isRecording
+                      }
+                    >
+                      Submit audio
+                    </Button>
+                    <Button
+                      size="sm"
+                      colorScheme="blue"
+                      mt={4}
+                      mb={4}
+                      width="100%"
+                      onClick={() => {
+                        setIsTyping(true);
+                        setTextAnswer("");
+                      }}
+                      leftIcon={<FiEdit />}
+                      variant="link"
+                    >
+                      Switch to text
+                    </Button>
+                  </>
+                )}
               </>
             )}
           </Skeleton>
         </DrawerBody>
-        <DrawerFooter>
-          <Button size="sm" variant="outline">
-            Skip
-          </Button>
-        </DrawerFooter>
       </DrawerContent>
     </Drawer>
   );
