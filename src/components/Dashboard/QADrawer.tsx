@@ -16,9 +16,16 @@ import {
   Skeleton,
   Text,
   Textarea,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { FiEdit, FiMessageCircle, FiMic, FiSend } from "react-icons/fi";
+import {
+  FiEdit,
+  FiMessageCircle,
+  FiMic,
+  FiSend,
+  FiSquare,
+} from "react-icons/fi";
 
 import { useApi } from "@/hooks/useApi";
 import theme from "@/theme/theme";
@@ -362,17 +369,25 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                       mb={4}
                       mt={4}
                     >
-                      <IconButton
-                        icon={<FiMic />}
-                        variant="outline"
-                        size="lg"
-                        rounded="full"
-                        width={"100px"}
-                        height={"100px"}
-                        fontSize="2xl"
-                        aria-label="Start talking"
-                        onClick={isRecording ? stopRecording : startRecording}
-                      />
+                      <Tooltip
+                        hasArrow
+                        placement="auto"
+                        label={
+                          isRecording ? "Stop recording" : "Start recording"
+                        }
+                      >
+                        <IconButton
+                          icon={isRecording ? <FiSquare /> : <FiMic />}
+                          variant="outline"
+                          size="lg"
+                          rounded="full"
+                          width={"100px"}
+                          height={"100px"}
+                          fontSize="2xl"
+                          aria-label="Start talking"
+                          onClick={isRecording ? stopRecording : startRecording}
+                        />
+                      </Tooltip>
                     </HStack>
                     <Button
                       size="md"
