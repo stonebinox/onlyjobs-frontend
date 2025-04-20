@@ -25,6 +25,7 @@ import {
   FiMic,
   FiSend,
   FiSquare,
+  FiX,
 } from "react-icons/fi";
 
 import { useApi } from "@/hooks/useApi";
@@ -136,6 +137,15 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     }
   };
 
+  const cancelRecording = () => {
+    if (mediaRecorder && isRecording) {
+      mediaRecorder.stop();
+      setIsRecording(false);
+      setAudioBlob(null);
+      setAudioError("Recording cancelled.");
+    }
+  };
+
   const stopRecording = () => {
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
@@ -194,6 +204,21 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     } finally {
       setAnswersLoading(false);
     }
+  };
+
+  const changeCurrentQuestion = (
+    questionId: string,
+    question: string,
+    answer: string = ""
+  ) => {
+    setCurrentQuestion({
+      questionId,
+      question,
+    });
+
+    setTextAnswer(answer);
+    setIsTyping(false);
+    setIsSpeaking(false);
   };
 
   const resetAll = () => {
@@ -419,6 +444,18 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                         />
                       </Tooltip>
                     </HStack>
+                    {isRecording && (
+                      <Button
+                        size="xs"
+                        color="orange.300"
+                        width="100%"
+                        onClick={cancelRecording}
+                        leftIcon={<FiX />}
+                        variant="link"
+                      >
+                        Cancel recording
+                      </Button>
+                    )}
                     <Button
                       size="md"
                       colorScheme="blue"
@@ -454,7 +491,10 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
           </Skeleton>
           <Divider />
           <Skeleton isLoaded={!answersLoading}>
-            <AnsweredQuestions answeredQuestions={answeredQuestions} />
+            <AnsweredQuestions
+              answeredQuestions={answeredQuestions}
+              changeCurrentQuestion={changeCurrentQuestion}
+            />
           </Skeleton>
         </DrawerBody>
       </DrawerContent>

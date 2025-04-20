@@ -14,7 +14,7 @@ import {
   Button,
   Tooltip,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import {
   FiMapPin,
   FiClock,
@@ -90,7 +90,12 @@ const JobListing = ({ job }: JobListingProps) => {
   const formatDescription = (description: string) => {
     const lines = description.split("\n");
 
-    return lines.map((line, index) => <p key={index}>{line}</p>);
+    return lines.map((line, index) => (
+      <Fragment key={index}>
+        <span>{line}</span>
+        <br />
+      </Fragment>
+    ));
   };
 
   const handleApplyClick = async () => {

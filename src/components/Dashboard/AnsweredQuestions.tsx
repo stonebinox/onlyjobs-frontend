@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import {
   Accordion,
   AccordionItem,
@@ -10,18 +10,24 @@ import {
   Badge,
   VStack,
   Heading,
-  Divider,
   HStack,
+  Button,
 } from "@chakra-ui/react";
 import { FiEdit, FiMic } from "react-icons/fi";
 import { AnsweredQuestion } from "@/types/AnsweredQuestion";
 
 interface AnsweredQuestionsProps {
   answeredQuestions: AnsweredQuestion[];
+  changeCurrentQuestion: (
+    questionId: string,
+    question: string,
+    answer: string
+  ) => void;
 }
 
 export const AnsweredQuestions = ({
   answeredQuestions,
+  changeCurrentQuestion,
 }: AnsweredQuestionsProps) => {
   if (answeredQuestions.length === 0) {
     return (
@@ -33,6 +39,17 @@ export const AnsweredQuestions = ({
       </Box>
     );
   }
+
+  const formatDescription = (description: string) => {
+    const lines = description.split("\n");
+
+    return lines.map((line, index) => (
+      <Fragment key={index}>
+        <span>{line}</span>
+        <br />
+      </Fragment>
+    ));
+  };
 
   return (
     <VStack spacing={4} align="stretch" mt={4}>
@@ -78,7 +95,19 @@ export const AnsweredQuestions = ({
                 <Text fontWeight="bold" fontSize="sm" color="gray.600">
                   Your Answer:
                 </Text>
-                <Text>{item.answer}</Text>
+                <Text>{formatDescription(item.answer)}</Text>
+                <Button
+                  size={"sm"}
+                  variant="outline"
+                  colorScheme="blue"
+                  mt={4}
+                  leftIcon={<FiEdit />}
+                  onClick={() =>
+                    changeCurrentQuestion(item.id, item.question, item.answer)
+                  }
+                >
+                  Edit Answer
+                </Button>
               </VStack>
             </AccordionPanel>
           </AccordionItem>
