@@ -257,6 +257,41 @@ export const useApi = () => {
     }
   };
 
+  const postAnswer = async (
+    answer: string,
+    questionId: string,
+    mode: "text" | "voice" = "text"
+  ) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/answer`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({
+            answer: {
+              answer,
+              questionId,
+              mode,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to post answer");
+      }
+
+      const data = await response.json();
+
+      return data;
+    } catch (error) {
+      console.error("Post answer error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -268,5 +303,6 @@ export const useApi = () => {
     markMatchClick,
     markMatchAsSkipped,
     getQuestion,
+    postAnswer,
   };
 };

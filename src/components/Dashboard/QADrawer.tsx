@@ -30,20 +30,51 @@ interface QADrawerProps {
 }
 
 export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
-  const { getQuestion } = useApi();
+  const { getQuestion, postAnswer } = useApi();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [textAnswer, setTextAnswer] = useState<string>("");
+  const [answerError, setAnswerError] = useState<string | null>(null);
 
   const startConversationClick = async () => {
     try {
       setIsLoading(true);
+      setIsTyping(false);
+      setIsSpeaking(false);
       const response = await getQuestion();
       setCurrentQuestion(JSON.parse(response));
     } catch (error) {
       console.error("Error fetching question:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const submitTypedAnswer = async () => {
+    if (textAnswer.trim() === "" || !currentQuestion) return;
+
+    setAnswerError(null);
+    const mode = "text";
+
+    try {
+      setIsLoading(true);
+      const response = await postAnswer(
+        textAnswer,
+        currentQuestion.questionId,
+        mode
+      );
+
+      if (response.success) {
+        setCurrentQuestion(null);
+        setTextAnswer("");
+        await startConversationClick();
+      } else {
+        setAnswerError(response.message);
+      }
+    } catch (error) {
+      console.error("Error posting answer:", error);
     } finally {
       setIsLoading(false);
     }
@@ -54,6 +85,8 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     setIsLoading(false);
     setIsTyping(false);
     setIsSpeaking(false);
+    setTextAnswer("");
+    setAnswerError(null);
   };
 
   useEffect(() => {
@@ -164,6 +197,22 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                 )}
                 {isTyping && (
                   <>
+                    {answerError && (
+                      <Alert
+                        status="error"
+                        variant="left-accent"
+                        borderRadius="md"
+                        mb={4}
+                      >
+                        <AlertIcon />
+                        <Box>
+                          <AlertTitle fontWeight="bold">Error</AlertTitle>
+                          <Text fontSize="md" mb={2}>
+                            {answerError}
+                          </Text>
+                        </Box>
+                      </Alert>
+                    )}
                     <Textarea
                       placeholder="Type your answer here..."
                       size="lg"
@@ -189,10 +238,7 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                       colorScheme="blue"
                       mt={4}
                       width="100%"
-                      onClick={() => {
-                        setIsTyping(false);
-                        setTextAnswer("");
-                      }}
+                      onClick={submitTypedAnswer}
                       leftIcon={<FiEdit />}
                     >
                       Submit answer

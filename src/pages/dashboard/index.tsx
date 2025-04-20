@@ -113,10 +113,9 @@ const Dashboard = () => {
       return;
     }
 
-    // Check file type (PDF, DOC, DOCX)
+    // Check file type (PDF, DOCX)
     const validTypes = [
       "application/pdf",
-      "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
 
