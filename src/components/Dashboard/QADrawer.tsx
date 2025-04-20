@@ -20,6 +20,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import {
+  FiArrowRight,
   FiEdit,
   FiMessageCircle,
   FiMic,
@@ -40,8 +41,13 @@ interface QADrawerProps {
 }
 
 export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
-  const { getQuestion, postAnswer, uploadAudio, getAnsweredQuestions } =
-    useApi();
+  const {
+    getQuestion,
+    postAnswer,
+    uploadAudio,
+    getAnsweredQuestions,
+    skipQuestion,
+  } = useApi();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [answersLoading, setAnswersLoading] = useState<boolean>(false);
@@ -65,6 +71,15 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
       setIsTyping(false);
       setIsSpeaking(false);
       const response = await getQuestion();
+
+      const parsedQuestion = JSON.parse(response);
+
+      if (!parsedQuestion.questionId) {
+        setCurrentQuestion(null);
+        setAnswerError("No more questions available at the moment.");
+        return;
+      }
+
       setCurrentQuestion(JSON.parse(response));
     } catch (error) {
       console.error("Error fetching question:", error);
@@ -150,6 +165,28 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
       setIsRecording(false);
+    }
+  };
+
+  const skipQuestionClick = async () => {
+    if (!currentQuestion) return;
+
+    setAnswerError(null);
+
+    try {
+      setIsLoading(true);
+      const response = await skipQuestion(currentQuestion.questionId);
+
+      if (response.success) {
+        setCurrentQuestion(null);
+        await startConversationClick();
+      } else {
+        setAnswerError(response.message);
+      }
+    } catch (error) {
+      console.error("Error skipping question:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -338,6 +375,17 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                         variant="outline"
                       >
                         Talk
+                      </Button>
+                    </HStack>
+                    <HStack justifyContent={"center"} width="100%" mb={4}>
+                      <Button
+                        size="xs"
+                        variant="link"
+                        textAlign={"center"}
+                        rightIcon={<FiArrowRight />}
+                        onClick={skipQuestionClick}
+                      >
+                        Skip question
                       </Button>
                     </HStack>
                     <Text

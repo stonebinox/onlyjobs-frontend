@@ -41,6 +41,10 @@ export const AnsweredQuestions = ({
   }
 
   const formatDescription = (description: string) => {
+    if (description.trim() === "") {
+      return "No answer provided.";
+    }
+
     const lines = description.split("\n");
 
     return lines.map((line, index) => (
@@ -57,7 +61,7 @@ export const AnsweredQuestions = ({
         Your Previous Answers
       </Heading>
       <Accordion allowMultiple defaultIndex={[]}>
-        {answeredQuestions.map((item, index) => (
+        {answeredQuestions.map((item) => (
           <AccordionItem
             key={item.id}
             borderWidth="1px"

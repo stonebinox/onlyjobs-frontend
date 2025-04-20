@@ -349,6 +349,29 @@ export const useApi = () => {
     }
   };
 
+  const skipQuestion = async (questionId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/skip-question`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ questionId }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to skip question");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Skip question error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -363,5 +386,6 @@ export const useApi = () => {
     postAnswer,
     uploadAudio,
     getAnsweredQuestions,
+    skipQuestion,
   };
 };
