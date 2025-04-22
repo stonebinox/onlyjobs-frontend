@@ -277,6 +277,7 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     if (!currentQuestion) return;
 
     fetchAnsweredQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuestion]);
 
   useEffect(() => {
@@ -297,6 +298,7 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     } else {
       fetchAnsweredQuestions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   return (
@@ -394,8 +396,8 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                       textAlign={"center"}
                       mb={4}
                     >
-                      Your answers will be auto-refined by AI. Don't worry about
-                      your accent or grammar.
+                      Your answers will be auto-refined by AI. Don&apos;t worry
+                      about your accent or grammar.
                     </Text>
                   </>
                 )}
