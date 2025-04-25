@@ -215,12 +215,12 @@ const Dashboard = () => {
                 <Button
                   leftIcon={<FiMessageSquare size="1.5em" />}
                   colorScheme="blue"
-                  variant="solid"
+                  variant="outline"
                   size="sm"
                   onClick={() => setIsDrawerOpen(true)}
                   w="100%"
                 >
-                  Update Q&amp;A
+                  Q&amp;A
                 </Button>
               </HStack>
               <Text fontSize="sm" mt={2} color="gray.500" textAlign="center">
