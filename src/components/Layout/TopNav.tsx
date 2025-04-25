@@ -1,5 +1,3 @@
-import { useAuth } from "@/contexts/AuthContext";
-import { useApi } from "@/hooks/useApi";
 import {
   Avatar,
   Box,
@@ -15,8 +13,12 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { FiBell, FiChevronDown, FiMenu } from "react-icons/fi";
+
+import { useAuth } from "@/contexts/AuthContext";
+import { useApi } from "@/hooks/useApi";
 
 interface TopNavProps extends FlexProps {
   onOpen: () => void;
@@ -26,6 +28,12 @@ export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
   const [username, setUsername] = useState<string>("User");
   const { getUserName } = useApi();
   const auth = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    auth.logout();
+    router.push("/");
+  };
 
   useEffect(() => {
     const fetchUsername = async () => {
@@ -104,7 +112,7 @@ export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
             <MenuList>
               <MenuItem>Profile</MenuItem>
               <MenuItem>Settings</MenuItem>
-              <MenuItem>Sign out</MenuItem>
+              <MenuItem onClick={handleLogout}>Sign out</MenuItem>
             </MenuList>
           </Menu>
         </Flex>
