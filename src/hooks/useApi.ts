@@ -372,6 +372,29 @@ export const useApi = () => {
     }
   };
 
+  const createAnswer = async (question: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/create-answer`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ question }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create answer");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Create answer error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -387,5 +410,6 @@ export const useApi = () => {
     uploadAudio,
     getAnsweredQuestions,
     skipQuestion,
+    createAnswer,
   };
 };

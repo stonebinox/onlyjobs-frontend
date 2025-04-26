@@ -57,9 +57,11 @@ export const AnsweredQuestions = ({
 
   return (
     <VStack spacing={4} align="stretch" mt={4}>
-      <Heading size="md" mb={2}>
-        Your Previous Answers
-      </Heading>
+      <Heading size="md">Your Previous Answers</Heading>
+      <Text size="md" color="gray.700">
+        Here are the questions you have answered so far. Click on any question
+        to edit your answer.
+      </Text>
       <Accordion allowMultiple defaultIndex={[]}>
         {answeredQuestions.map((item) => (
           <AccordionItem
