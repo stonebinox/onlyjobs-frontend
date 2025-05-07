@@ -41,6 +41,7 @@ import { useApi } from "@/hooks/useApi";
 import { JobMatches } from "@/components/Dashboard/JobMatches";
 import { QADrawer } from "@/components/Dashboard/QADrawer";
 import { JobResult } from "@/types/JobResult";
+import { VisitedJobs } from "@/components/Dashboard/VisitedJobs";
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
@@ -251,7 +252,7 @@ const Dashboard = () => {
                   />
                 </TabPanel>
                 <TabPanel>
-                  <Text>Recent candidates will appear here.</Text>
+                  <VisitedJobs jobs={jobs} loading={loading} />
                 </TabPanel>
                 <TabPanel>
                   <Text>Recent candidates will appear here.</Text>

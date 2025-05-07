@@ -1,8 +1,3 @@
-import { useApi } from "@/hooks/useApi";
-import { JobResult } from "@/types/JobResult";
-import { Salary } from "@/types/Salary";
-import { formatDate } from "@/utils/date-formatter";
-import { numberFormatter } from "@/utils/text-formatter";
 import {
   Box,
   Badge,
@@ -27,15 +22,21 @@ import {
   FiAlertCircle,
   FiXCircle,
   FiExternalLink,
-  FiHelpCircle,
   FiCpu,
 } from "react-icons/fi";
+
+import { useApi } from "@/hooks/useApi";
+import { JobResult } from "@/types/JobResult";
+import { Salary } from "@/types/Salary";
+import { formatDate } from "@/utils/date-formatter";
+import { numberFormatter } from "@/utils/text-formatter";
 
 export interface JobListingProps {
   job: JobResult;
 }
 
 const JobListing = ({ job }: JobListingProps) => {
+  console.log("JobListing", job);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [viewed, setViewed] = useState<boolean>(false);
   const [skippedLocally, setSkippedLocally] = useState<boolean>(false);
@@ -237,7 +238,7 @@ const JobListing = ({ job }: JobListingProps) => {
         <HStack>
           {(clicked || viewed) && (
             <Badge colorScheme="green" fontSize={"sm"}>
-              Visited
+              Visited on: {formatDate(new Date(job.updatedAt))}
             </Badge>
           )}
           <Button
