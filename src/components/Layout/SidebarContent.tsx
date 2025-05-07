@@ -7,13 +7,7 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
-import {
-  FiBarChart,
-  FiBriefcase,
-  FiHome,
-  FiSettings,
-  FiUsers,
-} from "react-icons/fi";
+import { FiHome, FiSettings } from "react-icons/fi";
 import { SidebarItem } from "./SidebarItem";
 
 interface SidebarProps extends BoxProps {
@@ -39,19 +33,27 @@ export const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         <CloseButton display={{ base: "flex", md: "none" }} onClick={onClose} />
       </Flex>
       <VStack spacing={2} align="stretch">
-        <SidebarItem icon={FiHome} href="/dashboard">
+        <SidebarItem
+          icon={FiHome}
+          href="/dashboard"
+          selected={window.location.pathname === "/dashboard"}
+        >
           Dashboard
         </SidebarItem>
-        <SidebarItem icon={FiBriefcase} href="/dashboard/jobs">
+        {/* <SidebarItem icon={FiBriefcase} href="/dashboard/jobs">
           Job Listings
-        </SidebarItem>
+        </SidebarItem> 
         <SidebarItem icon={FiUsers} href="/dashboard/candidates">
           Candidates
         </SidebarItem>
         <SidebarItem icon={FiBarChart} href="/dashboard/analytics">
           Analytics
-        </SidebarItem>
-        <SidebarItem icon={FiSettings} href="/dashboard/settings">
+        </SidebarItem>*/}
+        <SidebarItem
+          icon={FiSettings}
+          href="/dashboard/settings"
+          selected={window.location.pathname === "/dashboard/settings"}
+        >
           Settings
         </SidebarItem>
       </VStack>

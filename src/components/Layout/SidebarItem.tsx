@@ -7,12 +7,14 @@ interface SidebarItemProps {
   icon: IconType;
   children: ReactNode;
   href: string;
+  selected?: boolean;
 }
 
 export const SidebarItem = ({
   icon,
   children,
   href,
+  selected = false,
   ...rest
 }: SidebarItemProps) => {
   return (
@@ -28,6 +30,10 @@ export const SidebarItem = ({
           bg: "brand.500",
           color: "white",
         }}
+        {...(selected && {
+          bg: "brand.500",
+          color: "white",
+        })}
         {...rest}
       >
         {icon && (

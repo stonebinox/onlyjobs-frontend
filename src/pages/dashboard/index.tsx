@@ -25,7 +25,6 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import {
-  FiUsers,
   FiBriefcase,
   FiCheckCircle,
   FiTrendingUp,
@@ -44,7 +43,6 @@ import { QADrawer } from "@/components/Dashboard/QADrawer";
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
-  const [activeUserCount, setActiveUserCount] = useState<number>(0);
   const [matchCount, setMatchCount] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState<boolean>(false);
@@ -71,15 +69,6 @@ const Dashboard = () => {
       }
     };
 
-    const fetchActiveUserCount = async () => {
-      try {
-        const count: number = await getActiveUserCount();
-        setActiveUserCount(count);
-      } catch (error) {
-        console.error("Error fetching active user count:", error);
-      }
-    };
-
     const fetchMatchCount = async () => {
       try {
         const count: number = await getMatchCount();
@@ -90,7 +79,6 @@ const Dashboard = () => {
     };
 
     fetchMatchCount();
-    fetchActiveUserCount();
     fetchAvailableJobsCount();
   }, [
     auth?.isLoggedIn,
@@ -172,14 +160,9 @@ const Dashboard = () => {
           <Heading mb={5}>Dashboard</Heading>
 
           <SimpleGrid
-            columns={{ base: 1, md: 2, lg: 4 }}
-            spacing={{ base: 5, lg: 8 }}
+            columns={{ base: 1, md: 3, lg: 3 }}
+            spacing={{ base: 4, lg: 8 }}
           >
-            <StatCard
-              title="Active Candidates"
-              stat={new Intl.NumberFormat("en-US").format(activeUserCount)}
-              icon={<FiUsers size="3em" />}
-            />
             <StatCard
               title="Job Listings (in the last 30 days)"
               stat={new Intl.NumberFormat("en-US").format(availableJobsCount)}

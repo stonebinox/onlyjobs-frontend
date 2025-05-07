@@ -81,12 +81,12 @@ export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
       </Text>
 
       <HStack spacing={{ base: "0", md: "6" }}>
-        <IconButton
-          size="lg"
-          variant="ghost"
-          aria-label="notifications"
-          icon={<FiBell />}
-        />
+        {/* <IconButton
+        size="lg"
+        variant="ghost"
+        aria-label="notifications"
+        icon={<FiBell />}
+      /> */}
         <Flex alignItems={"center"}>
           <Menu>
             <MenuButton
