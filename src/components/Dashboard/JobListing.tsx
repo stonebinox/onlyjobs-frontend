@@ -33,16 +33,22 @@ import { numberFormatter } from "@/utils/text-formatter";
 
 export interface JobListingProps {
   job: JobResult;
+  bypassSkippedFiltering?: boolean;
 }
 
-const JobListing = ({ job }: JobListingProps) => {
+const JobListing = ({
+  job,
+  bypassSkippedFiltering = false,
+}: JobListingProps) => {
   console.log("JobListing", job);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [viewed, setViewed] = useState<boolean>(false);
   const [skippedLocally, setSkippedLocally] = useState<boolean>(false);
   const { markMatchClick, markMatchAsSkipped } = useApi();
 
-  if (!job.job || job.skipped || skippedLocally) return <></>;
+  if (!job.job) return <></>;
+
+  if ((job.skipped || skippedLocally) && !bypassSkippedFiltering) return <></>;
 
   const {
     matchScore,
@@ -125,7 +131,7 @@ const JobListing = ({ job }: JobListingProps) => {
       shadow="md"
       borderWidth="1px"
       borderRadius="lg"
-      bg={"white"}
+      bg={job.skipped ? "gray.200" : "white"}
       position="relative"
       overflow="hidden"
     >
@@ -236,18 +242,24 @@ const JobListing = ({ job }: JobListingProps) => {
           </Tooltip>
         </HStack>
         <HStack>
-          {(clicked || viewed) && (
-            <Badge colorScheme="green" fontSize={"sm"}>
-              Visited on: {formatDate(new Date(job.updatedAt))}
+          {(clicked || viewed || job.skipped) && (
+            <Badge
+              colorScheme={job.skipped ? "orange" : "green"}
+              fontSize={"sm"}
+            >
+              {job.skipped ? "Skipped" : "Visited"} on:{" "}
+              {formatDate(new Date(job.updatedAt))}
             </Badge>
           )}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => skipMatch(matchId)}
-          >
-            Skip
-          </Button>
+          {!job.skipped && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => skipMatch(matchId)}
+            >
+              Skip
+            </Button>
+          )}
           <Button
             size="sm"
             variant="outline"

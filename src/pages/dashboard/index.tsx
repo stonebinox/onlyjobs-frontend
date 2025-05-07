@@ -42,6 +42,7 @@ import { JobMatches } from "@/components/Dashboard/JobMatches";
 import { QADrawer } from "@/components/Dashboard/QADrawer";
 import { JobResult } from "@/types/JobResult";
 import { VisitedJobs } from "@/components/Dashboard/VisitedJobs";
+import { SkippedJobs } from "@/components/Dashboard/SkippedJobs";
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
@@ -255,7 +256,7 @@ const Dashboard = () => {
                   <VisitedJobs jobs={jobs} loading={loading} />
                 </TabPanel>
                 <TabPanel>
-                  <Text>Recent candidates will appear here.</Text>
+                  <SkippedJobs jobs={jobs} loading={loading} />
                 </TabPanel>
               </TabPanels>
             </Tabs>
