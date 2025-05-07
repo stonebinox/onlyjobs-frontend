@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
   Box,
   BoxProps,
@@ -15,6 +17,13 @@ interface SidebarProps extends BoxProps {
 }
 
 export const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
+  const [currentPath, setCurrentPath] = useState("");
+
+  useEffect(() => {
+    // This code only runs in the browser after the component mounts
+    setCurrentPath(window.location.pathname);
+  }, []);
+
   return (
     <Box
       transition="3s ease"
@@ -36,7 +45,7 @@ export const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         <SidebarItem
           icon={FiHome}
           href="/dashboard"
-          selected={window.location.pathname === "/dashboard"}
+          selected={currentPath === "/dashboard"}
         >
           Dashboard
         </SidebarItem>
@@ -52,7 +61,7 @@ export const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         <SidebarItem
           icon={FiSettings}
           href="/dashboard/settings"
-          selected={window.location.pathname === "/dashboard/settings"}
+          selected={currentPath === "/dashboard/settings"}
         >
           Settings
         </SidebarItem>

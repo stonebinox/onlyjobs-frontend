@@ -12,10 +12,9 @@ import {
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 
-import { useApi } from "@/hooks/useApi";
-import { JobResult } from "@/types/JobResult";
 import JobListing from "./JobListing";
 import theme from "@/theme/theme";
+import { JobResult } from "@/types/JobResult";
 
 const StyledSkeleton = styled(Skeleton)`
   width: 100%;
@@ -24,28 +23,18 @@ const StyledSkeleton = styled(Skeleton)`
   border-radius: 8px;
 `;
 
-export const JobMatches = () => {
-  const [jobs, setJobs] = useState<JobResult[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+interface JobMatchesProps {
+  jobs: JobResult[];
+  loading: boolean;
+  fetchMatches: () => void;
+}
+
+export const JobMatches = ({
+  jobs,
+  loading,
+  fetchMatches,
+}: JobMatchesProps) => {
   const [minScore, setMinScore] = useState<number>(65);
-  const { getMatches } = useApi();
-
-  const fetchMatches = async () => {
-    try {
-      setLoading(true);
-      const response = await getMatches(minScore);
-
-      if (response.error) {
-        console.error("Error fetching matches:", response.error);
-      } else {
-        setJobs(response);
-      }
-    } catch (error) {
-      console.error("Error fetching matches:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchMatches();

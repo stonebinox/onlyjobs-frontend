@@ -40,6 +40,7 @@ import { useRouter } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
 import { JobMatches } from "@/components/Dashboard/JobMatches";
 import { QADrawer } from "@/components/Dashboard/QADrawer";
+import { JobResult } from "@/types/JobResult";
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
@@ -49,11 +50,35 @@ const Dashboard = () => {
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [jobs, setJobs] = useState<JobResult[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
-  const { getAvailableJobsCount, getActiveUserCount, uploadCV, getMatchCount } =
-    useApi();
+  const {
+    getAvailableJobsCount,
+    getActiveUserCount,
+    uploadCV,
+    getMatchCount,
+    getMatches,
+  } = useApi();
+
+  const fetchMatches = async (minScore: number = 65) => {
+    try {
+      setLoading(true);
+      const response = await getMatches(minScore);
+
+      if (response.error) {
+        console.error("Error fetching matches:", response.error);
+      } else {
+        setJobs(response);
+      }
+    } catch (error) {
+      console.error("Error fetching matches:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!auth?.isLoggedIn) {
@@ -158,7 +183,6 @@ const Dashboard = () => {
       <DashboardLayout>
         <Box>
           <Heading mb={5}>Dashboard</Heading>
-
           <SimpleGrid
             columns={{ base: 1, md: 3, lg: 3 }}
             spacing={{ base: 4, lg: 8 }}
@@ -215,12 +239,19 @@ const Dashboard = () => {
             <Tabs colorScheme="blue">
               <TabList>
                 <Tab>Matches for you</Tab>
+                <Tab>Visited jobs</Tab>
                 <Tab>Skipped by you</Tab>
               </TabList>
-
               <TabPanels>
                 <TabPanel>
-                  <JobMatches />
+                  <JobMatches
+                    jobs={jobs}
+                    loading={loading}
+                    fetchMatches={fetchMatches}
+                  />
+                </TabPanel>
+                <TabPanel>
+                  <Text>Recent candidates will appear here.</Text>
                 </TabPanel>
                 <TabPanel>
                   <Text>Recent candidates will appear here.</Text>
@@ -230,7 +261,6 @@ const Dashboard = () => {
           </Box>
         </Box>
       </DashboardLayout>
-
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
