@@ -40,7 +40,6 @@ const JobListing = ({
   job,
   bypassSkippedFiltering = false,
 }: JobListingProps) => {
-  console.log("JobListing", job);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [viewed, setViewed] = useState<boolean>(false);
   const [skippedLocally, setSkippedLocally] = useState<boolean>(false);
