@@ -26,7 +26,7 @@ const StyledSkeleton = styled(Skeleton)`
 interface JobMatchesProps {
   jobs: JobResult[];
   loading: boolean;
-  fetchMatches: () => void;
+  fetchMatches: (minScore?: number) => void;
 }
 
 export const JobMatches = ({
@@ -36,8 +36,10 @@ export const JobMatches = ({
 }: JobMatchesProps) => {
   const [minScore, setMinScore] = useState<number>(65);
 
+  const unviewedJobs = jobs.filter((job) => !job.clicked && !job.skipped);
+
   useEffect(() => {
-    fetchMatches();
+    fetchMatches(minScore);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minScore]);
 
@@ -46,7 +48,7 @@ export const JobMatches = ({
       <StyledSkeleton isLoaded={!loading}>
         <Box p={4}>
           <Text fontSize="lg" fontWeight="bold" mb={2}>
-            Filter Matches by Score &bull; Viewing {jobs.length} jobs
+            Filter Matches by Score &bull; Viewing {unviewedJobs.length} jobs
           </Text>
           <Slider
             aria-label="match-score"
@@ -72,7 +74,21 @@ export const JobMatches = ({
           </Slider>
         </Box>
         <Flex direction="column" gap={4}>
-          {jobs.map((job) => (
+          {unviewedJobs.length === 0 && (
+            <Flex p={4} direction="column">
+              <Text>
+                No new matches at the moment. Your profile is match once every
+                24 hours with jobs.
+              </Text>
+              <Text>
+                Update your&nbsp;
+                <strong>profile</strong>&nbsp;or&nbsp;
+                <strong>answer some commonly asked interview questions</strong>
+                &nbsp;to enhance your profile in the meantime.
+              </Text>
+            </Flex>
+          )}
+          {unviewedJobs.map((job) => (
             <JobListing key={job._id} job={job} />
           ))}
         </Flex>
