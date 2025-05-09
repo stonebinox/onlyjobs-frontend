@@ -463,6 +463,30 @@ export const useApi = () => {
     }
   };
 
+  const updateMinMatchScore = async (minScore: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/update-mini-score`,
+        {
+          method: "PUT",
+          headers: getHeaders(),
+          body: JSON.stringify({ minScore }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Failed to update minimum match score"
+        );
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Update minimum match score error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -482,5 +506,6 @@ export const useApi = () => {
     getUserProfile,
     updateUserEmail,
     updatePassword,
+    updateMinMatchScore,
   };
 };

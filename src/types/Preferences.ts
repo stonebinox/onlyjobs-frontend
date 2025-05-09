@@ -4,4 +4,5 @@ export type Preferences = {
   remoteOnly: boolean;
   minSalary: number;
   industries: string[];
+  minScore: number;
 };

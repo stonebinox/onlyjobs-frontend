@@ -44,11 +44,17 @@ const SettingsPage = () => {
   const [currentPassword, setCurrentPassword] = useState<string>("");
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [matchScore, setMatchScore] = useState<number>(70);
+  const [matchScore, setMatchScore] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
   const [passwordLoading, setPasswordLoading] = useState<boolean>(false);
+  const [scoreLoading, setScoreLoading] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
-  const { updateUserEmail, getUserProfile, updatePassword } = useApi();
+  const {
+    updateUserEmail,
+    getUserProfile,
+    updatePassword,
+    updateMinMatchScore,
+  } = useApi();
 
   // Modal controls
   const {
@@ -120,14 +126,33 @@ const SettingsPage = () => {
     }
   };
 
-  const handleUpdatePreferences = () => {
-    toast({
-      title: "Preferences updated",
-      description: `Match score preference set to ${matchScore}`,
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
+  const handleUpdatePreferences = async () => {
+    try {
+      setScoreLoading(true);
+      const response = await updateMinMatchScore(matchScore);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      toast({
+        title: "Preferences updated",
+        description: `Match score preference set to ${matchScore}`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error updating preferences:", error);
+      toast({
+        title: "Error updating preferences",
+        description: "There was an error updating your preferences",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setScoreLoading(false);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -200,9 +225,15 @@ const SettingsPage = () => {
   };
 
   useEffect(() => {
+    handleUpdatePreferences();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchScore]);
+
+  useEffect(() => {
     if (!user) return;
 
     setEmail(user.email);
+    setMatchScore(user.preferences?.minScore || 0);
   }, [user]);
 
   useEffect(() => {
@@ -292,6 +323,7 @@ const SettingsPage = () => {
                 </Text>
                 <Box pt={6} pb={2}>
                   <Slider
+                    isDisabled={scoreLoading}
                     aria-label="match-score-slider"
                     defaultValue={matchScore}
                     min={30}
@@ -330,14 +362,6 @@ const SettingsPage = () => {
                   </Slider>
                 </Box>
               </FormControl>
-              <Button
-                colorScheme="blue"
-                alignSelf="flex-end"
-                onClick={handleUpdatePreferences}
-                leftIcon={<FaSave />}
-              >
-                Save Preferences
-              </Button>
             </VStack>
           </CardBody>
         </Card>
