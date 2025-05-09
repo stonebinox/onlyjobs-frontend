@@ -61,8 +61,8 @@ export const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
         </SidebarItem>*/}
         <SidebarItem
           icon={FiSettings}
-          href="/dashboard/settings"
-          selected={currentPath === "/dashboard/settings"}
+          href="/settings"
+          selected={currentPath === "/settings"}
         >
           Settings
         </SidebarItem>
