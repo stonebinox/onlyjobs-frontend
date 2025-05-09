@@ -14,7 +14,13 @@ import {
   useColorModeValue,
   Skeleton,
 } from "@chakra-ui/react";
-import { FaMapMarkerAlt, FaEnvelope, FaEdit, FaTrash } from "react-icons/fa";
+import {
+  FaMapMarkerAlt,
+  FaEnvelope,
+  FaEdit,
+  FaTrash,
+  FaDollarSign,
+} from "react-icons/fa";
 import styled from "styled-components";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
@@ -93,8 +99,6 @@ const ProfilePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  console.log("User data:", user);
-
   const handleEditExperience = (index: number) => {
     // Handle edit experience logic here
   };
@@ -126,6 +130,12 @@ const ProfilePage = () => {
                     <Text color={textColor}>
                       {user?.preferences?.location.join(", ") || "-"}(
                       {user?.preferences?.remoteOnly ? "Remote" : "On-site"})
+                    </Text>
+                  </HStack>
+                  <HStack>
+                    <Icon as={FaDollarSign} color={textColor} />
+                    <Text color={textColor}>
+                      {user?.preferences?.minSalary || "-"}
                     </Text>
                   </HStack>
                 </VStack>
@@ -467,47 +477,6 @@ const ProfilePage = () => {
                       </HStack>
                     </HStack>
                     {i < (user?.preferences?.jobTypes.length || 0) && (
-                      <Divider my={3} />
-                    )}
-                  </Box>
-                ))}
-              </VStack>
-            </CardBody>
-          </Card>
-          <Card bg={cardBg} shadow="md">
-            <CardBody>
-              <Heading as="h2" size="md" mb={4}>
-                Locations ({user?.preferences?.location.length || 0})
-              </Heading>
-              <VStack spacing={4} align="stretch">
-                {user?.preferences?.location.map((exp, i) => (
-                  <Box key={i}>
-                    <HStack justify="space-between" my={1}>
-                      <Text fontSize="sm" color={textColor}>
-                        {exp}
-                      </Text>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditExperience(i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteExperience(i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < (user?.preferences?.location.length || 0) && (
                       <Divider my={3} />
                     )}
                   </Box>
