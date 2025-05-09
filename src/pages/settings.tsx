@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -30,16 +30,22 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
+  Skeleton,
 } from "@chakra-ui/react";
 import DashboardLayout from "../components/Layout/DashboardLayout";
+import { useApi } from "@/hooks/useApi";
+import { User } from "@/types/User";
 
 const SettingsPage = () => {
   // State for form fields
-  const [email, setEmail] = useState("user@example.com");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [matchScore, setMatchScore] = useState(70);
+  const [email, setEmail] = useState<string>("user@example.com");
+  const [currentPassword, setCurrentPassword] = useState<string>("");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [matchScore, setMatchScore] = useState<number>(70);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null); // Replace 'any' with the appropriate type
+  const { updateUserEmail, getUserProfile } = useApi();
 
   // Modal controls
   const {
@@ -108,10 +114,61 @@ const SettingsPage = () => {
     fontSize: "sm",
   };
 
+  const handleEmailUpdate = async () => {
+    if (!user || user.email === email.trim()) return;
+
+    try {
+      setLoading(true);
+      await updateUserEmail(email.trim());
+      await fetchUserProfile();
+
+      toast({
+        title: "Email updated",
+        description: "Your email address has been updated successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error updating email:", error);
+      toast({
+        title: "Error updating email",
+        description: "There was an error updating your email address",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await getUserProfile();
+      setUser(response);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+
+    setEmail(user.email);
+  }, [user]);
+
+  useEffect(() => {
+    fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <DashboardLayout>
       <VStack spacing={6} align="stretch">
-        {/* Account Settings */}
         <Card bg={cardBg} shadow="md">
           <CardBody>
             <Heading as="h2" size="md" mb={4}>
@@ -119,14 +176,17 @@ const SettingsPage = () => {
             </Heading>
             <form onSubmit={handleUpdateAccount}>
               <VStack spacing={4} align="stretch">
-                <FormControl id="email">
-                  <FormLabel>Email address</FormLabel>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                </FormControl>
+                <Skeleton isLoaded={!loading}>
+                  <FormControl id="email">
+                    <FormLabel>Email address</FormLabel>
+                    <Input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      onBlur={handleEmailUpdate}
+                    />
+                  </FormControl>
+                </Skeleton>
                 <Divider />
                 <Heading as="h3" size="sm" mb={2}>
                   Change Password

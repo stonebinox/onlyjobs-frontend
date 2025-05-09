@@ -416,6 +416,28 @@ export const useApi = () => {
     }
   };
 
+  const updateUserEmail = async (email: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/update-email`,
+        {
+          method: "PUT",
+          headers: getHeaders(),
+          body: JSON.stringify({ email }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update email");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Update email error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -433,5 +455,6 @@ export const useApi = () => {
     skipQuestion,
     createAnswer,
     getUserProfile,
+    updateUserEmail,
   };
 };
