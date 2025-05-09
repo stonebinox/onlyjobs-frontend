@@ -487,6 +487,33 @@ export const useApi = () => {
     }
   };
 
+  const factoryResetUserAccount = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/factory-reset`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({}),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Failed to factory reset user account"
+        );
+      }
+
+      const data = await response.json();
+
+      return data;
+    } catch (error) {
+      console.error("Factory reset user account error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -507,5 +534,6 @@ export const useApi = () => {
     updateUserEmail,
     updatePassword,
     updateMinMatchScore,
+    factoryResetUserAccount,
   };
 };

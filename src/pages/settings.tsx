@@ -54,6 +54,7 @@ const SettingsPage = () => {
     getUserProfile,
     updatePassword,
     updateMinMatchScore,
+    factoryResetUserAccount,
   } = useApi();
 
   // Modal controls
@@ -127,6 +128,8 @@ const SettingsPage = () => {
   };
 
   const handleUpdatePreferences = async () => {
+    if (!user || user.preferences?.minScore === matchScore) return;
+
     try {
       setScoreLoading(true);
       const response = await updateMinMatchScore(matchScore);
@@ -166,15 +169,37 @@ const SettingsPage = () => {
     onDeleteClose();
   };
 
-  const handleFactoryReset = () => {
-    toast({
-      title: "Data reset complete",
-      description: "Your CV data, preferences, and Q&A have been reset",
-      status: "info",
-      duration: 5000,
-      isClosable: true,
-    });
-    onResetClose();
+  const handleFactoryReset = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const response = await factoryResetUserAccount();
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      toast({
+        title: "Data reset",
+        description: "Your data has been reset successfully",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error resetting data:", error);
+      toast({
+        title: "Error resetting data",
+        description: "There was an error resetting your data",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+      onResetClose();
+    }
   };
 
   const labelStyles = {
