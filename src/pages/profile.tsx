@@ -33,48 +33,6 @@ const StyledSkeleton = styled(Skeleton)`
   border-radius: 8px;
 `;
 
-// Mock user data
-const mockUser = {
-  name: "Alex Johnson",
-  email: "alex.johnson@example.com",
-  location: "San Francisco, CA",
-  avatar: "https://i.pravatar.cc/300",
-  skills: [
-    "React",
-    "TypeScript",
-    "Node.js",
-    "GraphQL",
-    "UI/UX Design",
-    "Chakra UI",
-  ],
-  experience: [
-    {
-      id: 1,
-      position: "Senior Frontend Developer",
-      company: "TechCorp Inc.",
-      duration: "2020 - Present",
-      description:
-        "Lead frontend development for multiple projects using React and TypeScript.",
-    },
-    {
-      id: 2,
-      position: "UI Developer",
-      company: "Design Studios",
-      duration: "2018 - 2020",
-      description:
-        "Designed and implemented responsive web interfaces for client projects.",
-    },
-    {
-      id: 3,
-      position: "Junior Web Developer",
-      company: "StartUp Hub",
-      duration: "2016 - 2018",
-      description:
-        "Assisted in development of web applications using JavaScript and CSS.",
-    },
-  ],
-};
-
 const ProfilePage = () => {
   const { getUserProfile } = useApi();
   const [user, setUser] = useState<User | null>(null);
