@@ -438,6 +438,31 @@ export const useApi = () => {
     }
   };
 
+  const updatePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/password`,
+        {
+          method: "PUT",
+          headers: getHeaders(),
+          body: JSON.stringify({ oldPassword: currentPassword, newPassword }),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update password");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Update password error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -456,5 +481,6 @@ export const useApi = () => {
     createAnswer,
     getUserProfile,
     updateUserEmail,
+    updatePassword,
   };
 };

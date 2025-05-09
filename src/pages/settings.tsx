@@ -32,6 +32,8 @@ import {
   useDisclosure,
   Skeleton,
 } from "@chakra-ui/react";
+import { FaRedo, FaSave, FaSkull } from "react-icons/fa";
+
 import DashboardLayout from "../components/Layout/DashboardLayout";
 import { useApi } from "@/hooks/useApi";
 import { User } from "@/types/User";
@@ -44,8 +46,9 @@ const SettingsPage = () => {
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [matchScore, setMatchScore] = useState<number>(70);
   const [loading, setLoading] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null); // Replace 'any' with the appropriate type
-  const { updateUserEmail, getUserProfile } = useApi();
+  const [passwordLoading, setPasswordLoading] = useState<boolean>(false);
+  const [user, setUser] = useState<User | null>(null);
+  const { updateUserEmail, getUserProfile, updatePassword } = useApi();
 
   // Modal controls
   const {
@@ -64,16 +67,57 @@ const SettingsPage = () => {
   const cardBg = useColorModeValue("white", "gray.700");
   const textColor = useColorModeValue("gray.600", "gray.300");
 
-  // Mock handlers - would connect to API in real implementation
-  const handleUpdateAccount = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Account updated",
-      description: "Your account information has been updated successfully",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
+  const handleUpdateAccount = async (e: React.FormEvent) => {
+    if (!user) return;
+
+    if (
+      currentPassword === "" ||
+      newPassword === "" ||
+      confirmPassword === "" ||
+      newPassword !== confirmPassword
+    ) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+
+      return;
+    }
+
+    try {
+      setPasswordLoading(true);
+      const response = await updatePassword(currentPassword, newPassword);
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      toast({
+        title: "Password updated",
+        description: "Your password has been updated successfully",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      console.error("Error updating account:", error);
+      toast({
+        title: "Error updating account",
+        description:
+          error.message || "There was an error updating your account",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setPasswordLoading(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    }
   };
 
   const handleUpdatePreferences = () => {
@@ -174,7 +218,7 @@ const SettingsPage = () => {
             <Heading as="h2" size="md" mb={4}>
               Account Settings
             </Heading>
-            <form onSubmit={handleUpdateAccount}>
+            <form>
               <VStack spacing={4} align="stretch">
                 <Skeleton isLoaded={!loading}>
                   <FormControl id="email">
@@ -197,6 +241,7 @@ const SettingsPage = () => {
                     type="password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
+                    disabled={passwordLoading}
                   />
                 </FormControl>
                 <FormControl id="newPassword">
@@ -205,6 +250,7 @@ const SettingsPage = () => {
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
+                    disabled={passwordLoading}
                   />
                 </FormControl>
                 <FormControl id="confirmPassword">
@@ -213,9 +259,17 @@ const SettingsPage = () => {
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={passwordLoading}
                   />
                 </FormControl>
-                <Button type="submit" colorScheme="blue" alignSelf="flex-end">
+                <Button
+                  type="button"
+                  colorScheme="blue"
+                  alignSelf="flex-end"
+                  onClick={handleUpdateAccount}
+                  disabled={passwordLoading}
+                  leftIcon={<FaSave />}
+                >
                   Save Changes
                 </Button>
               </VStack>
@@ -280,6 +334,7 @@ const SettingsPage = () => {
                 colorScheme="blue"
                 alignSelf="flex-end"
                 onClick={handleUpdatePreferences}
+                leftIcon={<FaSave />}
               >
                 Save Preferences
               </Button>
@@ -303,7 +358,11 @@ const SettingsPage = () => {
                 </AlertDescription>
               </Box>
             </Alert>
-            <Button colorScheme="orange" onClick={onResetOpen}>
+            <Button
+              colorScheme="orange"
+              onClick={onResetOpen}
+              leftIcon={<FaRedo />}
+            >
               Factory Reset
             </Button>
           </CardBody>
@@ -325,7 +384,11 @@ const SettingsPage = () => {
                 </AlertDescription>
               </Box>
             </Alert>
-            <Button colorScheme="red" onClick={onDeleteOpen}>
+            <Button
+              colorScheme="red"
+              onClick={onDeleteOpen}
+              leftIcon={<FaSkull />}
+            >
               Delete My Account
             </Button>
           </CardBody>
