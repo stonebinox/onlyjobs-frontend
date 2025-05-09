@@ -37,6 +37,8 @@ import { FaRedo, FaSave, FaSkull } from "react-icons/fa";
 import DashboardLayout from "../components/Layout/DashboardLayout";
 import { useApi } from "@/hooks/useApi";
 import { User } from "@/types/User";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/router";
 
 const SettingsPage = () => {
   // State for form fields
@@ -55,7 +57,10 @@ const SettingsPage = () => {
     updatePassword,
     updateMinMatchScore,
     factoryResetUserAccount,
+    deleteUserAccount,
   } = useApi();
+  const auth = useAuth();
+  const router = useRouter();
 
   // Modal controls
   const {
@@ -158,15 +163,40 @@ const SettingsPage = () => {
     }
   };
 
-  const handleDeleteAccount = () => {
-    toast({
-      title: "Account deleted",
-      description: "Your account has been deleted",
-      status: "error",
-      duration: 5000,
-      isClosable: true,
-    });
-    onDeleteClose();
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    try {
+      setLoading(true);
+      const response = await deleteUserAccount();
+
+      if (response.error) {
+        throw new Error(response.error);
+      }
+
+      toast({
+        title: "Account deleted",
+        description: "Your account has been deleted successfully",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
+
+      auth.logout();
+      router.push("/");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast({
+        title: "Error deleting account",
+        description: "There was an error deleting your account",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+      onDeleteClose();
+    }
   };
 
   const handleFactoryReset = async () => {

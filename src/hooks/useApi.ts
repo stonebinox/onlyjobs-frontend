@@ -514,6 +514,31 @@ export const useApi = () => {
     }
   };
 
+  const deleteUserAccount = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/delete`,
+        {
+          method: "DELETE",
+          headers: getHeaders(),
+          body: JSON.stringify({}),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to delete user account");
+      }
+
+      const data = await response.json();
+
+      return data;
+    } catch (error) {
+      console.error("Delete user account error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -535,5 +560,6 @@ export const useApi = () => {
     updatePassword,
     updateMinMatchScore,
     factoryResetUserAccount,
+    deleteUserAccount,
   };
 };
