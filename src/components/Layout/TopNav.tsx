@@ -113,7 +113,9 @@ export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
               <MenuItem onClick={() => router.push("/profile")}>
                 Profile
               </MenuItem>
-              <MenuItem>Settings</MenuItem>
+              <MenuItem onClick={() => router.push("/settings")}>
+                Settings
+              </MenuItem>
               <MenuItem onClick={handleLogout}>Sign out</MenuItem>
             </MenuList>
           </Menu>
