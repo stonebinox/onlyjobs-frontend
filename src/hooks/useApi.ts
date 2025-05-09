@@ -395,6 +395,27 @@ export const useApi = () => {
     }
   };
 
+  const getUserProfile = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/profile`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch user profile");
+      }
+      const data = await response.json();
+      return data.user;
+    } catch (error) {
+      console.error("Fetch user profile error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -411,5 +432,6 @@ export const useApi = () => {
     getAnsweredQuestions,
     skipQuestion,
     createAnswer,
+    getUserProfile,
   };
 };

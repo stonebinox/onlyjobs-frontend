@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { FiHome, FiSettings } from "react-icons/fi";
 import { SidebarItem } from "./SidebarItem";
+import { FaUser } from "react-icons/fa";
 
 interface SidebarProps extends BoxProps {
   onClose: () => void;

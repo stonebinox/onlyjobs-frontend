@@ -110,7 +110,9 @@ export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
               </HStack>
             </MenuButton>
             <MenuList>
-              <MenuItem>Profile</MenuItem>
+              <MenuItem onClick={() => router.push("/profile")}>
+                Profile
+              </MenuItem>
               <MenuItem>Settings</MenuItem>
               <MenuItem onClick={handleLogout}>Sign out</MenuItem>
             </MenuList>
