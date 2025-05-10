@@ -4,6 +4,7 @@ import {
   Flex,
   FlexProps,
   HStack,
+  Icon,
   IconButton,
   Menu,
   MenuButton,
@@ -15,7 +16,8 @@ import {
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { FiBell, FiChevronDown, FiMenu } from "react-icons/fi";
+import { FiChevronDown, FiMenu } from "react-icons/fi";
+import { FaWallet } from "react-icons/fa";
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useApi } from "@/hooks/useApi";
@@ -81,12 +83,23 @@ export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
       </Text>
 
       <HStack spacing={{ base: "0", md: "6" }}>
-        {/* <IconButton
-        size="lg"
-        variant="ghost"
-        aria-label="notifications"
-        icon={<FiBell />}
-      /> */}
+        <HStack
+          spacing={2}
+          cursor="pointer"
+          p={2}
+          borderRadius="md"
+          _hover={{ bg: useColorModeValue("gray.100", "gray.700") }}
+          onClick={() => router.push("/wallet")}
+        >
+          <Icon
+            as={FaWallet}
+            fontSize="1.2rem"
+            color={useColorModeValue("blue.500", "blue.300")}
+          />
+          <Text fontWeight="medium" fontSize="sm">
+            $3.20
+          </Text>
+        </HStack>
         <Flex alignItems={"center"}>
           <Menu>
             <MenuButton
