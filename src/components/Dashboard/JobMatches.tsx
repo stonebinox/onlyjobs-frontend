@@ -77,7 +77,7 @@ export const JobMatches = ({
           {unviewedJobs.length === 0 && (
             <Flex p={4} direction="column">
               <Text>
-                No new matches at the moment. Your profile is match once every
+                No new matches at the moment. Your profile is matched once every
                 24 hours with jobs.
               </Text>
               <Text>
