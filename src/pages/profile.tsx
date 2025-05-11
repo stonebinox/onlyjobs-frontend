@@ -100,6 +100,26 @@ const ProfilePage = () => {
               </HStack>
             </CardBody>
           </Card>
+
+          {/* New Resume Summary Card */}
+          <Card bg={cardBg} shadow="md">
+            <CardBody>
+              <Heading as="h2" size="md" mb={4}>
+                Resume Summary
+              </Heading>
+              <Box>
+                {user?.resume?.summary ? (
+                  <Text color={textColor}>{user.resume.summary}</Text>
+                ) : (
+                  <Text color={textColor} fontStyle="italic">
+                    No summary available. Add a summary to your resume to
+                    provide an overview of your skills and experience.
+                  </Text>
+                )}
+              </Box>
+            </CardBody>
+          </Card>
+
           <Card bg={cardBg} shadow="md">
             <CardBody>
               <Heading as="h2" size="md" mb={4}>

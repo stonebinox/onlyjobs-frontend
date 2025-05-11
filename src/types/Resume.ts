@@ -8,4 +8,5 @@ export type Resume = {
   achievements: string[];
   volunteerExperience: string[];
   interests: string[];
+  summary: string;
 };

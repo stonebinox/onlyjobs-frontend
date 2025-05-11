@@ -303,7 +303,7 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
   }, [isOpen]);
 
   return (
-    <Drawer placement="right" size="lg" isOpen={isOpen} onClose={onClose}>
+    <Drawer placement="right" size="xl" isOpen={isOpen} onClose={onClose}>
       <DrawerOverlay />
       <DrawerContent>
         <DrawerCloseButton />
