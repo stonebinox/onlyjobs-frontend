@@ -140,44 +140,38 @@ const JobListing = ({
             <Heading as="h3" size="md">
               {title}
             </Heading>
-            <Tooltip
-              label={`AI opinion: ${reasoning}`}
-              placement="auto"
-              hasArrow
+            <Box
+              px={4}
+              py={2}
+              borderRadius="md"
+              width="auto"
+              bg={
+                verdict === "Strong match"
+                  ? "green.500"
+                  : verdict === "Mild match"
+                  ? "blue.500"
+                  : verdict === "Weak match"
+                  ? "orange.500"
+                  : "red.500"
+              }
+              color={"white"}
             >
-              <Box
-                px={4}
-                py={2}
-                borderRadius="md"
-                width="auto"
-                bg={
-                  verdict === "Strong match"
-                    ? "green.500"
-                    : verdict === "Mild match"
-                    ? "blue.500"
-                    : verdict === "Weak match"
-                    ? "orange.500"
-                    : "red.500"
-                }
-                color={"white"}
-              >
-                <Flex justifyContent="space-between" alignItems="center">
-                  <HStack spacing={2}>
-                    {verdict === "Strong match" ? (
-                      <FiCheckCircle />
-                    ) : verdict === "Mild match" ? (
-                      <FiThumbsUp />
-                    ) : verdict === "Weak match" ? (
-                      <FiAlertCircle />
-                    ) : (
-                      <FiXCircle />
-                    )}
-                    <Text fontWeight="bold">{verdict}</Text>
-                    <FiCpu />
-                  </HStack>
-                </Flex>
-              </Box>
-            </Tooltip>
+              <Flex justifyContent="space-between" alignItems="center">
+                <HStack spacing={2}>
+                  {verdict === "Strong match" ? (
+                    <FiCheckCircle />
+                  ) : verdict === "Mild match" ? (
+                    <FiThumbsUp />
+                  ) : verdict === "Weak match" ? (
+                    <FiAlertCircle />
+                  ) : (
+                    <FiXCircle />
+                  )}
+                  <Text fontWeight="bold">{verdict}</Text>
+                  <FiCpu />
+                </HStack>
+              </Flex>
+            </Box>
           </HStack>
           <Text fontWeight="bold" color="gray.500">
             {company}
@@ -206,6 +200,28 @@ const JobListing = ({
               <Text fontSize="sm">{source}</Text>
             </HStack>
           </HStack>
+          {/* AI Reasoning Box */}
+          <Box
+            mt={2}
+            px={3}
+            py={2}
+            borderRadius="md"
+            bg="blue.50"
+            border="1px solid"
+            borderColor="blue.200"
+            color="blue.800"
+            fontSize="sm"
+            display="flex"
+            alignItems="flex-start"
+            gap={2}
+          >
+            <Box>
+              <Text fontWeight="bold" mb={1}>
+                AI Reasoning
+              </Text>
+              <Text>{reasoning}</Text>
+            </Box>
+          </Box>
           <Text noOfLines={isExpanded ? undefined : 2} color="gray.600" mt={2}>
             {formatDescription(description)}
           </Text>
