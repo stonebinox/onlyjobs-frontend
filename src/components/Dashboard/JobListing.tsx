@@ -126,23 +126,34 @@ const JobListing = ({
 
   return (
     <Box
-      p={5}
+      p={{ base: 3, md: 5 }}
       shadow="md"
       borderWidth="1px"
       borderRadius="lg"
       bg={job.skipped ? "gray.200" : "white"}
       position="relative"
       overflow="hidden"
+      maxW="100%"
     >
-      <Flex direction={{ base: "column", md: "row" }} justify="space-between">
-        <VStack align="start" spacing={2}>
-          <HStack gap={4}>
-            <Heading as="h3" size="md">
+      <Flex
+        direction={{ base: "column", md: "row" }}
+        justify="space-between"
+        gap={{ base: 2, md: 0 }}
+      >
+        <VStack align="start" spacing={2} w="100%">
+          <HStack
+            gap={2}
+            flexWrap="wrap"
+            alignItems="flex-start"
+            justifyContent="space-between"
+            w="100%"
+          >
+            <Heading as="h3" size={{ base: "sm", md: "md" }} noOfLines={2}>
               {title}
             </Heading>
             <Box
-              px={4}
-              py={2}
+              px={{ base: 2, md: 4 }}
+              py={{ base: 1, md: 2 }}
               borderRadius="md"
               width="auto"
               bg={
@@ -155,6 +166,8 @@ const JobListing = ({
                   : "red.500"
               }
               color={"white"}
+              fontSize={{ base: "xs", md: "sm" }}
+              mt={{ base: 1, md: 0 }}
             >
               <Flex justifyContent="space-between" alignItems="center">
                 <HStack spacing={2}>
@@ -173,33 +186,44 @@ const JobListing = ({
               </Flex>
             </Box>
           </HStack>
-          <Text fontWeight="bold" color="gray.500">
+          <Text
+            fontWeight="bold"
+            color="gray.500"
+            fontSize={{ base: "sm", md: "md" }}
+          >
             {company}
           </Text>
-          <HStack spacing={4} mt={2}>
-            <HStack>
+          {/* responsive vertical stack for job meta info */}
+          <Flex
+            direction={{ base: "column", sm: "row" }}
+            gap={{ base: 2, md: 4 }}
+            wrap="wrap"
+            mt={2}
+            w="100%"
+            align={{ base: "start", sm: "center" }}
+            fontSize={{ base: "xs", md: "sm" }}
+          >
+            <HStack minW="150px">
               <FiMapPin />
-              <Text fontSize="sm">{location.join(", ")}</Text>
+              <Text>{location.join(", ")}</Text>
             </HStack>
-            <HStack>
+            <HStack minW="120px">
               <FiTag />
-              <Text fontSize="sm">{tags.join(", ")}</Text>
+              <Text>{tags.join(", ")}</Text>
             </HStack>
-            <HStack>
+            <HStack minW="120px">
               <FiDollarSign />
-              <Text fontSize="sm">{getSalaryString(salary)}</Text>
+              <Text>{getSalaryString(salary)}</Text>
             </HStack>
-            <HStack>
+            <HStack minW="110px">
               <FiTarget />
-              <Text fontSize="sm" fontWeight={"bold"}>
-                {matchScore}% match
-              </Text>
+              <Text fontWeight={"bold"}>{matchScore}% match</Text>
             </HStack>
-            <HStack>
+            <HStack minW="100px">
               <FiGlobe />
-              <Text fontSize="sm">{source}</Text>
+              <Text>{source}</Text>
             </HStack>
-          </HStack>
+          </Flex>
           {/* AI Reasoning Box */}
           <Box
             mt={2}
@@ -210,25 +234,38 @@ const JobListing = ({
             border="1px solid"
             borderColor="blue.200"
             color="blue.800"
-            fontSize="sm"
+            fontSize={{ base: "xs", md: "sm" }}
             display="flex"
             alignItems="flex-start"
             gap={2}
+            w="100%"
           >
-            <Box>
+            <Box w="100%">
               <Text fontWeight="bold" mb={1}>
                 AI Reasoning
               </Text>
               <Text>{reasoning}</Text>
             </Box>
           </Box>
-          <Text noOfLines={isExpanded ? undefined : 2} color="gray.600" mt={2}>
+          <Text
+            noOfLines={isExpanded ? undefined : { base: 3, md: 2 }}
+            color="gray.600"
+            mt={2}
+            fontSize={{ base: "sm", md: "md" }}
+            w="100%"
+          >
             {formatDescription(description)}
           </Text>
         </VStack>
       </Flex>
-      <Flex justify="space-between" align="center" mt={4}>
-        <HStack>
+      <Flex
+        direction={{ base: "column", sm: "row" }}
+        justify="space-between"
+        align={{ base: "stretch", sm: "center" }}
+        mt={4}
+        gap={{ base: 2, sm: 0 }}
+      >
+        <HStack spacing={2} mb={{ base: 2, sm: 0 }}>
           <FiClock />
           <Text fontSize="xs">Posted {formatDate(new Date(postedDate))}</Text>
           <Tooltip
@@ -250,17 +287,19 @@ const JobListing = ({
                   ? "orange"
                   : "gray"
               }
-              fontSize={"xs"}
+              fontSize={{ base: "xx-small", md: "xs" }}
             >
               {getListingFreshness(new Date(postedDate))}
             </Badge>
           </Tooltip>
         </HStack>
-        <HStack>
+        <HStack spacing={2}>
           {(clicked || viewed || job.skipped) && (
             <Badge
               colorScheme={job.skipped ? "orange" : "green"}
-              fontSize={"sm"}
+              fontSize={{ base: "xs", md: "sm" }}
+              whiteSpace="pre-wrap"
+              textAlign="center"
             >
               {job.skipped ? "Skipped" : "Visited"} on:{" "}
               {formatDate(new Date(job.updatedAt))}
@@ -268,7 +307,7 @@ const JobListing = ({
           )}
           {!job.skipped && (
             <Button
-              size="sm"
+              size={{ base: "xs", md: "sm" }}
               variant="outline"
               onClick={() => skipMatch(matchId)}
             >
@@ -276,14 +315,14 @@ const JobListing = ({
             </Button>
           )}
           <Button
-            size="sm"
+            size={{ base: "xs", md: "sm" }}
             variant="outline"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded ? "Show Less" : "Show More"}
           </Button>
           <Button
-            size="sm"
+            size={{ base: "xs", md: "sm" }}
             colorScheme="blue"
             onClick={handleApplyClick}
             gap={2}
