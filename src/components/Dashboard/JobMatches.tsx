@@ -27,12 +27,14 @@ interface JobMatchesProps {
   jobs: JobResult[];
   loading: boolean;
   fetchMatches: (minScore?: number) => void;
+  openJobQuestionsDrawer: (jobResult: JobResult) => void;
 }
 
 export const JobMatches = ({
   jobs,
   loading,
   fetchMatches,
+  openJobQuestionsDrawer,
 }: JobMatchesProps) => {
   const [minScore, setMinScore] = useState<number>(65);
 
@@ -89,7 +91,11 @@ export const JobMatches = ({
             </Flex>
           )}
           {unviewedJobs.map((job) => (
-            <JobListing key={job._id} job={job} />
+            <JobListing
+              key={job._id}
+              job={job}
+              openJobQuestionsDrawer={openJobQuestionsDrawer}
+            />
           ))}
         </Flex>
       </StyledSkeleton>

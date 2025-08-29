@@ -11,11 +11,15 @@ import {
 } from "@chakra-ui/react";
 import { MdAutoAwesome } from "react-icons/md";
 import { FaCopy } from "react-icons/fa";
-
-import { useApi } from "@/hooks/useApi";
 import { useState } from "react";
 
-export const GenerateAnswer = () => {
+import { useApi } from "@/hooks/useApi";
+
+interface GenerateAnswerProps {
+  jobResultId?: string;
+}
+
+export const GenerateAnswer = ({ jobResultId }: GenerateAnswerProps) => {
   const [question, setQuestion] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [generatedAnswer, setGeneratedAnswer] = useState<string | null>(null);
@@ -26,7 +30,7 @@ export const GenerateAnswer = () => {
 
     try {
       setLoading(true);
-      const response = await createAnswer(question);
+      const response = await createAnswer(question, jobResultId);
 
       if (response?.success && response?.answer) {
         setGeneratedAnswer(response.answer);

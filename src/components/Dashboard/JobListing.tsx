@@ -34,11 +34,13 @@ import { numberFormatter } from "@/utils/text-formatter";
 export interface JobListingProps {
   job: JobResult;
   bypassSkippedFiltering?: boolean;
+  openJobQuestionsDrawer: (jobResult: JobResult) => void;
 }
 
 const JobListing = ({
   job,
   bypassSkippedFiltering = false,
+  openJobQuestionsDrawer,
 }: JobListingProps) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [viewed, setViewed] = useState<boolean>(false);
@@ -151,40 +153,49 @@ const JobListing = ({
             <Heading as="h3" size={{ base: "sm", md: "md" }} noOfLines={2}>
               {title}
             </Heading>
-            <Box
-              px={{ base: 2, md: 4 }}
-              py={{ base: 1, md: 2 }}
-              borderRadius="md"
-              width="auto"
-              bg={
-                verdict === "Strong match"
-                  ? "green.500"
-                  : verdict === "Mild match"
-                  ? "blue.500"
-                  : verdict === "Weak match"
-                  ? "orange.500"
-                  : "red.500"
-              }
-              color={"white"}
-              fontSize={{ base: "xs", md: "sm" }}
-              mt={{ base: 1, md: 0 }}
-            >
-              <Flex justifyContent="space-between" alignItems="center">
-                <HStack spacing={2}>
-                  {verdict === "Strong match" ? (
-                    <FiCheckCircle />
-                  ) : verdict === "Mild match" ? (
-                    <FiThumbsUp />
-                  ) : verdict === "Weak match" ? (
-                    <FiAlertCircle />
-                  ) : (
-                    <FiXCircle />
-                  )}
-                  <Text fontWeight="bold">{verdict}</Text>
-                  <FiCpu />
-                </HStack>
-              </Flex>
-            </Box>
+            <HStack spacing={2} alignItems="center">
+              <Button
+                size={{ base: "xs", md: "sm" }}
+                variant="outline"
+                onClick={() => openJobQuestionsDrawer(job)}
+              >
+                Answer job questions
+              </Button>
+              <Box
+                px={{ base: 2, md: 4 }}
+                py={{ base: 1, md: 2 }}
+                borderRadius="md"
+                width="auto"
+                bg={
+                  verdict === "Strong match"
+                    ? "green.500"
+                    : verdict === "Mild match"
+                    ? "blue.500"
+                    : verdict === "Weak match"
+                    ? "orange.500"
+                    : "red.500"
+                }
+                color={"white"}
+                fontSize={{ base: "xs", md: "sm" }}
+                mt={{ base: 1, md: 0 }}
+              >
+                <Flex justifyContent="space-between" alignItems="center">
+                  <HStack spacing={2}>
+                    {verdict === "Strong match" ? (
+                      <FiCheckCircle />
+                    ) : verdict === "Mild match" ? (
+                      <FiThumbsUp />
+                    ) : verdict === "Weak match" ? (
+                      <FiAlertCircle />
+                    ) : (
+                      <FiXCircle />
+                    )}
+                    <Text fontWeight="bold">{verdict}</Text>
+                    <FiCpu />
+                  </HStack>
+                </Flex>
+              </Box>
+            </HStack>
           </HStack>
           <Text
             fontWeight="bold"

@@ -15,9 +15,14 @@ const StyledSkeleton = styled(Skeleton)`
 interface VisitedJobsProps {
   loading: boolean;
   jobs: JobResult[];
+  openJobQuestionsDrawer: (jobResult: JobResult) => void;
 }
 
-export const VisitedJobs = ({ loading, jobs }: VisitedJobsProps) => {
+export const VisitedJobs = ({
+  loading,
+  jobs,
+  openJobQuestionsDrawer,
+}: VisitedJobsProps) => {
   const visitedJobs = useMemo(() => {
     return jobs
       .filter((job) => job.clicked && !job.skipped)
@@ -39,7 +44,10 @@ export const VisitedJobs = ({ loading, jobs }: VisitedJobsProps) => {
           <Flex direction="column" gap={4}>
             {visitedJobs.map((job) => (
               <Box key={job._id}>
-                <JobListing job={job} />
+                <JobListing
+                  job={job}
+                  openJobQuestionsDrawer={openJobQuestionsDrawer}
+                />
               </Box>
             ))}
           </Flex>

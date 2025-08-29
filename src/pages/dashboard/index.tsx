@@ -43,6 +43,7 @@ import { QADrawer } from "@/components/Dashboard/QADrawer";
 import { JobResult } from "@/types/JobResult";
 import { VisitedJobs } from "@/components/Dashboard/VisitedJobs";
 import { SkippedJobs } from "@/components/Dashboard/SkippedJobs";
+import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
@@ -52,6 +53,10 @@ const Dashboard = () => {
   const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [isJobDrawerOpen, setIsJobDrawerOpen] = useState<boolean>(false);
+  const [selectedJobResult, setSelectedJobResult] = useState<JobResult | null>(
+    null
+  );
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -80,6 +85,11 @@ const Dashboard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const openJobQuestionsDrawer = (jobResult: JobResult) => {
+    setSelectedJobResult(jobResult);
+    setIsJobDrawerOpen(true);
   };
 
   useEffect(() => {
@@ -250,13 +260,22 @@ const Dashboard = () => {
                     jobs={jobs}
                     loading={loading}
                     fetchMatches={fetchMatches}
+                    openJobQuestionsDrawer={openJobQuestionsDrawer}
                   />
                 </TabPanel>
                 <TabPanel>
-                  <VisitedJobs jobs={jobs} loading={loading} />
+                  <VisitedJobs
+                    jobs={jobs}
+                    loading={loading}
+                    openJobQuestionsDrawer={openJobQuestionsDrawer}
+                  />
                 </TabPanel>
                 <TabPanel>
-                  <SkippedJobs jobs={jobs} loading={loading} />
+                  <SkippedJobs
+                    jobs={jobs}
+                    loading={loading}
+                    openJobQuestionsDrawer={openJobQuestionsDrawer}
+                  />
                 </TabPanel>
               </TabPanels>
             </Tabs>
@@ -318,6 +337,11 @@ const Dashboard = () => {
         </ModalContent>
       </Modal>
       <QADrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+      <JobQuestionsDrawer
+        isOpen={isJobDrawerOpen}
+        onClose={() => setIsJobDrawerOpen(false)}
+        jobResult={selectedJobResult}
+      />
     </>
   );
 };
