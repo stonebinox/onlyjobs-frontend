@@ -2,6 +2,7 @@ import {
   Box,
   Container,
   Heading,
+  HStack,
   Text,
   useColorModeValue,
   VStack,
@@ -33,9 +34,14 @@ export const Footer = () => {
           <Text textAlign="center" color="white">
             © {new Date().getFullYear()} OnlyJobs. All rights reserved.
           </Text>
-          <ContactLink href="/privacy-policy" color="semantic.primary">
-            Privacy Policy
-          </ContactLink>
+          <HStack gap={4}>
+            <ContactLink href="/privacy-policy" color="semantic.primary">
+              Privacy Policy
+            </ContactLink>
+            <ContactLink href="/terms-conditions" color="semantic.primary">
+              Terms &amp; Conditions
+            </ContactLink>
+          </HStack>
         </VStack>
       </Container>
     </Box>
