@@ -31,15 +31,11 @@ export const Footer = () => {
             OnlyJobs
           </Heading>
           <Text textAlign="center" color="white">
-            © {new Date().getFullYear()} OnlyJobs. All rights reserved. &bull;
-            &nbsp;
-            <ContactLink
-              href={`mailto:${"anoop"}.${"santhanam"}@${"gmail"}.${"com"}`}
-              color="semantic.primary"
-            >
-              Contact me
-            </ContactLink>
+            © {new Date().getFullYear()} OnlyJobs. All rights reserved.
           </Text>
+          <ContactLink href="/privacy-policy" color="semantic.primary">
+            Privacy Policy
+          </ContactLink>
         </VStack>
       </Container>
     </Box>
