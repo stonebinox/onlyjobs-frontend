@@ -10,13 +10,13 @@ import {
   useColorModeValue,
   Input,
 } from "@chakra-ui/react";
-import Link from "next/link";
 import styled from "styled-components";
 
 import theme from "@/theme/theme";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { Footer } from "@/components/Footer";
 
 const StyledText = styled.span`
   color: ${theme.colors.semantic.primary};
@@ -34,10 +34,6 @@ const FormContainer = styled.div`
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   gap: 16px;
-`;
-
-const ContactLink = styled(Link)`
-  color: ${theme.colors.semantic.primary};
 `;
 
 export default function Home() {
@@ -248,33 +244,7 @@ export default function Home() {
           </Stack>
         </VStack>
       </Container>
-
-      <Box
-        bg={useColorModeValue("gray.700", "gray.900")}
-        py={10}
-        position={"fixed"}
-        width={"100%"}
-        bottom={"0px"}
-        left={"0px"}
-      >
-        <Container maxW="container.xl">
-          <VStack>
-            <Heading size="md" mb={4} color="white">
-              OnlyJobs
-            </Heading>
-            <Text textAlign="center" color="white">
-              © {new Date().getFullYear()} OnlyJobs. All rights reserved. &bull;
-              &nbsp;
-              <ContactLink
-                href={`mailto:${"anoop"}.${"santhanam"}@${"gmail"}.${"com"}`}
-                color="semantic.primary"
-              >
-                Contact me
-              </ContactLink>
-            </Text>
-          </VStack>
-        </Container>
-      </Box>
+      <Footer />
     </Box>
   );
 }
