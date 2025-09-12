@@ -41,6 +41,9 @@ export const Footer = () => {
             <ContactLink href="/terms-conditions" color="semantic.primary">
               Terms &amp; Conditions
             </ContactLink>
+            <ContactLink href="/refund-policy" color="semantic.primary">
+              Refund Policy
+            </ContactLink>
           </HStack>
         </VStack>
       </Container>
