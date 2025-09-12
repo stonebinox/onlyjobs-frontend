@@ -44,6 +44,12 @@ export const Footer = () => {
             <ContactLink href="/refund-policy" color="semantic.primary">
               Refund Policy
             </ContactLink>
+            <ContactLink
+              href="mailto:contact@auroradesignshq.com"
+              color="semantic.primary"
+            >
+              Contact Us
+            </ContactLink>
           </HStack>
         </VStack>
       </Container>
