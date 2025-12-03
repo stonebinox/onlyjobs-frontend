@@ -22,6 +22,8 @@ import {
   Input,
   Alert,
   AlertIcon,
+  AlertTitle,
+  AlertDescription,
   HStack,
 } from "@chakra-ui/react";
 import {
@@ -59,6 +61,8 @@ const Dashboard = () => {
   );
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [showLowBalanceWarning, setShowLowBalanceWarning] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
@@ -68,6 +72,7 @@ const Dashboard = () => {
     uploadCV,
     getMatchCount,
     getMatches,
+    checkWalletBalance,
   } = useApi();
 
   const fetchMatches = async (minScore: number = 65) => {
@@ -115,8 +120,21 @@ const Dashboard = () => {
       }
     };
 
+    const fetchWalletBalance = async () => {
+      try {
+        const result = await checkWalletBalance();
+        if (result && !("error" in result)) {
+          setWalletBalance(result.balance);
+          setShowLowBalanceWarning(!result.hasSufficientBalance);
+        }
+      } catch (error) {
+        console.error("Error fetching wallet balance:", error);
+      }
+    };
+
     fetchMatchCount();
     fetchAvailableJobsCount();
+    fetchWalletBalance();
   }, [
     auth?.isLoggedIn,
     getActiveUserCount,
@@ -195,6 +213,28 @@ const Dashboard = () => {
       <DashboardLayout>
         <Box>
           <Heading mb={5}>Dashboard</Heading>
+          {showLowBalanceWarning && (
+            <Alert status="warning" mb={5} borderRadius="md">
+              <AlertIcon />
+              <Box flex="1">
+                <AlertTitle>Low Wallet Balance</AlertTitle>
+                <AlertDescription>
+                  Your wallet balance is low. Please add funds to continue
+                  receiving job matches.{" "}
+                  <Text
+                    as="span"
+                    color="blue.500"
+                    fontWeight="bold"
+                    textDecoration="underline"
+                    cursor="pointer"
+                    onClick={() => router.push("/wallet")}
+                  >
+                    Go to Wallet
+                  </Text>
+                </AlertDescription>
+              </Box>
+            </Alert>
+          )}
           <SimpleGrid
             columns={{ base: 1, md: 3, lg: 3 }}
             spacing={{ base: 4, lg: 8 }}

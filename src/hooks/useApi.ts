@@ -599,6 +599,116 @@ export const useApi = () => {
     }
   };
 
+  const getWalletBalance = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/wallet/balance`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch wallet balance");
+      }
+
+      const data = await response.json();
+      return data.balance;
+    } catch (error) {
+      console.error("Fetch wallet balance error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const createPaymentOrder = async (amount: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/wallet/create-order`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ amount }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create payment order");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Create payment order error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const verifyPayment = async (
+    orderId: string,
+    paymentId: string,
+    signature: string
+  ) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/wallet/verify-payment`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ orderId, paymentId, signature }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to verify payment");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Verify payment error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const getTransactions = async (page: number = 1, limit: number = 20) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/wallet/transactions?page=${page}&limit=${limit}`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Failed to fetch transaction history"
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Fetch transactions error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const checkWalletBalance = async () => {
+    try {
+      const balance = await getWalletBalance();
+      if (typeof balance === "object" && "error" in balance) {
+        return { error: balance.error };
+      }
+      return { balance: balance as number, hasSufficientBalance: balance >= 0.3 };
+    } catch (error) {
+      console.error("Check wallet balance error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -623,5 +733,10 @@ export const useApi = () => {
     deleteUserAccount,
     updateUserProfile,
     searchSkills,
+    getWalletBalance,
+    createPaymentOrder,
+    verifyPayment,
+    getTransactions,
+    checkWalletBalance,
   };
 };
