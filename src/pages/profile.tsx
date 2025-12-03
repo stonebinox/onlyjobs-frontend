@@ -13,6 +13,16 @@ import {
   Icon,
   useColorModeValue,
   Skeleton,
+  Button,
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  useToast,
 } from "@chakra-ui/react";
 import {
   FaMapMarkerAlt,
@@ -20,12 +30,19 @@ import {
   FaEdit,
   FaTrash,
   FaDollarSign,
+  FaPlus,
 } from "react-icons/fa";
 import styled from "styled-components";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
 import { useApi } from "@/hooks/useApi";
 import { User } from "@/types/User";
+import EditSummaryModal from "../components/Profile/EditSummaryModal";
+import EditArrayItemModal from "../components/Profile/EditArrayItemModal";
+import AddArrayItemModal from "../components/Profile/AddArrayItemModal";
+import EditSkillsModal from "../components/Profile/EditSkillsModal";
+import EditLanguagesModal from "../components/Profile/EditLanguagesModal";
+import { parseSkill } from "@/utils/skillUtils";
 
 const StyledSkeleton = styled(Skeleton)`
   width: 100%;
@@ -33,14 +50,42 @@ const StyledSkeleton = styled(Skeleton)`
   border-radius: 8px;
 `;
 
+type ArrayFieldType =
+  | "experience"
+  | "education"
+  | "projects"
+  | "achievements"
+  | "certifications"
+  | "volunteerExperience"
+  | "interests";
+
 const ProfilePage = () => {
-  const { getUserProfile } = useApi();
+  const { getUserProfile, updateUserProfile } = useApi();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const cardBg = useColorModeValue("white", "gray.700");
   const textColor = useColorModeValue("gray.600", "gray.300");
+  const toast = useToast();
+
+  // Modal states
+  const summaryModal = useDisclosure();
+  const skillsModal = useDisclosure();
+  const languagesModal = useDisclosure();
+  const editArrayItemModal = useDisclosure();
+  const addArrayItemModal = useDisclosure();
+  const deleteConfirmModal = useDisclosure();
+
+  // State for modals
+  const [editingField, setEditingField] = useState<ArrayFieldType | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number>(-1);
+  const [deletingField, setDeletingField] = useState<ArrayFieldType | null>(null);
+  const [deletingIndex, setDeletingIndex] = useState<number>(-1);
 
   useEffect(() => {
+    fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
     const fetchUserProfile = async () => {
       try {
         setLoading(true);
@@ -53,16 +98,165 @@ const ProfilePage = () => {
       }
     };
 
-    fetchUserProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleEditExperience = (index: number) => {
-    // Handle edit experience logic here
+  const handleUpdateResume = async (resumeUpdate: any) => {
+    const response = await updateUserProfile(resumeUpdate);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    await fetchUserProfile();
   };
 
-  const handleDeleteExperience = (index: number) => {
-    // Handle delete experience logic here
+  // Summary handlers
+  const handleEditSummary = () => {
+    summaryModal.onOpen();
+  };
+
+  const handleSaveSummary = async (summary: string) => {
+    await handleUpdateResume({ summary });
+  };
+
+  // Skills handlers
+  const handleEditSkills = () => {
+    skillsModal.onOpen();
+  };
+
+  const handleSaveSkills = async (skills: string[]) => {
+    await handleUpdateResume({ skills });
+  };
+
+  // Languages handlers
+  const handleEditLanguages = () => {
+    languagesModal.onOpen();
+  };
+
+  const handleSaveLanguages = async (languages: string[]) => {
+    await handleUpdateResume({ languages });
+  };
+
+  // Array item handlers (experience, projects, etc.)
+  const handleEditArrayItem = (field: ArrayFieldType, index: number) => {
+    setEditingField(field);
+    setEditingIndex(index);
+    editArrayItemModal.onOpen();
+  };
+
+  const handleAddArrayItem = (field: ArrayFieldType) => {
+    setEditingField(field);
+    setEditingIndex(-1);
+    addArrayItemModal.onOpen();
+  };
+
+  const handleSaveArrayItem = async (value: string) => {
+    if (!editingField || !user) return;
+
+    const currentArray = user.resume?.[editingField] || [];
+    if (editingIndex >= 0) {
+      // Edit existing item
+      const updatedArray = [...currentArray];
+      updatedArray[editingIndex] = value;
+      await handleUpdateResume({ [editingField]: updatedArray });
+    } else {
+      // Add new item
+      await handleUpdateResume({ [editingField]: [...currentArray, value] });
+    }
+  };
+
+  const handleDeleteArrayItem = (field: ArrayFieldType, index: number) => {
+    setDeletingField(field);
+    setDeletingIndex(index);
+    deleteConfirmModal.onOpen();
+  };
+
+  const confirmDeleteArrayItem = async () => {
+    if (!deletingField || deletingIndex < 0 || !user) return;
+
+    const currentArray = user.resume?.[deletingField] || [];
+    const updatedArray = currentArray.filter((_, i) => i !== deletingIndex);
+    await handleUpdateResume({ [deletingField]: updatedArray });
+    deleteConfirmModal.onClose();
+    setDeletingField(null);
+    setDeletingIndex(-1);
+  };
+
+  const getCurrentArrayItemValue = (): string => {
+    if (!editingField || editingIndex < 0 || !user) return "";
+    return user.resume?.[editingField]?.[editingIndex] || "";
+  };
+
+  const getFieldLabel = (field: ArrayFieldType): string => {
+    const labels: Record<ArrayFieldType, string> = {
+      experience: "Work Experience",
+      education: "Education",
+      projects: "Project",
+      achievements: "Achievement",
+      certifications: "Certification",
+      volunteerExperience: "Volunteer Experience",
+      interests: "Interest",
+    };
+    return labels[field];
+  };
+
+  const renderArrayField = (
+    field: ArrayFieldType,
+    items: string[],
+    label: string
+  ) => {
+    return (
+      <Card bg={cardBg} shadow="md">
+        <CardBody>
+          <HStack justify="space-between" mb={4}>
+            <Heading as="h2" size="md">
+              {label} ({items.length})
+            </Heading>
+            <Button
+              leftIcon={<FaPlus />}
+              size="sm"
+              onClick={() => handleAddArrayItem(field)}
+            >
+              Add
+            </Button>
+          </HStack>
+          <VStack spacing={4} align="stretch">
+            {items.length === 0 ? (
+              <Text color={textColor} fontStyle="italic">
+                No {label.toLowerCase()} added yet
+              </Text>
+            ) : (
+              items.map((item, i) => (
+                <Box key={i}>
+                  <HStack justify="space-between" my={1}>
+                    <Text fontSize="sm" color={textColor}>
+                      {item}
+                    </Text>
+                    <HStack gap={4}>
+                      <Icon
+                        as={FaEdit}
+                        color="blue.500"
+                        boxSize={4}
+                        cursor="pointer"
+                        onClick={() => handleEditArrayItem(field, i)}
+                        _hover={{ color: "blue.600" }}
+                        title="Edit"
+                      />
+                      <Icon
+                        as={FaTrash}
+                        color="blue.500"
+                        boxSize={4}
+                        cursor="pointer"
+                        onClick={() => handleDeleteArrayItem(field, i)}
+                        _hover={{ color: "red.600" }}
+                        title="Delete"
+                      />
+                    </HStack>
+                  </HStack>
+                  {i < items.length - 1 && <Divider my={3} />}
+                </Box>
+              ))
+            )}
+          </VStack>
+        </CardBody>
+      </Card>
+    );
   };
 
   return (
@@ -86,7 +280,7 @@ const ProfilePage = () => {
                   <HStack>
                     <Icon as={FaMapMarkerAlt} color={textColor} />
                     <Text color={textColor}>
-                      {user?.preferences?.location.join(", ") || "-"}(
+                      {user?.preferences?.location.join(", ") || "-"} (
                       {user?.preferences?.remoteOnly ? "Remote" : "On-site"})
                     </Text>
                   </HStack>
@@ -101,12 +295,21 @@ const ProfilePage = () => {
             </CardBody>
           </Card>
 
-          {/* New Resume Summary Card */}
+          {/* Resume Summary Card */}
           <Card bg={cardBg} shadow="md">
             <CardBody>
-              <Heading as="h2" size="md" mb={4}>
+              <HStack justify="space-between" mb={4}>
+                <Heading as="h2" size="md">
                 Resume Summary
               </Heading>
+                <Button
+                  leftIcon={<FaEdit />}
+                  size="sm"
+                  onClick={handleEditSummary}
+                >
+                  Edit
+                </Button>
+              </HStack>
               <Box>
                 {user?.resume?.summary ? (
                   <Text color={textColor}>{user.resume.summary}</Text>
@@ -120,13 +323,26 @@ const ProfilePage = () => {
             </CardBody>
           </Card>
 
+          {/* Skills Card */}
           <Card bg={cardBg} shadow="md">
             <CardBody>
-              <Heading as="h2" size="md" mb={4}>
+              <HStack justify="space-between" mb={4}>
+                <Heading as="h2" size="md">
                 Skills ({user?.resume?.skills.length || 0})
               </Heading>
+                <Button
+                  leftIcon={<FaEdit />}
+                  size="sm"
+                  onClick={handleEditSkills}
+                >
+                  Edit
+                </Button>
+              </HStack>
               <Box>
-                {user?.resume?.skills.map((skill, index) => (
+                {user?.resume?.skills && user.resume.skills.length > 0 ? (
+                  user.resume.skills.map((skill, index) => {
+                    const parsed = parseSkill(skill);
+                    return (
                   <Badge
                     key={index}
                     mr={2}
@@ -137,270 +353,91 @@ const ProfilePage = () => {
                     px={3}
                     py={1}
                   >
-                    {skill}
+                        {parsed.name}
+                        {parsed.rating !== null && (
+                          <Text as="span" opacity={0.8} fontSize="xs" ml={1}>
+                            ({parsed.rating}/10)
+                          </Text>
+                        )}
                   </Badge>
-                )) || (
-                  <Text color={textColor}>
-                    Update your skills by uploading a resume
+                    );
+                  })
+                ) : (
+                  <Text color={textColor} fontStyle="italic">
+                    No skills added yet
                   </Text>
                 )}
               </Box>
             </CardBody>
           </Card>
+
+          {/* Work Experience */}
+          {renderArrayField(
+            "experience",
+            user?.resume?.experience || [],
+            "Work Experience"
+          )}
+
+          {/* Education */}
+          {renderArrayField(
+            "education",
+            user?.resume?.education || [],
+            "Education"
+          )}
+
+          {/* Projects */}
+          {renderArrayField(
+            "projects",
+            user?.resume?.projects || [],
+            "Projects"
+          )}
+
+          {/* Achievements */}
+          {renderArrayField(
+            "achievements",
+            user?.resume?.achievements || [],
+            "Achievements"
+          )}
+
+          {/* Certifications */}
+          {renderArrayField(
+            "certifications",
+            user?.resume?.certifications || [],
+            "Certifications"
+          )}
+
+          {/* Volunteer Experience */}
+          {renderArrayField(
+            "volunteerExperience",
+            user?.resume?.volunteerExperience || [],
+            "Volunteer Experiences"
+          )}
+
+          {/* Interests */}
+          {renderArrayField(
+            "interests",
+            user?.resume?.interests || [],
+            "Interests"
+          )}
+
+          {/* Languages Card */}
           <Card bg={cardBg} shadow="md">
             <CardBody>
-              <Heading as="h2" size="md" mb={4}>
-                Work Experience ({user?.resume?.experience.length || 0})
-              </Heading>
-              <VStack spacing={4} align="stretch">
-                {user?.resume?.experience.map((exp, i) => (
-                  <Box key={i}>
-                    <HStack justify="space-between" my={1}>
-                      <Text fontSize="sm" color={textColor}>
-                        {exp}
-                      </Text>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditExperience(i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteExperience(i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < (user?.resume?.experience.length || 0) && (
-                      <Divider my={3} />
-                    )}
-                  </Box>
-                ))}
-              </VStack>
-            </CardBody>
-          </Card>
-          <Card bg={cardBg} shadow="md">
-            <CardBody>
-              <Heading as="h2" size="md" mb={4}>
-                Projects ({user?.resume?.projects.length || 0})
-              </Heading>
-              <VStack spacing={4} align="stretch">
-                {user?.resume?.projects.map((exp, i) => (
-                  <Box key={i}>
-                    <HStack justify="space-between" my={1}>
-                      <Text fontSize="sm" color={textColor}>
-                        {exp}
-                      </Text>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditExperience(i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteExperience(i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < (user?.resume?.projects.length || 0) && (
-                      <Divider my={3} />
-                    )}
-                  </Box>
-                ))}
-              </VStack>
-            </CardBody>
-          </Card>
-          <Card bg={cardBg} shadow="md">
-            <CardBody>
-              <Heading as="h2" size="md" mb={4}>
-                Achievements ({user?.resume?.achievements.length || 0})
-              </Heading>
-              <VStack spacing={4} align="stretch">
-                {user?.resume?.achievements.map((exp, i) => (
-                  <Box key={i}>
-                    <HStack justify="space-between" my={1}>
-                      <Text fontSize="sm" color={textColor}>
-                        {exp}
-                      </Text>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditExperience(i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteExperience(i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < (user?.resume?.achievements.length || 0) && (
-                      <Divider my={3} />
-                    )}
-                  </Box>
-                ))}
-              </VStack>
-            </CardBody>
-          </Card>
-          <Card bg={cardBg} shadow="md">
-            <CardBody>
-              <Heading as="h2" size="md" mb={4}>
-                Certifications ({user?.resume?.certifications.length || 0})
-              </Heading>
-              <VStack spacing={4} align="stretch">
-                {user?.resume?.certifications.map((exp, i) => (
-                  <Box key={i}>
-                    <HStack justify="space-between" my={1}>
-                      <Text fontSize="sm" color={textColor}>
-                        {exp}
-                      </Text>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditExperience(i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteExperience(i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < (user?.resume?.certifications.length || 0) && (
-                      <Divider my={3} />
-                    )}
-                  </Box>
-                ))}
-              </VStack>
-            </CardBody>
-          </Card>
-          <Card bg={cardBg} shadow="md">
-            <CardBody>
-              <Heading as="h2" size="md" mb={4}>
-                Volunteer Experiences (
-                {user?.resume?.volunteerExperience.length || 0})
-              </Heading>
-              <VStack spacing={4} align="stretch">
-                {user?.resume?.volunteerExperience.map((exp, i) => (
-                  <Box key={i}>
-                    <HStack justify="space-between" my={1}>
-                      <Text fontSize="sm" color={textColor}>
-                        {exp}
-                      </Text>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditExperience(i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteExperience(i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < (user?.resume?.volunteerExperience.length || 0) && (
-                      <Divider my={3} />
-                    )}
-                  </Box>
-                ))}
-              </VStack>
-            </CardBody>
-          </Card>
-          <Card bg={cardBg} shadow="md">
-            <CardBody>
-              <Heading as="h2" size="md" mb={4}>
-                Interests ({user?.resume?.interests.length || 0})
-              </Heading>
-              <VStack spacing={4} align="stretch">
-                {user?.resume?.interests.map((exp, i) => (
-                  <Box key={i}>
-                    <HStack justify="space-between" my={1}>
-                      <Text fontSize="sm" color={textColor}>
-                        {exp}
-                      </Text>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditExperience(i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteExperience(i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < (user?.resume?.interests.length || 0) && (
-                      <Divider my={3} />
-                    )}
-                  </Box>
-                ))}
-              </VStack>
-            </CardBody>
-          </Card>
-          <Card bg={cardBg} shadow="md">
-            <CardBody>
-              <Heading as="h2" size="md" mb={4}>
+              <HStack justify="space-between" mb={4}>
+                <Heading as="h2" size="md">
                 Languages ({user?.resume?.languages.length || 0})
               </Heading>
+                <Button
+                  leftIcon={<FaEdit />}
+                  size="sm"
+                  onClick={handleEditLanguages}
+                >
+                  Edit
+                </Button>
+              </HStack>
               <Box>
-                {user?.resume?.languages.map((skill, index) => (
+                {user?.resume?.languages && user.resume.languages.length > 0 ? (
+                  user.resume.languages.map((language, index) => (
                   <Badge
                     key={index}
                     mr={2}
@@ -411,57 +448,46 @@ const ProfilePage = () => {
                     px={3}
                     py={1}
                   >
-                    {skill}
+                      {language}
                   </Badge>
-                )) || (
-                  <Text color={textColor}>
-                    Update your skills by uploading a resume
+                  ))
+                ) : (
+                  <Text color={textColor} fontStyle="italic">
+                    No languages added yet
                   </Text>
                 )}
               </Box>
             </CardBody>
           </Card>
+
+          {/* Preferred Job Types */}
           <Card bg={cardBg} shadow="md">
             <CardBody>
               <Heading as="h2" size="md" mb={4}>
                 Preferred Job Types ({user?.preferences?.jobTypes.length || 0})
               </Heading>
               <VStack spacing={4} align="stretch">
-                {user?.preferences?.jobTypes.map((exp, i) => (
+                {user?.preferences?.jobTypes && user.preferences.jobTypes.length > 0 ? (
+                  user.preferences.jobTypes.map((jobType, i) => (
                   <Box key={i}>
-                    <HStack justify="space-between" my={1}>
                       <Text fontSize="sm" color={textColor}>
-                        {exp}
+                        {jobType}
                       </Text>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditExperience(i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteExperience(i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < (user?.preferences?.jobTypes.length || 0) && (
+                      {i < user.preferences.jobTypes.length - 1 && (
                       <Divider my={3} />
                     )}
                   </Box>
-                ))}
+                  ))
+                ) : (
+                  <Text color={textColor} fontStyle="italic">
+                    No job types specified
+                  </Text>
+                )}
               </VStack>
             </CardBody>
           </Card>
+
+          {/* Industries Interested In */}
           <Card bg={cardBg} shadow="md">
             <CardBody>
               <Heading as="h2" size="md" mb={4}>
@@ -469,43 +495,103 @@ const ProfilePage = () => {
                 {user?.preferences?.industries.length || 0})
               </Heading>
               <VStack spacing={4} align="stretch">
-                {user?.preferences?.industries.map((exp, i) => (
+                {user?.preferences?.industries && user.preferences.industries.length > 0 ? (
+                  user.preferences.industries.map((industry, i) => (
                   <Box key={i}>
-                    <HStack justify="space-between" my={1}>
                       <Text fontSize="sm" color={textColor}>
-                        {exp}
+                        {industry}
                       </Text>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditExperience(i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteExperience(i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < (user?.preferences?.industries.length || 0) && (
+                      {i < user.preferences.industries.length - 1 && (
                       <Divider my={3} />
                     )}
                   </Box>
-                ))}
+                  ))
+                ) : (
+                  <Text color={textColor} fontStyle="italic">
+                    No industries specified
+                  </Text>
+                )}
               </VStack>
             </CardBody>
           </Card>
         </VStack>
       )}
+
+      {/* Modals */}
+      <EditSummaryModal
+        isOpen={summaryModal.isOpen}
+        onClose={summaryModal.onClose}
+        currentSummary={user?.resume?.summary || ""}
+        onSave={handleSaveSummary}
+      />
+
+      <EditSkillsModal
+        isOpen={skillsModal.isOpen}
+        onClose={skillsModal.onClose}
+        currentSkills={user?.resume?.skills || []}
+        onSave={handleSaveSkills}
+      />
+
+      <EditLanguagesModal
+        isOpen={languagesModal.isOpen}
+        onClose={languagesModal.onClose}
+        currentLanguages={user?.resume?.languages || []}
+        onSave={handleSaveLanguages}
+      />
+
+      <EditArrayItemModal
+        isOpen={editArrayItemModal.isOpen}
+        onClose={() => {
+          editArrayItemModal.onClose();
+          setEditingField(null);
+          setEditingIndex(-1);
+        }}
+        currentValue={getCurrentArrayItemValue()}
+        fieldLabel={editingField ? getFieldLabel(editingField) : ""}
+        onSave={handleSaveArrayItem}
+      />
+
+      <AddArrayItemModal
+        isOpen={addArrayItemModal.isOpen}
+        onClose={() => {
+          addArrayItemModal.onClose();
+          setEditingField(null);
+          setEditingIndex(-1);
+        }}
+        fieldLabel={editingField ? getFieldLabel(editingField) : ""}
+        onSave={handleSaveArrayItem}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteConfirmModal.isOpen}
+        onClose={deleteConfirmModal.onClose}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirm Deletion</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text>
+              Are you sure you want to delete this{" "}
+              {deletingField ? getFieldLabel(deletingField).toLowerCase() : "item"}?
+              This action cannot be undone.
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              colorScheme="gray"
+              mr={3}
+              onClick={deleteConfirmModal.onClose}
+            >
+              Cancel
+            </Button>
+            <Button colorScheme="red" onClick={confirmDeleteArrayItem}>
+              Delete
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </DashboardLayout>
   );
 };

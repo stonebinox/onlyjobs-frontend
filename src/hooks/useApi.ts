@@ -539,6 +539,66 @@ export const useApi = () => {
     }
   };
 
+  const updateUserProfile = async (resume: Partial<{
+    summary: string;
+    skills: string[];
+    experience: string[];
+    education: string[];
+    projects: string[];
+    certifications: string[];
+    languages: string[];
+    achievements: string[];
+    volunteerExperience: string[];
+    interests: string[];
+  }>) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/profile`,
+        {
+          method: "PUT",
+          headers: getHeaders(),
+          body: JSON.stringify({ resume }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update user profile");
+      }
+
+      const data = await response.json();
+
+      return data;
+    } catch (error) {
+      console.error("Update user profile error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const searchSkills = async (query: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/skills/search?q=${encodeURIComponent(query)}`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to search skills");
+      }
+
+      const data = await response.json();
+
+      return data.skills || [];
+    } catch (error) {
+      console.error("Search skills error:", error);
+      return [];
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -561,5 +621,7 @@ export const useApi = () => {
     updateMinMatchScore,
     factoryResetUserAccount,
     deleteUserAccount,
+    updateUserProfile,
+    searchSkills,
   };
 };
