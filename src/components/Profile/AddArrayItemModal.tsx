@@ -92,7 +92,7 @@ const AddArrayItemModal: React.FC<AddArrayItemModalProps> = ({
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button colorScheme="gray" mr={3} onClick={handleClose}>
+          <Button variant="outline" mr={3} onClick={handleClose}>
             Cancel
           </Button>
           <Button onClick={handleSave} isLoading={isLoading}>

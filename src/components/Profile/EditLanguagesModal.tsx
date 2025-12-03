@@ -119,6 +119,8 @@ const EditLanguagesModal: React.FC<EditLanguagesModalProps> = ({
                     size="sm"
                     onClick={handleAddLanguage}
                     leftIcon={<FaPlus />}
+                    colorScheme="blue"
+                    variant="solid"
                   >
                     Add
                   </Button>
@@ -165,7 +167,7 @@ const EditLanguagesModal: React.FC<EditLanguagesModalProps> = ({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button colorScheme="gray" mr={3} onClick={onClose}>
+          <Button variant="outline" mr={3} onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={handleSave} isLoading={isLoading}>

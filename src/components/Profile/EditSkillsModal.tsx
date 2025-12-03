@@ -74,9 +74,12 @@ const EditSkillsModal: React.FC<EditSkillsModalProps> = ({
         try {
           const results = await searchSkills(trimmedSkill);
           // Filter out skills that are already in the user's profile
-          const existingSkillNames = skills.map((s) => getSkillName(s).toLowerCase());
+          const existingSkillNames = skills.map((s) =>
+            getSkillName(s).toLowerCase()
+          );
           const filteredResults = results.filter(
-            (suggestion: string) => !existingSkillNames.includes(suggestion.toLowerCase())
+            (suggestion: string) =>
+              !existingSkillNames.includes(suggestion.toLowerCase())
           );
           setSuggestions(filteredResults);
           setShowSuggestions(filteredResults.length > 0);
@@ -233,6 +236,8 @@ const EditSkillsModal: React.FC<EditSkillsModalProps> = ({
                       size="sm"
                       onClick={() => handleAddSkill()}
                       leftIcon={<FaPlus />}
+                      colorScheme="blue"
+                      variant="solid"
                     >
                       Add
                     </Button>
@@ -280,7 +285,12 @@ const EditSkillsModal: React.FC<EditSkillsModalProps> = ({
               <FormControl>
                 <FormLabel>
                   Rate your proficiency (1-10)
-                  <Text fontSize="xs" color="gray.500" fontWeight="normal" mt={1}>
+                  <Text
+                    fontSize="xs"
+                    color="gray.500"
+                    fontWeight="normal"
+                    mt={1}
+                  >
                     Employers never see this, but we use it to match you with
                     the best jobs
                   </Text>
@@ -385,7 +395,7 @@ const EditSkillsModal: React.FC<EditSkillsModalProps> = ({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button colorScheme="gray" mr={3} onClick={onClose}>
+          <Button variant="outline" mr={3} onClick={onClose}>
             Cancel
           </Button>
           <Button onClick={handleSave} isLoading={isLoading}>

@@ -580,7 +580,7 @@ const ProfilePage = () => {
           </ModalBody>
           <ModalFooter>
             <Button
-              colorScheme="gray"
+              variant="outline"
               mr={3}
               onClick={deleteConfirmModal.onClose}
             >
