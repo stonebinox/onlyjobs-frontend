@@ -78,7 +78,9 @@ const ProfilePage = () => {
   // State for modals
   const [editingField, setEditingField] = useState<ArrayFieldType | null>(null);
   const [editingIndex, setEditingIndex] = useState<number>(-1);
-  const [deletingField, setDeletingField] = useState<ArrayFieldType | null>(null);
+  const [deletingField, setDeletingField] = useState<ArrayFieldType | null>(
+    null
+  );
   const [deletingIndex, setDeletingIndex] = useState<number>(-1);
 
   useEffect(() => {
@@ -86,17 +88,17 @@ const ProfilePage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-    const fetchUserProfile = async () => {
-      try {
-        setLoading(true);
-        const response = await getUserProfile();
-        setUser(response);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchUserProfile = async () => {
+    try {
+      setLoading(true);
+      const response = await getUserProfile();
+      setUser(response);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleUpdateResume = async (resumeUpdate: any) => {
     const response = await updateUserProfile(resumeUpdate);
@@ -300,8 +302,8 @@ const ProfilePage = () => {
             <CardBody>
               <HStack justify="space-between" mb={4}>
                 <Heading as="h2" size="md">
-                Resume Summary
-              </Heading>
+                  Resume Summary
+                </Heading>
                 <Button
                   leftIcon={<FaEdit />}
                   size="sm"
@@ -328,8 +330,8 @@ const ProfilePage = () => {
             <CardBody>
               <HStack justify="space-between" mb={4}>
                 <Heading as="h2" size="md">
-                Skills ({user?.resume?.skills.length || 0})
-              </Heading>
+                  Skills ({user?.resume?.skills.length || 0})
+                </Heading>
                 <Button
                   leftIcon={<FaEdit />}
                   size="sm"
@@ -343,23 +345,23 @@ const ProfilePage = () => {
                   user.resume.skills.map((skill, index) => {
                     const parsed = parseSkill(skill);
                     return (
-                  <Badge
-                    key={index}
-                    mr={2}
-                    mb={2}
-                    colorScheme="blue"
-                    variant="solid"
-                    borderRadius="full"
-                    px={3}
-                    py={1}
-                  >
+                      <Badge
+                        key={index}
+                        mr={2}
+                        mb={2}
+                        colorScheme="blue"
+                        variant="solid"
+                        borderRadius="full"
+                        px={3}
+                        py={1}
+                      >
                         {parsed.name}
                         {parsed.rating !== null && (
                           <Text as="span" opacity={0.8} fontSize="xs" ml={1}>
                             ({parsed.rating}/10)
                           </Text>
                         )}
-                  </Badge>
+                      </Badge>
                     );
                   })
                 ) : (
@@ -425,8 +427,8 @@ const ProfilePage = () => {
             <CardBody>
               <HStack justify="space-between" mb={4}>
                 <Heading as="h2" size="md">
-                Languages ({user?.resume?.languages.length || 0})
-              </Heading>
+                  Languages ({user?.resume?.languages.length || 0})
+                </Heading>
                 <Button
                   leftIcon={<FaEdit />}
                   size="sm"
@@ -438,18 +440,18 @@ const ProfilePage = () => {
               <Box>
                 {user?.resume?.languages && user.resume.languages.length > 0 ? (
                   user.resume.languages.map((language, index) => (
-                  <Badge
-                    key={index}
-                    mr={2}
-                    mb={2}
-                    colorScheme="blue"
-                    variant="solid"
-                    borderRadius="full"
-                    px={3}
-                    py={1}
-                  >
+                    <Badge
+                      key={index}
+                      mr={2}
+                      mb={2}
+                      colorScheme="blue"
+                      variant="solid"
+                      borderRadius="full"
+                      px={3}
+                      py={1}
+                    >
                       {language}
-                  </Badge>
+                    </Badge>
                   ))
                 ) : (
                   <Text color={textColor} fontStyle="italic">
@@ -467,16 +469,17 @@ const ProfilePage = () => {
                 Preferred Job Types ({user?.preferences?.jobTypes.length || 0})
               </Heading>
               <VStack spacing={4} align="stretch">
-                {user?.preferences?.jobTypes && user.preferences.jobTypes.length > 0 ? (
+                {user?.preferences?.jobTypes &&
+                user.preferences.jobTypes.length > 0 ? (
                   user.preferences.jobTypes.map((jobType, i) => (
-                  <Box key={i}>
+                    <Box key={i}>
                       <Text fontSize="sm" color={textColor}>
                         {jobType}
                       </Text>
-                      {i < user.preferences.jobTypes.length - 1 && (
-                      <Divider my={3} />
-                    )}
-                  </Box>
+                      {i < (user.preferences?.jobTypes?.length || 0) - 1 && (
+                        <Divider my={3} />
+                      )}
+                    </Box>
                   ))
                 ) : (
                   <Text color={textColor} fontStyle="italic">
@@ -495,16 +498,17 @@ const ProfilePage = () => {
                 {user?.preferences?.industries.length || 0})
               </Heading>
               <VStack spacing={4} align="stretch">
-                {user?.preferences?.industries && user.preferences.industries.length > 0 ? (
+                {user?.preferences?.industries &&
+                user.preferences.industries.length > 0 ? (
                   user.preferences.industries.map((industry, i) => (
-                  <Box key={i}>
+                    <Box key={i}>
                       <Text fontSize="sm" color={textColor}>
                         {industry}
                       </Text>
-                      {i < user.preferences.industries.length - 1 && (
-                      <Divider my={3} />
-                    )}
-                  </Box>
+                      {i < (user.preferences?.industries?.length || 0) - 1 && (
+                        <Divider my={3} />
+                      )}
+                    </Box>
                   ))
                 ) : (
                   <Text color={textColor} fontStyle="italic">
@@ -574,8 +578,10 @@ const ProfilePage = () => {
           <ModalBody>
             <Text>
               Are you sure you want to delete this{" "}
-              {deletingField ? getFieldLabel(deletingField).toLowerCase() : "item"}?
-              This action cannot be undone.
+              {deletingField
+                ? getFieldLabel(deletingField).toLowerCase()
+                : "item"}
+              ? This action cannot be undone.
             </Text>
           </ModalBody>
           <ModalFooter>
