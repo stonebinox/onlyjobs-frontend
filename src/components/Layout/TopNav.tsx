@@ -28,7 +28,8 @@ interface TopNavProps extends FlexProps {
 
 export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
   const [username, setUsername] = useState<string>("User");
-  const { getUserName } = useApi();
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const { getUserName, getWalletBalance } = useApi();
   const auth = useAuth();
   const router = useRouter();
 
@@ -51,8 +52,24 @@ export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
       }
     };
 
+    const fetchWalletBalance = async () => {
+      if (!auth?.isLoggedIn) return;
+
+      try {
+        const result = await getWalletBalance();
+        if (typeof result === "number") {
+          setWalletBalance(result);
+        } else if (result && typeof result === "object" && "error" in result) {
+          console.error("Error fetching wallet balance:", result.error);
+        }
+      } catch (error) {
+        console.error("Error fetching wallet balance:", error);
+      }
+    };
+
     fetchUsername();
-  }, [auth, getUserName]);
+    fetchWalletBalance();
+  }, [auth, getUserName, getWalletBalance]);
 
   return (
     <Flex
@@ -97,7 +114,7 @@ export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
             color={useColorModeValue("blue.500", "blue.300")}
           />
           <Text fontWeight="medium" fontSize="sm">
-            $3.20
+            {walletBalance !== null ? `$${walletBalance.toFixed(2)}` : "-"}
           </Text>
         </HStack>
         <Flex alignItems={"center"}>
