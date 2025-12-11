@@ -156,7 +156,7 @@ export default function Home() {
             position={"relative"}
             width="100%"
           >
-            <form>
+            <form onSubmit={handleSubmit}>
               <FormContainer>
                 <Heading size="sm">Login or Sign up</Heading>
                 <Input
@@ -174,10 +174,9 @@ export default function Home() {
                   isInvalid={fieldError}
                 />
                 <Button
-                  type="button"
+                  type="submit"
                   variant={"solid"}
                   width="100%"
-                  onClick={handleSubmit}
                   isDisabled={loading}
                   isLoading={loading}
                   loadingText="Processing ..."
