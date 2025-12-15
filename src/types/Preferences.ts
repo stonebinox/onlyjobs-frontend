@@ -5,4 +5,5 @@ export type Preferences = {
   minSalary: number;
   industries: string[];
   minScore: number;
+  matchingEnabled: boolean;
 };

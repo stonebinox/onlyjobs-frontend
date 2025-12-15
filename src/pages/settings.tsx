@@ -31,8 +31,13 @@ import {
   ModalCloseButton,
   useDisclosure,
   Skeleton,
+  Switch,
+  InputGroup,
+  InputLeftElement,
+  Icon as ChakraIcon,
 } from "@chakra-ui/react";
 import { FaRedo, FaSave, FaSkull } from "react-icons/fa";
+import { FaEnvelope } from "react-icons/fa6";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
 import { useApi } from "@/hooks/useApi";
@@ -47,7 +52,17 @@ const SettingsPage = () => {
   const [newPassword, setNewPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [matchScore, setMatchScore] = useState<number>(0);
+  const [jobTypes, setJobTypes] = useState<string>("");
+  const [industries, setIndustries] = useState<string>("");
+  const [locations, setLocations] = useState<string>("");
+  const [remoteOnly, setRemoteOnly] = useState<boolean>(false);
+  const [minSalary, setMinSalary] = useState<number>(0);
+  const [newEmailInput, setNewEmailInput] = useState<string>("");
+  const [emailChangeLoading, setEmailChangeLoading] = useState<boolean>(false);
+  const [matchingEnabled, setMatchingEnabled] = useState<boolean>(true);
+  const [pendingMatchingEnabled, setPendingMatchingEnabled] = useState<boolean | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [prefSaving, setPrefSaving] = useState<boolean>(false);
   const [passwordLoading, setPasswordLoading] = useState<boolean>(false);
   const [scoreLoading, setScoreLoading] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
@@ -56,6 +71,8 @@ const SettingsPage = () => {
     getUserProfile,
     updatePassword,
     updateMinMatchScore,
+    updatePreferences,
+    requestEmailChange,
     factoryResetUserAccount,
     deleteUserAccount,
   } = useApi();
@@ -73,6 +90,18 @@ const SettingsPage = () => {
     isOpen: isResetOpen,
     onOpen: onResetOpen,
     onClose: onResetClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isEmailChangeOpen,
+    onOpen: onEmailChangeOpen,
+    onClose: onEmailChangeClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isMatchingConfirmOpen,
+    onOpen: onMatchingConfirmOpen,
+    onClose: onMatchingConfirmClose,
   } = useDisclosure();
 
   const toast = useToast();
@@ -163,6 +192,83 @@ const SettingsPage = () => {
     }
   };
 
+  const handleSavePreferences = async (overrideMatchingEnabled?: boolean) => {
+    if (!user) return;
+
+    const payload: Record<string, any> = {};
+
+    const splitAndClean = (value: string) =>
+      value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+    payload.jobTypes = splitAndClean(jobTypes);
+    payload.industries = splitAndClean(industries);
+    payload.location = splitAndClean(locations);
+    payload.remoteOnly = remoteOnly;
+    payload.minSalary = Number(minSalary) || 0;
+    payload.matchingEnabled =
+      overrideMatchingEnabled !== undefined
+        ? overrideMatchingEnabled
+        : matchingEnabled;
+
+    try {
+      setPrefSaving(true);
+      const response = await updatePreferences(payload);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      const nextMatchingEnabled =
+        overrideMatchingEnabled !== undefined
+          ? overrideMatchingEnabled
+          : matchingEnabled;
+      setMatchingEnabled(nextMatchingEnabled);
+      setUser((prev) => {
+        if (!prev) return prev;
+        const currentPrefs = prev.preferences || {
+          jobTypes: [],
+          location: [],
+          remoteOnly: false,
+          minSalary: 0,
+          industries: [],
+          minScore: 30,
+          matchingEnabled: true,
+        };
+        return {
+          ...prev,
+          preferences: {
+            jobTypes: payload.jobTypes ?? currentPrefs.jobTypes,
+            location: payload.location ?? currentPrefs.location,
+            remoteOnly: payload.remoteOnly ?? currentPrefs.remoteOnly,
+            minSalary: payload.minSalary ?? currentPrefs.minSalary,
+            industries: payload.industries ?? currentPrefs.industries,
+            minScore: payload.minScore ?? currentPrefs.minScore,
+            matchingEnabled: payload.matchingEnabled ?? currentPrefs.matchingEnabled,
+          },
+        };
+      });
+      toast({
+        title: "Preferences updated",
+        description: "Your job preferences have been saved",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      console.error("Error updating preferences:", error);
+      toast({
+        title: "Error updating preferences",
+        description: error.message || "There was an error saving preferences",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setPrefSaving(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!user) return;
 
@@ -239,32 +345,7 @@ const SettingsPage = () => {
   };
 
   const handleEmailUpdate = async () => {
-    if (!user || user.email === email.trim()) return;
-
-    try {
-      setLoading(true);
-      await updateUserEmail(email.trim());
-      await fetchUserProfile();
-
-      toast({
-        title: "Email updated",
-        description: "Your email address has been updated successfully",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-      });
-    } catch (error) {
-      console.error("Error updating email:", error);
-      toast({
-        title: "Error updating email",
-        description: "There was an error updating your email address",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    } finally {
-      setLoading(false);
-    }
+    // legacy handler no-op; email change is handled via verified flow
   };
 
   const fetchUserProfile = async () => {
@@ -279,6 +360,47 @@ const SettingsPage = () => {
     }
   };
 
+  const handleEmailChangeRequest = async () => {
+    if (!newEmailInput || newEmailInput.trim().toLowerCase() === email.trim().toLowerCase()) {
+      toast({
+        title: "Enter a different email",
+        status: "warning",
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    try {
+      setEmailChangeLoading(true);
+      const response = await requestEmailChange(newEmailInput.trim());
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      toast({
+        title: "Verification sent",
+        description: "Check your new email to confirm the change. You will need to sign in again.",
+        status: "success",
+        duration: 4000,
+        isClosable: true,
+      });
+      onEmailChangeClose();
+      auth.logout();
+      router.push("/signin");
+    } catch (error: any) {
+      console.error("Email change request error:", error);
+      toast({
+        title: "Email change failed",
+        description: error.message || "Could not request email change",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+    } finally {
+      setEmailChangeLoading(false);
+    }
+  };
+
   useEffect(() => {
     handleUpdatePreferences();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -289,6 +411,12 @@ const SettingsPage = () => {
 
     setEmail(user.email);
     setMatchScore(user.preferences?.minScore || 0);
+    setRemoteOnly(user.preferences?.remoteOnly || false);
+    setMinSalary(user.preferences?.minSalary || 0);
+    setJobTypes((user.preferences?.jobTypes || []).join(", "));
+    setIndustries((user.preferences?.industries || []).join(", "));
+    setLocations((user.preferences?.location || []).join(", "));
+    setMatchingEnabled(user.preferences?.matchingEnabled ?? true);
   }, [user]);
 
   useEffect(() => {
@@ -304,62 +432,63 @@ const SettingsPage = () => {
             <Heading as="h2" size="md" mb={4}>
               Account Settings
             </Heading>
-            <form>
-              <VStack spacing={4} align="stretch">
-                <Skeleton isLoaded={!loading}>
-                  <FormControl id="email">
-                    <FormLabel>Email address</FormLabel>
-                    <Input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onBlur={handleEmailUpdate}
-                    />
-                  </FormControl>
-                </Skeleton>
-                <Divider />
-                <Heading as="h3" size="sm" mb={2}>
-                  Change Password
-                </Heading>
-                <FormControl id="currentPassword">
-                  <FormLabel>Current Password</FormLabel>
+            <VStack spacing={4} align="stretch">
+              <Skeleton isLoaded={!loading}>
+                <FormControl id="email">
+                  <FormLabel>Current Email</FormLabel>
                   <Input
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    disabled={passwordLoading}
+                    type="email"
+                    value={email}
+                    isReadOnly
+                    cursor="not-allowed"
                   />
                 </FormControl>
-                <FormControl id="newPassword">
-                  <FormLabel>New Password</FormLabel>
-                  <Input
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    disabled={passwordLoading}
-                  />
-                </FormControl>
-                <FormControl id="confirmPassword">
-                  <FormLabel>Confirm New Password</FormLabel>
-                  <Input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    disabled={passwordLoading}
-                  />
-                </FormControl>
-                <Button
-                  type="button"
-                  colorScheme="blue"
-                  alignSelf="flex-end"
-                  onClick={handleUpdateAccount}
-                  disabled={passwordLoading}
-                  leftIcon={<FaSave />}
-                >
-                  Save Changes
+                <Button variant="outline" onClick={onEmailChangeOpen}>
+                  Change Email
                 </Button>
-              </VStack>
-            </form>
+              </Skeleton>
+              <Divider />
+              <Heading as="h3" size="sm" mb={2}>
+                Change Password
+              </Heading>
+              <FormControl id="currentPassword">
+                <FormLabel>Current Password</FormLabel>
+                <Input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  disabled={passwordLoading}
+                />
+              </FormControl>
+              <FormControl id="newPassword">
+                <FormLabel>New Password</FormLabel>
+                <Input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  disabled={passwordLoading}
+                />
+              </FormControl>
+              <FormControl id="confirmPassword">
+                <FormLabel>Confirm New Password</FormLabel>
+                <Input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={passwordLoading}
+                />
+              </FormControl>
+              <Button
+                type="button"
+                colorScheme="blue"
+                alignSelf="flex-end"
+                onClick={handleUpdateAccount}
+                disabled={passwordLoading}
+                leftIcon={<FaSave />}
+              >
+                Save Changes
+              </Button>
+            </VStack>
           </CardBody>
         </Card>
 
@@ -417,6 +546,86 @@ const SettingsPage = () => {
                   </Slider>
                 </Box>
               </FormControl>
+
+              <Divider />
+
+              <FormControl id="minSalary">
+                <FormLabel>Minimum Salary (USD/year)</FormLabel>
+                <Input
+                  type="number"
+                  value={minSalary}
+                  onChange={(e) => setMinSalary(Number(e.target.value) || 0)}
+                  min={0}
+                  placeholder="e.g., 120000"
+                />
+              </FormControl>
+
+              <FormControl id="remoteOnly" display="flex" alignItems="center">
+                <FormLabel mb="0">Remote Only</FormLabel>
+                <Switch
+                  isChecked={remoteOnly}
+                  onChange={(e) => setRemoteOnly(e.target.checked)}
+                  colorScheme="blue"
+                />
+              </FormControl>
+
+              <FormControl id="matchingEnabled" display="flex" alignItems="center">
+                <FormLabel mb="0">Match jobs for me (uses $0.30 when matches are found)</FormLabel>
+                <Switch
+                  isChecked={matchingEnabled}
+                  onChange={(e) => {
+                    setPendingMatchingEnabled(e.target.checked);
+                    onMatchingConfirmOpen();
+                  }}
+                  colorScheme="blue"
+                />
+              </FormControl>
+
+              <FormControl id="locations">
+                <FormLabel>Preferred Locations</FormLabel>
+                <Text color={textColor} fontSize="sm" mb={2}>
+                  Comma-separated (e.g., Remote, United States, Europe)
+                </Text>
+                <Input
+                  value={locations}
+                  onChange={(e) => setLocations(e.target.value)}
+                  placeholder="Remote, United States, Europe"
+                />
+              </FormControl>
+
+              <FormControl id="jobTypes">
+                <FormLabel>Job Types</FormLabel>
+                <Text color={textColor} fontSize="sm" mb={2}>
+                  Comma-separated (e.g., Full-time, Contract, Freelance)
+                </Text>
+                <Input
+                  value={jobTypes}
+                  onChange={(e) => setJobTypes(e.target.value)}
+                  placeholder="Full-time, Contract"
+                />
+              </FormControl>
+
+              <FormControl id="industries">
+                <FormLabel>Industries</FormLabel>
+                <Text color={textColor} fontSize="sm" mb={2}>
+                  Comma-separated (e.g., Fintech, Healthtech, AI)
+                </Text>
+                <Input
+                  value={industries}
+                  onChange={(e) => setIndustries(e.target.value)}
+                  placeholder="Fintech, Healthtech, AI"
+                />
+              </FormControl>
+
+              <Button
+                colorScheme="blue"
+                onClick={() => handleSavePreferences()}
+                isLoading={prefSaving}
+                leftIcon={<FaSave />}
+                alignSelf="flex-end"
+              >
+                Save Preferences
+              </Button>
             </VStack>
           </CardBody>
         </Card>
@@ -515,6 +724,89 @@ const SettingsPage = () => {
             </Button>
             <Button colorScheme="orange" onClick={handleFactoryReset}>
               Yes, Reset My Data
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Matching toggle confirmation */}
+      <Modal isOpen={isMatchingConfirmOpen} onClose={onMatchingConfirmClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            {pendingMatchingEnabled !== null && pendingMatchingEnabled
+              ? "Resume matching?"
+              : "Pause matching?"}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Text color={textColor}>
+              {pendingMatchingEnabled !== null && pendingMatchingEnabled
+                ? "We'll start matching you again and deduct $0.30 when matches are found."
+                : "We'll pause matching and stop any wallet deductions until you turn it back on."}
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={() => {
+              setPendingMatchingEnabled(null);
+              onMatchingConfirmClose();
+            }}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              onClick={async () => {
+                onMatchingConfirmClose();
+                if (pendingMatchingEnabled !== null) {
+                  await handleSavePreferences(pendingMatchingEnabled);
+                  setPendingMatchingEnabled(null);
+                }
+              }}
+              isLoading={prefSaving}
+            >
+              Confirm
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Change Email Modal */}
+      <Modal isOpen={isEmailChangeOpen} onClose={onEmailChangeClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Change Email</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack align="stretch" spacing={4}>
+              <Text color={textColor}>
+                We will send a verification link to the new email. Once verified, you’ll be asked to sign in again.
+              </Text>
+              <FormControl id="newEmail">
+                <FormLabel>New Email Address</FormLabel>
+                <InputGroup>
+                  <InputLeftElement pointerEvents="none">
+                    <ChakraIcon as={FaEnvelope} color="gray.400" />
+                  </InputLeftElement>
+                  <Input
+                    type="email"
+                    value={newEmailInput}
+                    onChange={(e) => setNewEmailInput(e.target.value)}
+                    placeholder="you@example.com"
+                  />
+                </InputGroup>
+              </FormControl>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={onEmailChangeClose}>
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              onClick={handleEmailChangeRequest}
+              isLoading={emailChangeLoading}
+            >
+              Send Verification
             </Button>
           </ModalFooter>
         </ModalContent>

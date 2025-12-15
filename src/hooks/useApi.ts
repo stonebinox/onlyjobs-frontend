@@ -487,6 +487,54 @@ export const useApi = () => {
     }
   };
 
+  const requestEmailChange = async (newEmail: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/email-change/request`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ newEmail }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to request email change");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Request email change error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const verifyEmailChange = async (token: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/email-change/verify`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to verify email change");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Verify email change error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const factoryResetUserAccount = async () => {
     try {
       const response = await fetch(
@@ -571,6 +619,39 @@ export const useApi = () => {
       return data;
     } catch (error) {
       console.error("Update user profile error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const updatePreferences = async (preferences: Partial<{
+    jobTypes: string[];
+    industries: string[];
+    location: string[];
+    remoteOnly: boolean;
+    minSalary: number;
+    minScore: number;
+    matchingEnabled: boolean;
+  }>) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/preferences`,
+        {
+          method: "PUT",
+          headers: getHeaders(),
+          body: JSON.stringify(preferences),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update preferences");
+      }
+
+      const data = await response.json();
+
+      return data;
+    } catch (error) {
+      console.error("Update preferences error:", error);
       return { error: (error as Error).message };
     }
   };
@@ -729,6 +810,9 @@ export const useApi = () => {
     updateUserEmail,
     updatePassword,
     updateMinMatchScore,
+    updatePreferences,
+    requestEmailChange,
+    verifyEmailChange,
     factoryResetUserAccount,
     deleteUserAccount,
     updateUserProfile,
