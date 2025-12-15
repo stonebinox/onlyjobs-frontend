@@ -35,12 +35,14 @@ export interface JobListingProps {
   job: JobResult;
   bypassSkippedFiltering?: boolean;
   openJobQuestionsDrawer: (jobResult: JobResult) => void;
+  onApplyClick?: (jobResult: JobResult) => void;
 }
 
 const JobListing = ({
   job,
   bypassSkippedFiltering = false,
   openJobQuestionsDrawer,
+  onApplyClick,
 }: JobListingProps) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [viewed, setViewed] = useState<boolean>(false);
@@ -110,6 +112,10 @@ const JobListing = ({
     window.open(url, "_blank");
     setViewed(true);
     await markMatchClick(matchId);
+    // Notify parent component about the Apply click
+    if (onApplyClick) {
+      onApplyClick(job);
+    }
   };
 
   const getListingFreshness = (date: Date) => {

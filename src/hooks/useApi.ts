@@ -233,6 +233,31 @@ export const useApi = () => {
     }
   };
 
+  const markMatchApplied = async (matchId: string, applied: boolean) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/applied`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ matchId, applied }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || "Failed to mark match applied status"
+        );
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Mark match applied error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const getQuestion = async () => {
     try {
       const response = await fetch(
@@ -800,6 +825,7 @@ export const useApi = () => {
     getMatches,
     markMatchClick,
     markMatchAsSkipped,
+    markMatchApplied,
     getQuestion,
     postAnswer,
     uploadAudio,

@@ -16,12 +16,14 @@ interface SkippedJobsProps {
   loading: boolean;
   jobs: JobResult[];
   openJobQuestionsDrawer: (jobResult: JobResult) => void;
+  onApplyClick?: (jobResult: JobResult) => void;
 }
 
 export const SkippedJobs = ({
   loading,
   jobs,
   openJobQuestionsDrawer,
+  onApplyClick,
 }: SkippedJobsProps) => {
   const skippedJobs = useMemo(() => {
     return jobs
@@ -48,6 +50,7 @@ export const SkippedJobs = ({
                   job={job}
                   bypassSkippedFiltering={true}
                   openJobQuestionsDrawer={openJobQuestionsDrawer}
+                  onApplyClick={onApplyClick}
                 />
               </Box>
             ))}

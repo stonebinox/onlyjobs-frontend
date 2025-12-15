@@ -12,22 +12,22 @@ const StyledSkeleton = styled(Skeleton)`
   border-radius: 8px;
 `;
 
-interface VisitedJobsProps {
+interface AppliedJobsProps {
   loading: boolean;
   jobs: JobResult[];
   openJobQuestionsDrawer: (jobResult: JobResult) => void;
   onApplyClick?: (jobResult: JobResult) => void;
 }
 
-export const VisitedJobs = ({
+export const AppliedJobs = ({
   loading,
   jobs,
   openJobQuestionsDrawer,
   onApplyClick,
-}: VisitedJobsProps) => {
-  const visitedJobs = useMemo(() => {
+}: AppliedJobsProps) => {
+  const appliedJobs = useMemo(() => {
     return jobs
-      .filter((job) => job.clicked && !job.skipped)
+      .filter((job) => job.applied === true)
       .sort(
         (a, b) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
@@ -39,12 +39,12 @@ export const VisitedJobs = ({
       <StyledSkeleton isLoaded={!loading}>
         <Box p={4}>
           <Text fontSize="lg" fontWeight="bold" mb={2}>
-            Visited Jobs &bull; {visitedJobs.length} jobs
+            Applied Jobs &bull; {appliedJobs.length} jobs
           </Text>
         </Box>
-        {visitedJobs.length > 0 ? (
+        {appliedJobs.length > 0 ? (
           <Flex direction="column" gap={4}>
-            {visitedJobs.map((job) => (
+            {appliedJobs.map((job) => (
               <Box key={job._id}>
                 <JobListing
                   job={job}
@@ -56,10 +56,11 @@ export const VisitedJobs = ({
           </Flex>
         ) : (
           <Flex p={4} direction="column">
-            <Text>You haven&apos;t visited any jobs yet.</Text>
+            <Text>You haven&apos;t applied to any jobs yet.</Text>
           </Flex>
         )}
       </StyledSkeleton>
     </Flex>
   );
 };
+

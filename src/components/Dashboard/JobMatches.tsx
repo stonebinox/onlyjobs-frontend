@@ -28,6 +28,7 @@ interface JobMatchesProps {
   loading: boolean;
   fetchMatches: (minScore?: number) => void;
   openJobQuestionsDrawer: (jobResult: JobResult) => void;
+  onApplyClick?: (jobResult: JobResult) => void;
 }
 
 export const JobMatches = ({
@@ -35,6 +36,7 @@ export const JobMatches = ({
   loading,
   fetchMatches,
   openJobQuestionsDrawer,
+  onApplyClick,
 }: JobMatchesProps) => {
   const [minScore, setMinScore] = useState<number>(65);
 
@@ -95,6 +97,7 @@ export const JobMatches = ({
               key={job._id}
               job={job}
               openJobQuestionsDrawer={openJobQuestionsDrawer}
+              onApplyClick={onApplyClick}
             />
           ))}
         </Flex>

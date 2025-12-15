@@ -45,6 +45,7 @@ import { QADrawer } from "@/components/Dashboard/QADrawer";
 import { JobResult } from "@/types/JobResult";
 import { VisitedJobs } from "@/components/Dashboard/VisitedJobs";
 import { SkippedJobs } from "@/components/Dashboard/SkippedJobs";
+import { AppliedJobs } from "@/components/Dashboard/AppliedJobs";
 import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
 
 const Dashboard = () => {
@@ -63,6 +64,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [showLowBalanceWarning, setShowLowBalanceWarning] = useState(false);
+  const [pendingJobForDrawer, setPendingJobForDrawer] = useState<JobResult | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
@@ -95,6 +97,15 @@ const Dashboard = () => {
   const openJobQuestionsDrawer = (jobResult: JobResult) => {
     setSelectedJobResult(jobResult);
     setIsJobDrawerOpen(true);
+    // Clear pending job when drawer is manually opened
+    if (pendingJobForDrawer?._id === jobResult._id) {
+      setPendingJobForDrawer(null);
+    }
+  };
+
+  const handleApplyClick = (jobResult: JobResult) => {
+    // Store the job that was clicked for later drawer opening
+    setPendingJobForDrawer(jobResult);
   };
 
   useEffect(() => {
@@ -142,6 +153,28 @@ const Dashboard = () => {
     getMatchCount,
     router,
   ]);
+
+  // Handle page visibility change to auto-open drawer
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // When tab becomes visible and there's a pending job, open the drawer
+      if (document.visibilityState === "visible" && pendingJobForDrawer) {
+        // Only auto-open if drawer is not already open
+        if (!isJobDrawerOpen) {
+          setSelectedJobResult(pendingJobForDrawer);
+          setIsJobDrawerOpen(true);
+          // Clear pending job after opening drawer
+          setPendingJobForDrawer(null);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [pendingJobForDrawer, isJobDrawerOpen]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -291,8 +324,9 @@ const Dashboard = () => {
             <Tabs colorScheme="blue">
               <TabList>
                 <Tab>Matches for you</Tab>
-                <Tab>Visited jobs</Tab>
-                <Tab>Skipped by you</Tab>
+                <Tab>Applied</Tab>
+                <Tab>Viewed</Tab>
+                <Tab>Skipped</Tab>
               </TabList>
               <TabPanels>
                 <TabPanel>
@@ -301,6 +335,15 @@ const Dashboard = () => {
                     loading={loading}
                     fetchMatches={fetchMatches}
                     openJobQuestionsDrawer={openJobQuestionsDrawer}
+                    onApplyClick={handleApplyClick}
+                  />
+                </TabPanel>
+                <TabPanel>
+                  <AppliedJobs
+                    jobs={jobs}
+                    loading={loading}
+                    openJobQuestionsDrawer={openJobQuestionsDrawer}
+                    onApplyClick={handleApplyClick}
                   />
                 </TabPanel>
                 <TabPanel>
@@ -308,6 +351,7 @@ const Dashboard = () => {
                     jobs={jobs}
                     loading={loading}
                     openJobQuestionsDrawer={openJobQuestionsDrawer}
+                    onApplyClick={handleApplyClick}
                   />
                 </TabPanel>
                 <TabPanel>
@@ -315,6 +359,7 @@ const Dashboard = () => {
                     jobs={jobs}
                     loading={loading}
                     openJobQuestionsDrawer={openJobQuestionsDrawer}
+                    onApplyClick={handleApplyClick}
                   />
                 </TabPanel>
               </TabPanels>
@@ -381,6 +426,10 @@ const Dashboard = () => {
         isOpen={isJobDrawerOpen}
         onClose={() => setIsJobDrawerOpen(false)}
         jobResult={selectedJobResult}
+        onStatusUpdate={() => {
+          // Refresh jobs list to get updated applied status
+          fetchMatches();
+        }}
       />
     </>
   );

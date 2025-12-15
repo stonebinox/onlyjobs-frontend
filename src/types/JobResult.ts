@@ -11,5 +11,6 @@ export type JobResult = {
   createdAt: string;
   updatedAt: string;
   skipped: boolean;
+  applied: boolean | null;
   job: Job | null;
 };
