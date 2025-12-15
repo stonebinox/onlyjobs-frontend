@@ -151,6 +151,7 @@ const Dashboard = () => {
     getActiveUserCount,
     getAvailableJobsCount,
     getMatchCount,
+    checkWalletBalance,
     router,
   ]);
 
