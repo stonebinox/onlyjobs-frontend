@@ -321,7 +321,7 @@ const Dashboard = () => {
               </Text>
             </Box>
           </SimpleGrid>
-          <Box mt={10}>
+          <Box mt={10} maxW={{ base: "100%", lg: "1200px" }} mx="auto">
             <Tabs colorScheme="blue">
               <TabList>
                 <Tab>Matches for you</Tab>
@@ -330,7 +330,7 @@ const Dashboard = () => {
                 <Tab>Skipped</Tab>
               </TabList>
               <TabPanels>
-                <TabPanel>
+                <TabPanel px={0}>
                   <JobMatches
                     jobs={jobs}
                     loading={loading}
@@ -339,7 +339,7 @@ const Dashboard = () => {
                     onApplyClick={handleApplyClick}
                   />
                 </TabPanel>
-                <TabPanel>
+                <TabPanel px={0}>
                   <AppliedJobs
                     jobs={jobs}
                     loading={loading}
@@ -347,7 +347,7 @@ const Dashboard = () => {
                     onApplyClick={handleApplyClick}
                   />
                 </TabPanel>
-                <TabPanel>
+                <TabPanel px={0}>
                   <VisitedJobs
                     jobs={jobs}
                     loading={loading}
@@ -355,7 +355,7 @@ const Dashboard = () => {
                     onApplyClick={handleApplyClick}
                   />
                 </TabPanel>
-                <TabPanel>
+                <TabPanel px={0}>
                   <SkippedJobs
                     jobs={jobs}
                     loading={loading}

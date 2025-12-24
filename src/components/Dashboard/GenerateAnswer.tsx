@@ -47,8 +47,8 @@ export const GenerateAnswer = ({ jobResultId }: GenerateAnswerProps) => {
   };
 
   return (
-    <VStack gap={4} mb={8} alignItems="flex-start" mt={8}>
-      <Heading size="md">Generate Answer</Heading>
+    <VStack gap={4} mb={6} alignItems="flex-start">
+      <Heading size="sm" fontWeight="semibold">Generate Answer</Heading>
       <Text size="md" color="gray.700">
         Paste a question here from any job application to generate an answer
         based on your profile. The AI will do its best to match your{" "}

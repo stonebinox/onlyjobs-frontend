@@ -32,13 +32,13 @@ export const JobQuestionsDrawer = ({
         <DrawerHeader>
           {jobResult?.job?.title} at {jobResult?.job?.company}
         </DrawerHeader>
-        <DrawerBody>
+        <DrawerBody pt={6}>
+          <GenerateAnswer jobResultId={jobResult?._id || ""} />
           <ApplicationStatusBanner
             jobResult={jobResult}
             onStatusUpdate={onStatusUpdate}
             onClose={onClose}
           />
-          <GenerateAnswer jobResultId={jobResult?._id || ""} />
         </DrawerBody>
       </DrawerContent>
     </Drawer>

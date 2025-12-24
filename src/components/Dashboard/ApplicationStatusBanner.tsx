@@ -1,8 +1,7 @@
 import {
-  Alert,
-  AlertIcon,
   Box,
   Button,
+  Divider,
   HStack,
   Text,
   VStack,
@@ -65,14 +64,12 @@ export const ApplicationStatusBanner = ({
   const companyName = jobResult.job?.company || "this company";
 
   return (
-    <Alert status="info" borderRadius="md" mb={4}>
-      <AlertIcon />
-      <VStack align="stretch" spacing={3} width="100%">
-        <Box>
-          <Text fontWeight="semibold" fontSize="md">
-            Did you apply to {jobTitle} at {companyName}?
-          </Text>
-        </Box>
+    <Box mt={6} pt={6}>
+      <Divider mb={6} />
+      <VStack align="stretch" spacing={4} width="100%">
+        <Text fontWeight="medium" fontSize="sm" color="gray.700">
+          Did you apply to {jobTitle} at {companyName}?
+        </Text>
         <HStack spacing={3}>
           <Button
             colorScheme="green"
@@ -97,7 +94,7 @@ export const ApplicationStatusBanner = ({
           </Button>
         </HStack>
       </VStack>
-    </Alert>
+    </Box>
   );
 };
 
