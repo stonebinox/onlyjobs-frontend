@@ -1,7 +1,11 @@
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Button,
-  Divider,
   Heading,
   HStack,
   IconButton,
@@ -105,46 +109,75 @@ export const GenerateAnswer = ({ jobResultId }: GenerateAnswerProps) => {
           <Text fontWeight="semibold" fontSize="sm" color="gray.600" mb={3}>
             Previous Q&A ({qnaHistory.length})
           </Text>
-          <VStack spacing={3} alignItems="stretch" maxH="400px" overflowY="auto">
-            {qnaHistory.map((item, index) => (
-              <Box
-                key={item._id}
-                width="100%"
-                bg="gray.50"
-                p={3}
-                borderRadius="md"
-                borderLeft="3px solid"
-                borderLeftColor="blue.300"
-              >
-                <VStack spacing={2} alignItems="flex-start">
-                  <Box width="100%">
-                    <Text fontWeight="bold" fontSize="xs" color="gray.500" mb={1} textTransform="uppercase" letterSpacing="wide">
-                      Question:
-                    </Text>
-                    <Text fontSize="xs" color="gray.700" fontStyle="italic">
-                      {item.question}
-                    </Text>
-                  </Box>
-                  <Box width="100%">
-                    <Text fontWeight="bold" fontSize="xs" color="gray.500" mb={1} textTransform="uppercase" letterSpacing="wide">
-                      Answer:
-                    </Text>
-                    <Text 
-                      fontSize="xs" 
-                      color="gray.800"
-                      whiteSpace="pre-wrap"
-                      lineHeight="1.5"
-                    >
-                      {item.answer}
-                    </Text>
-                  </Box>
-                  {index < qnaHistory.length - 1 && (
-                    <Divider mt={2} />
-                  )}
-                </VStack>
-              </Box>
-            ))}
-          </VStack>
+          <Box maxH="400px" overflowY="auto">
+            <Accordion allowMultiple defaultIndex={[]}>
+              {qnaHistory.map((item, index) => (
+                <AccordionItem
+                  key={item._id}
+                  borderWidth="1px"
+                  borderRadius="md"
+                  mb={2}
+                  borderLeft="3px solid"
+                  borderLeftColor="blue.300"
+                >
+                  <h2>
+                    <AccordionButton py={2} px={3}>
+                      <Box flex="1" textAlign="left">
+                        <Text
+                          fontSize="xs"
+                          color="gray.700"
+                          fontStyle="italic"
+                          noOfLines={1}
+                        >
+                          {item.question}
+                        </Text>
+                      </Box>
+                      <AccordionIcon />
+                    </AccordionButton>
+                  </h2>
+                  <AccordionPanel pb={3} px={3} bg="gray.50">
+                    <VStack spacing={2} alignItems="flex-start">
+                      <Box width="100%">
+                        <Text
+                          fontWeight="bold"
+                          fontSize="xs"
+                          color="gray.500"
+                          mb={1}
+                          textTransform="uppercase"
+                          letterSpacing="wide"
+                        >
+                          Question:
+                        </Text>
+                        <Text fontSize="xs" color="gray.700" fontStyle="italic">
+                          {item.question}
+                        </Text>
+                      </Box>
+                      <Box width="100%">
+                        <Text
+                          fontWeight="bold"
+                          fontSize="xs"
+                          color="gray.500"
+                          mb={1}
+                          textTransform="uppercase"
+                          letterSpacing="wide"
+                        >
+                          Answer:
+                        </Text>
+                        <Text
+                          fontSize="xs"
+                          color="gray.800"
+                          whiteSpace="pre-wrap"
+                          lineHeight="1.5"
+                        >
+                          {item.answer}
+                        </Text>
+                      </Box>
+                    </VStack>
+                  </AccordionPanel>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </Box>
         </Box>
       )}
       <HStack gap={4} width="100%">
