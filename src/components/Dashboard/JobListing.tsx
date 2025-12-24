@@ -165,7 +165,7 @@ const JobListing = ({
                 variant="outline"
                 onClick={() => openJobQuestionsDrawer(job)}
               >
-                Answer job questions
+                Get Application Help
               </Button>
               <Box
                 px={{ base: 2, md: 4 }}

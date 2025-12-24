@@ -420,6 +420,28 @@ export const useApi = () => {
     }
   };
 
+  const getMatchQnAHistory = async (matchRecordId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/match-qna/${matchRecordId}`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch Q&A history");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Get Q&A history error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const getUserProfile = async () => {
     try {
       const response = await fetch(
@@ -832,6 +854,7 @@ export const useApi = () => {
     getAnsweredQuestions,
     skipQuestion,
     createAnswer,
+    getMatchQnAHistory,
     getUserProfile,
     updateUserEmail,
     updatePassword,
