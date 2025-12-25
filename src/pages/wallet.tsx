@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Heading,
@@ -99,7 +99,13 @@ const WalletPage = () => {
   const textColor = useColorModeValue("gray.600", "gray.300");
   const highlightColor = useColorModeValue("blue.500", "blue.300");
 
-  const fetchBalance = useCallback(async () => {
+  useEffect(() => {
+    fetchBalance();
+    fetchTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchBalance = async () => {
     try {
       setLoading(true);
       const result = await getWalletBalance();
@@ -113,9 +119,9 @@ const WalletPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [getWalletBalance]);
+  };
 
-  const fetchTransactions = useCallback(async () => {
+  const fetchTransactions = async () => {
     try {
       setTransactionsLoading(true);
       const result = await getTransactions(1, 50);
@@ -127,12 +133,7 @@ const WalletPage = () => {
     } finally {
       setTransactionsLoading(false);
     }
-  }, [getTransactions]);
-
-  useEffect(() => {
-    fetchBalance();
-    fetchTransactions();
-  }, [fetchBalance, fetchTransactions]);
+  };
 
   const validateCustomAmount = (value: string): string => {
     if (!value || value.trim() === "") {

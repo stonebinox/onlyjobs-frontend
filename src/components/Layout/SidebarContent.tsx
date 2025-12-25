@@ -8,6 +8,8 @@ import {
   Heading,
   useColorModeValue,
   VStack,
+  HStack,
+  Badge,
 } from "@chakra-ui/react";
 import { FiHome, FiSettings } from "react-icons/fi";
 import { SidebarItem } from "./SidebarItem";
@@ -37,9 +39,14 @@ export const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       {...rest}
     >
       <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <Heading size="md" fontWeight="bold">
-          OnlyJobs
-        </Heading>
+        <HStack spacing={2}>
+          <Heading size="md" fontWeight="bold">
+            OnlyJobs
+          </Heading>
+          <Badge colorScheme="orange" fontSize="0.6em" px={2} py={0.5}>
+            BETA
+          </Badge>
+        </HStack>
         <CloseButton display={{ base: "flex", md: "none" }} onClick={onClose} />
       </Flex>
       <VStack spacing={2} align="stretch">

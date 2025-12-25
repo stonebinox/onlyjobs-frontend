@@ -9,6 +9,8 @@ import {
   VStack,
   useColorModeValue,
   Input,
+  Badge,
+  HStack,
 } from "@chakra-ui/react";
 import styled from "styled-components";
 
@@ -81,7 +83,12 @@ export default function Home() {
       >
         <Container maxW="container.xl">
           <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
-            <Heading size="md">OnlyJobs</Heading>
+            <HStack spacing={2}>
+              <Heading size="md">OnlyJobs</Heading>
+              <Badge colorScheme="orange" fontSize="0.7em" px={2} py={0.5}>
+                BETA
+              </Badge>
+            </HStack>
           </Flex>
         </Container>
       </Box>

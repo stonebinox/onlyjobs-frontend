@@ -9,6 +9,7 @@ import {
 
 import { TopNav } from "./TopNav";
 import { SidebarContent } from "./SidebarContent";
+import { Footer } from "@/components/Footer";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -36,9 +37,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </DrawerContent>
       </Drawer>
       <TopNav onOpen={onOpen} />
-      <Box ml={{ base: 0, md: 60 }} p="4">
+      <Box
+        ml={{ base: 0, md: 60 }}
+        p="4"
+        pb={{ base: 40, md: 32 }}
+      >
         {children}
       </Box>
+      <Footer />
     </Box>
   );
 };

@@ -11,7 +11,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>OnlyJobs</title>
+        <title>OnlyJobs [BETA]</title>
       </Head>
       <Script
         src="https://checkout.razorpay.com/v1/checkout.js"

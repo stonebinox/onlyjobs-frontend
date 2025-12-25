@@ -13,6 +13,7 @@ import {
   Text,
   useColorModeValue,
   VStack,
+  Badge,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -91,13 +92,24 @@ export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
         icon={<FiMenu />}
       />
 
-      <Text
-        display={{ base: "flex", md: "none" }}
-        fontSize="2xl"
-        fontWeight="bold"
-      >
-        OnlyJobs
-      </Text>
+      <HStack spacing={2}>
+        <Text
+          display={{ base: "flex", md: "none" }}
+          fontSize="2xl"
+          fontWeight="bold"
+        >
+          OnlyJobs
+        </Text>
+        <Badge
+          display={{ base: "flex", md: "none" }}
+          colorScheme="orange"
+          fontSize="0.6em"
+          px={2}
+          py={0.5}
+        >
+          BETA
+        </Badge>
+      </HStack>
 
       <HStack spacing={{ base: "0", md: "6" }}>
         <HStack
