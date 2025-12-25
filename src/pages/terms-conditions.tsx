@@ -30,8 +30,9 @@ const TermsConditions = () => {
             <strong>Plans, wallet & payments:</strong>
             <ul>
               <li>
-                You may add funds to a wallet (in USD) and/or purchase
-                usage-based features. Minimum top-up is $5; maximum is $500.
+                New accounts receive a $2 welcome bonus to get started. You may
+                add additional funds to your wallet (in USD). Minimum top-up is
+                $5; maximum is $500.
               </li>
               <li>
                 Payments are processed by Razorpay; we don&apos;t store your
