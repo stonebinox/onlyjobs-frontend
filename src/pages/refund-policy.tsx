@@ -20,8 +20,8 @@ const RefundPolicy = () => {
           <strong>Wallet funds:</strong> Wallet funds (in USD) do not expire.
           Funds are non-withdrawable by default, but if you contact us, we may
           consider refund requests on a case-by-case basis. If you permanently
-          close your account within 14 days of a top-up and haven't used the
-          funds, you can request a refund to the original payment method
+          close your account within 14 days of a top-up and haven&apos;t used
+          the funds, you can request a refund to the original payment method
           (processing fees may be deducted).
         </li>
       </ul>

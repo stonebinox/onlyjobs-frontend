@@ -34,7 +34,7 @@ const TermsConditions = () => {
                 usage-based features. Minimum top-up is $5; maximum is $500.
               </li>
               <li>
-                Payments are processed by Razorpay; we don't store your
+                Payments are processed by Razorpay; we don&apos;t store your
                 card/bank details.
               </li>
               <li>
