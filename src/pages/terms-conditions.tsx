@@ -4,7 +4,7 @@ const TermsConditions = () => {
   return (
     <Box p={8}>
       <Heading size="lg">Terms & Conditions (OnlyJobs)</Heading>{" "}
-      <strong>Last updated: 13 Sept 2025</strong>
+      <strong>Last updated: 25 Dec 2025</strong>
       <p>
         These Terms govern your use of OnlyJobs (“Service”). By creating an
         account or using the Service, you agree to them.
@@ -30,22 +30,29 @@ const TermsConditions = () => {
             <strong>Plans, wallet & payments:</strong>
             <ul>
               <li>
-                You may add funds to a wallet and/or purchase usage-based
-                features.
+                You may add funds to a wallet (in USD) and/or purchase
+                usage-based features. Minimum top-up is $5; maximum is $500.
               </li>
               <li>
-                Payments are processed by Razorpay; we don’t store your
+                Payments are processed by Razorpay; we don't store your
                 card/bank details.
               </li>
-              <li>Pricing: shown in-app and may change prospectively.</li>
+              <li>
+                Pricing: You are charged $0.30 per day only when at least one
+                job match is found based on your preferences. No matches = no
+                charge. Pricing may change prospectively with notice.
+              </li>
               <li>Taxes: where applicable, are added at checkout.</li>
+              <li>
+                Wallet funds do not expire. Funds are non-withdrawable, but if
+                you contact us, we may consider refund requests on a
+                case-by-case basis.
+              </li>
             </ul>
           </li>
           <li>
             <strong>Refunds & cancellations:</strong> We provide a
-            fair-use/quality policy—see Refund & Cancellation Policy. Wallet
-            funds are generally non-withdrawable, but we’ll review erroneous or
-            unused charges.
+            fair-use/quality policy—see Refund & Cancellation Policy.
           </li>
           <li>
             <strong>Acceptable use:</strong> You agree not to:

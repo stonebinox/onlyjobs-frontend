@@ -5,7 +5,7 @@ const PrivacyPolicyPage = () => {
   return (
     <Box p={8}>
       <Heading size="lg">Privacy Policy (OnlyJobs)</Heading>
-      <strong>Last updated: 13 Sept 2025</strong>
+      <strong>Last updated: 25 Dec 2025</strong>
       <p>
         OnlyJobs (“we”, “us”, “our”) helps candidates discover and evaluate jobs
         with AI-assisted tools. This policy explains what we collect, why, and
@@ -34,9 +34,9 @@ const PrivacyPolicyPage = () => {
           reasoning.
         </li>
         <li>
-          Payments: wallet top-ups and purchases are processed by Razorpay. We
-          receive transaction IDs and status, but we do not store card/bank
-          details.
+          Payments: wallet top-ups (in USD) and purchases are processed by
+          Razorpay. We receive transaction IDs and status, but we do not store
+          card/bank details.
         </li>
         <li>Support messages: emails, chat transcripts, attachments.</li>
       </ul>

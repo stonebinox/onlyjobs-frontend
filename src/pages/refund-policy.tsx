@@ -4,7 +4,7 @@ const RefundPolicy = () => {
   return (
     <Box p={8}>
       <Heading size="lg">Refund & Cancellation Policy (OnlyJobs)</Heading>
-      <strong>Last updated: 13 Sept 2025</strong>
+      <strong>Last updated: 25 Dec 2025</strong>
       <ul>
         <li>
           <strong>Digital services:</strong> Because matching and AI usage are
@@ -17,10 +17,12 @@ const RefundPolicy = () => {
           or refund on request.
         </li>
         <li>
-          <strong>Unused wallet funds:</strong> If you permanently close your
-          account within 14 days of a top-up and haven’t used the funds, you can
-          request a refund to the original payment method (processing fees may
-          be deducted).
+          <strong>Wallet funds:</strong> Wallet funds (in USD) do not expire.
+          Funds are non-withdrawable by default, but if you contact us, we may
+          consider refund requests on a case-by-case basis. If you permanently
+          close your account within 14 days of a top-up and haven't used the
+          funds, you can request a refund to the original payment method
+          (processing fees may be deducted).
         </li>
       </ul>
       <p>
