@@ -66,7 +66,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [showLowBalanceWarning, setShowLowBalanceWarning] = useState(false);
-  const [pendingJobForDrawer, setPendingJobForDrawer] = useState<JobResult | null>(null);
+  const [pendingJobForDrawer, setPendingJobForDrawer] =
+    useState<JobResult | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
@@ -414,7 +415,9 @@ const Dashboard = () => {
                 onChange={handleFileChange}
               />
               <Text mt={2} fontSize="sm" color="gray.500">
-                Supported formats: PDF, DOC, DOCX. We extract relevant information (skills, experience, education) but don't store your file.
+                Supported formats: PDF, DOC, DOCX. We extract relevant
+                information (skills, experience, education) but don&apos;t store
+                your file.
               </Text>
             </FormControl>
           </ModalBody>
