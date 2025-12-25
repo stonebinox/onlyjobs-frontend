@@ -875,6 +875,79 @@ export const useApi = () => {
     }
   };
 
+  const getGuideProgress = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/guide-progress`,
+        {
+          method: "GET",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch guide progress");
+      }
+
+      const data = await response.json();
+      return data.guideProgress || {};
+    } catch (error) {
+      console.error("Get guide progress error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const updateGuideProgress = async (
+    pageId: string,
+    completed?: boolean,
+    skipped?: boolean
+  ) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/guide-progress`,
+        {
+          method: "PUT",
+          headers: getHeaders(),
+          body: JSON.stringify({ pageId, completed, skipped }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to update guide progress");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Update guide progress error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const resetGuideProgress = async (pageId?: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/guide-progress/reset`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ pageId }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to reset guide progress");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Reset guide progress error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -909,5 +982,8 @@ export const useApi = () => {
     verifyPayment,
     getTransactions,
     checkWalletBalance,
+    getGuideProgress,
+    updateGuideProgress,
+    resetGuideProgress,
   };
 };

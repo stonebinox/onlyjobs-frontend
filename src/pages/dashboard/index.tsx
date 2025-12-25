@@ -47,6 +47,8 @@ import { VisitedJobs } from "@/components/Dashboard/VisitedJobs";
 import { SkippedJobs } from "@/components/Dashboard/SkippedJobs";
 import { AppliedJobs } from "@/components/Dashboard/AppliedJobs";
 import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
+import Guide from "@/components/Guide/Guide";
+import { dashboardGuideConfig } from "@/config/guides/dashboardGuide";
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
@@ -244,6 +246,13 @@ const Dashboard = () => {
 
   return (
     <>
+      <Guide
+        pageId={dashboardGuideConfig.pageId}
+        steps={dashboardGuideConfig.steps}
+        showModal={dashboardGuideConfig.showModal}
+        modalTitle={dashboardGuideConfig.modalTitle}
+        modalContent={dashboardGuideConfig.modalContent}
+      />
       <DashboardLayout>
         <Box>
           <Heading mb={5}>Dashboard</Heading>
@@ -272,6 +281,7 @@ const Dashboard = () => {
           <SimpleGrid
             columns={{ base: 1, md: 3, lg: 3 }}
             spacing={{ base: 4, lg: 8 }}
+            data-guide="stat-cards"
           >
             <StatCard
               title="Job Listings (in the last 30 days)"
@@ -302,6 +312,7 @@ const Dashboard = () => {
                   size="sm"
                   onClick={onOpen}
                   w="100%"
+                  data-guide="cv-upload-button"
                 >
                   Upload Your CV
                 </Button>
@@ -312,6 +323,7 @@ const Dashboard = () => {
                   size="sm"
                   onClick={() => setIsDrawerOpen(true)}
                   w="100%"
+                  data-guide="qa-button"
                 >
                   Q&amp;A
                 </Button>
@@ -323,7 +335,7 @@ const Dashboard = () => {
           </SimpleGrid>
           <Box mt={10} maxW={{ base: "100%", lg: "1200px" }} mx="auto">
             <Tabs colorScheme="blue">
-              <TabList>
+              <TabList data-guide="job-tabs">
                 <Tab>Matches for you</Tab>
                 <Tab>Applied</Tab>
                 <Tab>Viewed</Tab>
@@ -331,13 +343,15 @@ const Dashboard = () => {
               </TabList>
               <TabPanels>
                 <TabPanel px={0}>
-                  <JobMatches
-                    jobs={jobs}
-                    loading={loading}
-                    fetchMatches={fetchMatches}
-                    openJobQuestionsDrawer={openJobQuestionsDrawer}
-                    onApplyClick={handleApplyClick}
-                  />
+                  <Box data-guide="job-matches">
+                    <JobMatches
+                      jobs={jobs}
+                      loading={loading}
+                      fetchMatches={fetchMatches}
+                      openJobQuestionsDrawer={openJobQuestionsDrawer}
+                      onApplyClick={handleApplyClick}
+                    />
+                  </Box>
                 </TabPanel>
                 <TabPanel px={0}>
                   <AppliedJobs
@@ -400,7 +414,7 @@ const Dashboard = () => {
                 onChange={handleFileChange}
               />
               <Text mt={2} fontSize="sm" color="gray.500">
-                Supported formats: PDF, DOC, DOCX
+                Supported formats: PDF, DOC, DOCX. We extract relevant information (skills, experience, education) but don't store your file.
               </Text>
             </FormControl>
           </ModalBody>

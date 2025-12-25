@@ -58,6 +58,7 @@ export const JobMatches = ({
             aria-label="match-score"
             onChangeEnd={(val) => setMinScore(val)}
             defaultValue={minScore}
+            data-guide="match-score-slider"
           >
             <SliderMark
               value={minScore}

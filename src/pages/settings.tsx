@@ -44,6 +44,9 @@ import { useApi } from "@/hooks/useApi";
 import { User } from "@/types/User";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/router";
+import Guide from "@/components/Guide/Guide";
+import { settingsGuideConfig } from "@/config/guides/settingsGuide";
+import { useGuide } from "@/contexts/GuideContext";
 
 const SettingsPage = () => {
   // State for form fields
@@ -60,7 +63,9 @@ const SettingsPage = () => {
   const [newEmailInput, setNewEmailInput] = useState<string>("");
   const [emailChangeLoading, setEmailChangeLoading] = useState<boolean>(false);
   const [matchingEnabled, setMatchingEnabled] = useState<boolean>(true);
-  const [pendingMatchingEnabled, setPendingMatchingEnabled] = useState<boolean | null>(null);
+  const [pendingMatchingEnabled, setPendingMatchingEnabled] = useState<
+    boolean | null
+  >(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [prefSaving, setPrefSaving] = useState<boolean>(false);
   const [passwordLoading, setPasswordLoading] = useState<boolean>(false);
@@ -75,9 +80,11 @@ const SettingsPage = () => {
     requestEmailChange,
     factoryResetUserAccount,
     deleteUserAccount,
+    resetGuideProgress,
   } = useApi();
   const auth = useAuth();
   const router = useRouter();
+  const { resetPageProgress, guideProgress } = useGuide();
 
   // Modal controls
   const {
@@ -244,7 +251,8 @@ const SettingsPage = () => {
             minSalary: payload.minSalary ?? currentPrefs.minSalary,
             industries: payload.industries ?? currentPrefs.industries,
             minScore: payload.minScore ?? currentPrefs.minScore,
-            matchingEnabled: payload.matchingEnabled ?? currentPrefs.matchingEnabled,
+            matchingEnabled:
+              payload.matchingEnabled ?? currentPrefs.matchingEnabled,
           },
         };
       });
@@ -361,7 +369,10 @@ const SettingsPage = () => {
   };
 
   const handleEmailChangeRequest = async () => {
-    if (!newEmailInput || newEmailInput.trim().toLowerCase() === email.trim().toLowerCase()) {
+    if (
+      !newEmailInput ||
+      newEmailInput.trim().toLowerCase() === email.trim().toLowerCase()
+    ) {
       toast({
         title: "Enter a different email",
         status: "warning",
@@ -379,7 +390,8 @@ const SettingsPage = () => {
       }
       toast({
         title: "Verification sent",
-        description: "Check your new email to confirm the change. You will need to sign in again.",
+        description:
+          "Check your new email to confirm the change. You will need to sign in again.",
         status: "success",
         duration: 4000,
         isClosable: true,
@@ -424,10 +436,42 @@ const SettingsPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const handleResetGuide = async (pageId?: string) => {
+    try {
+      await resetGuideProgress(pageId);
+      await resetPageProgress(pageId);
+      toast({
+        title: "Guide reset",
+        description: pageId
+          ? `Guide for ${pageId} has been reset`
+          : "All guides have been reset",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Error resetting guide:", error);
+      toast({
+        title: "Error",
+        description: "Failed to reset guide",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
   return (
     <DashboardLayout>
+      <Guide
+        pageId={settingsGuideConfig.pageId}
+        steps={settingsGuideConfig.steps}
+        showModal={settingsGuideConfig.showModal}
+        modalTitle={settingsGuideConfig.modalTitle}
+        modalContent={settingsGuideConfig.modalContent}
+      />
       <VStack spacing={6} align="stretch">
-        <Card bg={cardBg} shadow="md">
+        <Card bg={cardBg} shadow="md" data-guide="email-settings">
           <CardBody>
             <Heading as="h2" size="md" mb={4}>
               Account Settings
@@ -493,13 +537,13 @@ const SettingsPage = () => {
         </Card>
 
         {/* Match Preferences */}
-        <Card bg={cardBg} shadow="md">
+        <Card bg={cardBg} shadow="md" data-guide="preferences-section">
           <CardBody>
             <Heading as="h2" size="md" mb={4}>
               Match Preferences
             </Heading>
             <VStack spacing={6} align="stretch">
-              <FormControl id="matchScore">
+              <FormControl id="matchScore" data-guide="match-score-setting">
                 <FormLabel>Minimum Match Score</FormLabel>
                 <Text color={textColor} mb={2}>
                   Only show job opportunities with at least this match
@@ -569,8 +613,15 @@ const SettingsPage = () => {
                 />
               </FormControl>
 
-              <FormControl id="matchingEnabled" display="flex" alignItems="center">
-                <FormLabel mb="0">Match jobs for me (uses $0.30 when matches are found)</FormLabel>
+              <FormControl
+                id="matchingEnabled"
+                display="flex"
+                alignItems="center"
+                data-guide="matching-toggle"
+              >
+                <FormLabel mb="0">
+                  Match jobs for me (uses $0.30 when matches are found)
+                </FormLabel>
                 <Switch
                   isChecked={matchingEnabled}
                   onChange={(e) => {
@@ -653,6 +704,61 @@ const SettingsPage = () => {
             >
               Factory Reset
             </Button>
+          </CardBody>
+        </Card>
+
+        {/* Restart Guides */}
+        <Card bg={cardBg} shadow="md">
+          <CardBody>
+            <Heading as="h2" size="md" mb={4}>
+              Restart Guides
+            </Heading>
+            <Text color={textColor} mb={4}>
+              Reset and restart the interactive guides to learn about platform
+              features again.
+            </Text>
+            <VStack spacing={3} align="stretch">
+              <Button
+                colorScheme="blue"
+                variant="outline"
+                onClick={() => handleResetGuide("dashboard")}
+                isDisabled={!guideProgress.dashboard}
+              >
+                Restart Dashboard Guide
+              </Button>
+              <Button
+                colorScheme="blue"
+                variant="outline"
+                onClick={() => handleResetGuide("profile")}
+                isDisabled={!guideProgress.profile}
+              >
+                Restart Profile Guide
+              </Button>
+              <Button
+                colorScheme="blue"
+                variant="outline"
+                onClick={() => handleResetGuide("settings")}
+                isDisabled={!guideProgress.settings}
+              >
+                Restart Settings Guide
+              </Button>
+              <Button
+                colorScheme="blue"
+                variant="outline"
+                onClick={() => handleResetGuide("wallet")}
+                isDisabled={!guideProgress.wallet}
+              >
+                Restart Wallet Guide
+              </Button>
+              <Divider />
+              <Button
+                colorScheme="blue"
+                onClick={() => handleResetGuide()}
+                isDisabled={Object.keys(guideProgress).length === 0}
+              >
+                Restart All Guides
+              </Button>
+            </VStack>
           </CardBody>
         </Card>
 
@@ -747,10 +853,14 @@ const SettingsPage = () => {
             </Text>
           </ModalBody>
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={() => {
-              setPendingMatchingEnabled(null);
-              onMatchingConfirmClose();
-            }}>
+            <Button
+              variant="ghost"
+              mr={3}
+              onClick={() => {
+                setPendingMatchingEnabled(null);
+                onMatchingConfirmClose();
+              }}
+            >
               Cancel
             </Button>
             <Button
@@ -779,7 +889,8 @@ const SettingsPage = () => {
           <ModalBody>
             <VStack align="stretch" spacing={4}>
               <Text color={textColor}>
-                We will send a verification link to the new email. Once verified, you’ll be asked to sign in again.
+                We will send a verification link to the new email. Once
+                verified, you’ll be asked to sign in again.
               </Text>
               <FormControl id="newEmail">
                 <FormLabel>New Email Address</FormLabel>

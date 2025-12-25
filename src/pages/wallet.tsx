@@ -44,6 +44,8 @@ import { useRouter } from "next/navigation";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
 import { useApi } from "@/hooks/useApi";
+import Guide from "@/components/Guide/Guide";
+import { walletGuideConfig } from "@/config/guides/walletGuide";
 
 declare global {
   interface Window {
@@ -294,9 +296,16 @@ const WalletPage = () => {
 
   return (
     <DashboardLayout>
+      <Guide
+        pageId={walletGuideConfig.pageId}
+        steps={walletGuideConfig.steps}
+        showModal={walletGuideConfig.showModal}
+        modalTitle={walletGuideConfig.modalTitle}
+        modalContent={walletGuideConfig.modalContent}
+      />
       <VStack spacing={6} align="stretch">
         {/* Balance Card */}
-        <Card bg={cardBg} shadow="md">
+        <Card bg={cardBg} shadow="md" data-guide="wallet-balance">
           <CardBody>
             <Stat>
               <StatLabel fontSize="xl">Wallet Balance</StatLabel>
@@ -319,7 +328,7 @@ const WalletPage = () => {
             </Heading>
 
             <VStack spacing={4} align="stretch">
-              <HStack spacing={4}>
+              <HStack spacing={4} data-guide="top-up-button">
                 <Button
                   colorScheme="blue"
                   onClick={() => handleTopUp(5)}
@@ -407,6 +416,7 @@ const WalletPage = () => {
             <Heading as="h2" size="md" mb={4}>
               Transaction History
             </Heading>
+            <TableContainer data-guide="transactions-table">
             {transactionsLoading ? (
               <Box textAlign="center" py={8}>
                 <Spinner size="lg" />
@@ -416,7 +426,6 @@ const WalletPage = () => {
                 No transactions yet
               </Text>
             ) : (
-            <TableContainer>
               <Table variant="simple" size="sm">
                 <Thead>
                   <Tr>

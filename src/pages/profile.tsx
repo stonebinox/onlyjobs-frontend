@@ -43,6 +43,8 @@ import AddArrayItemModal from "../components/Profile/AddArrayItemModal";
 import EditSkillsModal from "../components/Profile/EditSkillsModal";
 import EditLanguagesModal from "../components/Profile/EditLanguagesModal";
 import { parseSkill } from "@/utils/skillUtils";
+import Guide from "@/components/Guide/Guide";
+import { profileGuideConfig } from "@/config/guides/profileGuide";
 
 const StyledSkeleton = styled(Skeleton)`
   width: 100%;
@@ -263,6 +265,13 @@ const ProfilePage = () => {
 
   return (
     <DashboardLayout>
+      <Guide
+        pageId={profileGuideConfig.pageId}
+        steps={profileGuideConfig.steps}
+        showModal={profileGuideConfig.showModal}
+        modalTitle={profileGuideConfig.modalTitle}
+        modalContent={profileGuideConfig.modalContent}
+      />
       {loading && !user ? (
         <StyledSkeleton isLoaded={!loading} />
       ) : (
@@ -298,7 +307,7 @@ const ProfilePage = () => {
           </Card>
 
           {/* Resume Summary Card */}
-          <Card bg={cardBg} shadow="md">
+          <Card bg={cardBg} shadow="md" data-guide="profile-summary">
             <CardBody>
               <HStack justify="space-between" mb={4}>
                 <Heading as="h2" size="md">
@@ -326,7 +335,7 @@ const ProfilePage = () => {
           </Card>
 
           {/* Skills Card */}
-          <Card bg={cardBg} shadow="md">
+          <Card bg={cardBg} shadow="md" data-guide="profile-skills">
             <CardBody>
               <HStack justify="space-between" mb={4}>
                 <Heading as="h2" size="md">
@@ -374,18 +383,22 @@ const ProfilePage = () => {
           </Card>
 
           {/* Work Experience */}
-          {renderArrayField(
-            "experience",
-            user?.resume?.experience || [],
-            "Work Experience"
-          )}
+          <Box data-guide="profile-experience">
+            {renderArrayField(
+              "experience",
+              user?.resume?.experience || [],
+              "Work Experience"
+            )}
+          </Box>
 
           {/* Education */}
-          {renderArrayField(
-            "education",
-            user?.resume?.education || [],
-            "Education"
-          )}
+          <Box data-guide="profile-education">
+            {renderArrayField(
+              "education",
+              user?.resume?.education || [],
+              "Education"
+            )}
+          </Box>
 
           {/* Projects */}
           {renderArrayField(

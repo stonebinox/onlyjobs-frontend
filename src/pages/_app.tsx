@@ -5,6 +5,7 @@ import Script from "next/script";
 
 import theme from "../theme/theme";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { GuideProvider } from "@/contexts/GuideContext";
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -18,7 +19,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       />
       <ChakraProvider theme={theme}>
         <AuthProvider>
-          <Component {...pageProps} />
+          <GuideProvider>
+            <Component {...pageProps} />
+          </GuideProvider>
         </AuthProvider>
       </ChakraProvider>
     </>

@@ -223,6 +223,7 @@ const JobListing = ({
                   size={{ base: "xs", md: "sm" }}
                   variant="outline"
                   onClick={() => openJobQuestionsDrawer(job)}
+                  data-guide="job-application-help"
                 >
                   Get Application Help
                 </Button>
@@ -291,7 +292,7 @@ const JobListing = ({
                 <FiDollarSign />
                 <Text>{getSalaryString(salary)}</Text>
               </HStack>
-              <HStack minW="110px">
+              <HStack minW="110px" data-guide="job-match-score">
                 <FiTarget />
                 <Text fontWeight={"bold"}>{matchScore}% match</Text>
               </HStack>
@@ -315,6 +316,7 @@ const JobListing = ({
               alignItems="flex-start"
               gap={2}
               w="100%"
+              data-guide="job-ai-reasoning"
             >
               <Box w="100%">
                 <Text fontWeight="bold" mb={1}>
@@ -344,30 +346,31 @@ const JobListing = ({
           <HStack spacing={2} mb={{ base: 2, sm: 0 }}>
             <FiClock />
             <Text fontSize="xs">Posted {formatDate(new Date(postedDate))}</Text>
-            <Tooltip
-              label={
-                getListingFreshness(new Date(postedDate)) === "Fresh"
-                  ? "Posted less than a week ago"
-                  : getListingFreshness(new Date(postedDate)) === "Warm"
-                  ? "Posted 1-2 weeks ago"
-                  : "Posted more than 2 weeks ago"
-              }
-              placement="top"
-              hasArrow
-            >
-              <Badge
-                colorScheme={
+              <Tooltip
+                label={
                   getListingFreshness(new Date(postedDate)) === "Fresh"
-                    ? "green"
+                    ? "Posted less than a week ago"
                     : getListingFreshness(new Date(postedDate)) === "Warm"
-                    ? "orange"
-                    : "gray"
+                    ? "Posted 1-2 weeks ago"
+                    : "Posted more than 2 weeks ago"
                 }
-                fontSize={{ base: "xx-small", md: "xs" }}
+                placement="top"
+                hasArrow
               >
-                {getListingFreshness(new Date(postedDate))}
-              </Badge>
-            </Tooltip>
+                <Badge
+                  colorScheme={
+                    getListingFreshness(new Date(postedDate)) === "Fresh"
+                      ? "green"
+                      : getListingFreshness(new Date(postedDate)) === "Warm"
+                      ? "orange"
+                      : "gray"
+                  }
+                  fontSize={{ base: "xx-small", md: "xs" }}
+                  data-guide="job-listing-health"
+                >
+                  {getListingFreshness(new Date(postedDate))}
+                </Badge>
+              </Tooltip>
           </HStack>
           <HStack spacing={2}>
             {(clicked || viewed || job.skipped) && (
