@@ -34,7 +34,6 @@ import theme from "@/theme/theme";
 import { Question } from "@/types/Question";
 import { AnsweredQuestion } from "@/types/AnsweredQuestion";
 import { AnsweredQuestions } from "./AnsweredQuestions";
-import { GenerateAnswer } from "./GenerateAnswer";
 
 interface QADrawerProps {
   isOpen: boolean;
@@ -542,8 +541,6 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
           </Skeleton>
           <Divider />
           <Skeleton isLoaded={!answersLoading}>
-            <GenerateAnswer />
-            <Divider />
             <AnsweredQuestions
               answeredQuestions={answeredQuestions}
               changeCurrentQuestion={changeCurrentQuestion}
