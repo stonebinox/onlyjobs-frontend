@@ -411,10 +411,17 @@ const JobListing = ({
       </Box>
 
       {/* Skip Reason Modal */}
-      <Modal isOpen={isReasonModalOpen} onClose={handleModalClose} size="md">
+      <Modal
+        isOpen={isReasonModalOpen}
+        onClose={handleModalClose}
+        size={{ base: "full", sm: "md" }}
+        motionPreset="slideInBottom"
+      >
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader fontSize="md">Why are you skipping this job?</ModalHeader>
+        <ModalContent mx={{ base: 0, sm: 4 }} my={{ base: 0, sm: "auto" }}>
+          <ModalHeader fontSize={{ base: "lg", sm: "md" }}>
+            Why are you skipping this job?
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={4}>
             <Text fontSize="sm" color="gray.600" mb={4}>
@@ -426,7 +433,7 @@ const JobListing = ({
                 (category) => (
                   <WrapItem key={category}>
                     <Button
-                      size="sm"
+                      size={{ base: "md", sm: "sm" }}
                       variant={
                         selectedReason === category ? "solid" : "outline"
                       }
@@ -460,7 +467,12 @@ const JobListing = ({
           </ModalBody>
 
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={handleModalClose} size="sm">
+            <Button
+              variant="ghost"
+              mr={3}
+              onClick={handleModalClose}
+              size={{ base: "md", sm: "sm" }}
+            >
               Cancel
             </Button>
             <Button
@@ -469,7 +481,7 @@ const JobListing = ({
               isDisabled={!selectedReason}
               isLoading={isSkipping}
               loadingText="Skipping..."
-              size="sm"
+              size={{ base: "md", sm: "sm" }}
             >
               Skip Job
             </Button>

@@ -171,10 +171,17 @@ export const ApplicationStatusBanner = ({
       </Box>
 
       {/* Reason Picker Modal */}
-      <Modal isOpen={isReasonModalOpen} onClose={handleModalClose} size="md">
+      <Modal
+        isOpen={isReasonModalOpen}
+        onClose={handleModalClose}
+        size={{ base: "full", sm: "md" }}
+        motionPreset="slideInBottom"
+      >
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader fontSize="md">Why didn&apos;t you apply?</ModalHeader>
+        <ModalContent mx={{ base: 0, sm: 4 }} my={{ base: 0, sm: "auto" }}>
+          <ModalHeader fontSize={{ base: "lg", sm: "md" }}>
+            Why didn&apos;t you apply?
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={4}>
             <Text fontSize="sm" color="gray.600" mb={4}>
@@ -186,7 +193,7 @@ export const ApplicationStatusBanner = ({
                 (category) => (
                   <WrapItem key={category}>
                     <Button
-                      size="sm"
+                      size={{ base: "md", sm: "sm" }}
                       variant={
                         selectedReason === category ? "solid" : "outline"
                       }
@@ -220,7 +227,12 @@ export const ApplicationStatusBanner = ({
           </ModalBody>
 
           <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={handleModalClose} size="sm">
+            <Button
+              variant="ghost"
+              mr={3}
+              onClick={handleModalClose}
+              size={{ base: "md", sm: "sm" }}
+            >
               Cancel
             </Button>
             <Button
@@ -229,7 +241,7 @@ export const ApplicationStatusBanner = ({
               isDisabled={!selectedReason}
               isLoading={submittingButton === "no"}
               loadingText="Submitting..."
-              size="sm"
+              size={{ base: "md", sm: "sm" }}
             >
               Submit
             </Button>
