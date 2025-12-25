@@ -8,6 +8,17 @@ import {
   Flex,
   Button,
   Tooltip,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Textarea,
+  Wrap,
+  WrapItem,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { Fragment, useState } from "react";
 import {
@@ -31,6 +42,19 @@ import { Salary } from "@/types/Salary";
 import { formatDate } from "@/utils/date-formatter";
 import { numberFormatter } from "@/utils/text-formatter";
 
+// Reason categories matching the backend
+const REASON_CATEGORIES = {
+  salary: "Salary too low",
+  location: "Location/remote policy",
+  skills_gap: "Missing required skills",
+  company_type: "Company size/stage",
+  role_mismatch: "Role doesn't match goals",
+  job_inactive: "Job no longer available",
+  other: "Other",
+} as const;
+
+type ReasonCategory = keyof typeof REASON_CATEGORIES;
+
 export interface JobListingProps {
   job: JobResult;
   bypassSkippedFiltering?: boolean;
@@ -47,7 +71,17 @@ const JobListing = ({
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [viewed, setViewed] = useState<boolean>(false);
   const [skippedLocally, setSkippedLocally] = useState<boolean>(false);
+  const [isSkipping, setIsSkipping] = useState<boolean>(false);
+  const [selectedReason, setSelectedReason] = useState<ReasonCategory | null>(
+    null
+  );
+  const [reasonDetails, setReasonDetails] = useState("");
   const { markMatchClick, markMatchAsSkipped } = useApi();
+  const {
+    isOpen: isReasonModalOpen,
+    onOpen: openReasonModal,
+    onClose: closeReasonModal,
+  } = useDisclosure();
 
   if (!job.job) return <></>;
 
@@ -72,9 +106,33 @@ const JobListing = ({
     },
   } = job;
 
-  const skipMatch = async (matchId: string) => {
-    setSkippedLocally(true);
-    await markMatchAsSkipped(matchId);
+  const handleSkipClick = () => {
+    openReasonModal();
+  };
+
+  const handleSkipSubmit = async () => {
+    if (!selectedReason) return;
+
+    setIsSkipping(true);
+    try {
+      await markMatchAsSkipped(
+        matchId,
+        selectedReason,
+        reasonDetails.trim() || undefined
+      );
+      setSkippedLocally(true);
+      closeReasonModal();
+    } catch (error) {
+      console.error("Error skipping match:", error);
+    } finally {
+      setIsSkipping(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setSelectedReason(null);
+    setReasonDetails("");
+    closeReasonModal();
   };
 
   const getSalaryString = (salary: Salary) => {
@@ -133,223 +191,292 @@ const JobListing = ({
   };
 
   return (
-    <Box
-      p={{ base: 3, md: 5 }}
-      shadow="md"
-      borderWidth="1px"
-      borderRadius="lg"
-      bg={job.skipped ? "gray.200" : "white"}
-      position="relative"
-      overflow="hidden"
-      maxW="100%"
-    >
-      <Flex
-        direction={{ base: "column", md: "row" }}
-        justify="space-between"
-        gap={{ base: 2, md: 0 }}
+    <>
+      <Box
+        p={{ base: 3, md: 5 }}
+        shadow="md"
+        borderWidth="1px"
+        borderRadius="lg"
+        bg={job.skipped ? "gray.200" : "white"}
+        position="relative"
+        overflow="hidden"
+        maxW="100%"
       >
-        <VStack align="start" spacing={2} w="100%">
-          <HStack
-            gap={2}
-            flexWrap="wrap"
-            alignItems="flex-start"
-            justifyContent="space-between"
-            w="100%"
-          >
-            <Heading as="h3" size={{ base: "sm", md: "md" }} noOfLines={2}>
-              {title}
-            </Heading>
-            <HStack spacing={2} alignItems="center">
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          justify="space-between"
+          gap={{ base: 2, md: 0 }}
+        >
+          <VStack align="start" spacing={2} w="100%">
+            <HStack
+              gap={2}
+              flexWrap="wrap"
+              alignItems="flex-start"
+              justifyContent="space-between"
+              w="100%"
+            >
+              <Heading as="h3" size={{ base: "sm", md: "md" }} noOfLines={2}>
+                {title}
+              </Heading>
+              <HStack spacing={2} alignItems="center">
+                <Button
+                  size={{ base: "xs", md: "sm" }}
+                  variant="outline"
+                  onClick={() => openJobQuestionsDrawer(job)}
+                >
+                  Get Application Help
+                </Button>
+                <Box
+                  px={{ base: 2, md: 4 }}
+                  py={{ base: 1, md: 2 }}
+                  borderRadius="md"
+                  width="auto"
+                  bg={
+                    verdict === "Strong match"
+                      ? "green.500"
+                      : verdict === "Mild match"
+                      ? "blue.500"
+                      : verdict === "Weak match"
+                      ? "orange.500"
+                      : "red.500"
+                  }
+                  color={"white"}
+                  fontSize={{ base: "xs", md: "sm" }}
+                  mt={{ base: 1, md: 0 }}
+                >
+                  <Flex justifyContent="space-between" alignItems="center">
+                    <HStack spacing={2}>
+                      {verdict === "Strong match" ? (
+                        <FiCheckCircle />
+                      ) : verdict === "Mild match" ? (
+                        <FiThumbsUp />
+                      ) : verdict === "Weak match" ? (
+                        <FiAlertCircle />
+                      ) : (
+                        <FiXCircle />
+                      )}
+                      <Text fontWeight="bold">{verdict}</Text>
+                      <FiCpu />
+                    </HStack>
+                  </Flex>
+                </Box>
+              </HStack>
+            </HStack>
+            <Text
+              fontWeight="bold"
+              color="gray.500"
+              fontSize={{ base: "sm", md: "md" }}
+            >
+              {company}
+            </Text>
+            {/* responsive vertical stack for job meta info */}
+            <Flex
+              direction={{ base: "column", sm: "row" }}
+              gap={{ base: 2, md: 4 }}
+              wrap="wrap"
+              mt={2}
+              w="100%"
+              align={{ base: "start", sm: "center" }}
+              fontSize={{ base: "xs", md: "sm" }}
+            >
+              <HStack minW="150px">
+                <FiMapPin />
+                <Text>{location.join(", ")}</Text>
+              </HStack>
+              <HStack minW="120px">
+                <FiTag />
+                <Text>{tags.join(", ")}</Text>
+              </HStack>
+              <HStack minW="120px">
+                <FiDollarSign />
+                <Text>{getSalaryString(salary)}</Text>
+              </HStack>
+              <HStack minW="110px">
+                <FiTarget />
+                <Text fontWeight={"bold"}>{matchScore}% match</Text>
+              </HStack>
+              <HStack minW="100px">
+                <FiGlobe />
+                <Text>{source}</Text>
+              </HStack>
+            </Flex>
+            {/* AI Reasoning Box */}
+            <Box
+              mt={2}
+              px={3}
+              py={2}
+              borderRadius="md"
+              bg="blue.50"
+              border="1px solid"
+              borderColor="blue.200"
+              color="blue.800"
+              fontSize={{ base: "xs", md: "sm" }}
+              display="flex"
+              alignItems="flex-start"
+              gap={2}
+              w="100%"
+            >
+              <Box w="100%">
+                <Text fontWeight="bold" mb={1}>
+                  AI Reasoning
+                </Text>
+                <Text>{reasoning}</Text>
+              </Box>
+            </Box>
+            <Text
+              noOfLines={isExpanded ? undefined : { base: 3, md: 2 }}
+              color="gray.600"
+              mt={2}
+              fontSize={{ base: "sm", md: "md" }}
+              w="100%"
+            >
+              {formatDescription(description)}
+            </Text>
+          </VStack>
+        </Flex>
+        <Flex
+          direction={{ base: "column", sm: "row" }}
+          justify="space-between"
+          align={{ base: "stretch", sm: "center" }}
+          mt={4}
+          gap={{ base: 2, sm: 0 }}
+        >
+          <HStack spacing={2} mb={{ base: 2, sm: 0 }}>
+            <FiClock />
+            <Text fontSize="xs">Posted {formatDate(new Date(postedDate))}</Text>
+            <Tooltip
+              label={
+                getListingFreshness(new Date(postedDate)) === "Fresh"
+                  ? "Posted less than a week ago"
+                  : getListingFreshness(new Date(postedDate)) === "Warm"
+                  ? "Posted 1-2 weeks ago"
+                  : "Posted more than 2 weeks ago"
+              }
+              placement="top"
+              hasArrow
+            >
+              <Badge
+                colorScheme={
+                  getListingFreshness(new Date(postedDate)) === "Fresh"
+                    ? "green"
+                    : getListingFreshness(new Date(postedDate)) === "Warm"
+                    ? "orange"
+                    : "gray"
+                }
+                fontSize={{ base: "xx-small", md: "xs" }}
+              >
+                {getListingFreshness(new Date(postedDate))}
+              </Badge>
+            </Tooltip>
+          </HStack>
+          <HStack spacing={2}>
+            {(clicked || viewed || job.skipped) && (
+              <Badge
+                colorScheme={job.skipped ? "orange" : "green"}
+                fontSize={{ base: "xs", md: "sm" }}
+                whiteSpace="pre-wrap"
+                textAlign="center"
+              >
+                {job.skipped ? "Skipped" : "Visited"} on:{" "}
+                {formatDate(new Date(job.updatedAt))}
+              </Badge>
+            )}
+            {!job.skipped && (
               <Button
                 size={{ base: "xs", md: "sm" }}
                 variant="outline"
-                onClick={() => openJobQuestionsDrawer(job)}
+                onClick={handleSkipClick}
               >
-                Get Application Help
+                Skip
               </Button>
-              <Box
-                px={{ base: 2, md: 4 }}
-                py={{ base: 1, md: 2 }}
-                borderRadius="md"
-                width="auto"
-                bg={
-                  verdict === "Strong match"
-                    ? "green.500"
-                    : verdict === "Mild match"
-                    ? "blue.500"
-                    : verdict === "Weak match"
-                    ? "orange.500"
-                    : "red.500"
-                }
-                color={"white"}
-                fontSize={{ base: "xs", md: "sm" }}
-                mt={{ base: 1, md: 0 }}
-              >
-                <Flex justifyContent="space-between" alignItems="center">
-                  <HStack spacing={2}>
-                    {verdict === "Strong match" ? (
-                      <FiCheckCircle />
-                    ) : verdict === "Mild match" ? (
-                      <FiThumbsUp />
-                    ) : verdict === "Weak match" ? (
-                      <FiAlertCircle />
-                    ) : (
-                      <FiXCircle />
-                    )}
-                    <Text fontWeight="bold">{verdict}</Text>
-                    <FiCpu />
-                  </HStack>
-                </Flex>
-              </Box>
-            </HStack>
-          </HStack>
-          <Text
-            fontWeight="bold"
-            color="gray.500"
-            fontSize={{ base: "sm", md: "md" }}
-          >
-            {company}
-          </Text>
-          {/* responsive vertical stack for job meta info */}
-          <Flex
-            direction={{ base: "column", sm: "row" }}
-            gap={{ base: 2, md: 4 }}
-            wrap="wrap"
-            mt={2}
-            w="100%"
-            align={{ base: "start", sm: "center" }}
-            fontSize={{ base: "xs", md: "sm" }}
-          >
-            <HStack minW="150px">
-              <FiMapPin />
-              <Text>{location.join(", ")}</Text>
-            </HStack>
-            <HStack minW="120px">
-              <FiTag />
-              <Text>{tags.join(", ")}</Text>
-            </HStack>
-            <HStack minW="120px">
-              <FiDollarSign />
-              <Text>{getSalaryString(salary)}</Text>
-            </HStack>
-            <HStack minW="110px">
-              <FiTarget />
-              <Text fontWeight={"bold"}>{matchScore}% match</Text>
-            </HStack>
-            <HStack minW="100px">
-              <FiGlobe />
-              <Text>{source}</Text>
-            </HStack>
-          </Flex>
-          {/* AI Reasoning Box */}
-          <Box
-            mt={2}
-            px={3}
-            py={2}
-            borderRadius="md"
-            bg="blue.50"
-            border="1px solid"
-            borderColor="blue.200"
-            color="blue.800"
-            fontSize={{ base: "xs", md: "sm" }}
-            display="flex"
-            alignItems="flex-start"
-            gap={2}
-            w="100%"
-          >
-            <Box w="100%">
-              <Text fontWeight="bold" mb={1}>
-                AI Reasoning
-              </Text>
-              <Text>{reasoning}</Text>
-            </Box>
-          </Box>
-          <Text
-            noOfLines={isExpanded ? undefined : { base: 3, md: 2 }}
-            color="gray.600"
-            mt={2}
-            fontSize={{ base: "sm", md: "md" }}
-            w="100%"
-          >
-            {formatDescription(description)}
-          </Text>
-        </VStack>
-      </Flex>
-      <Flex
-        direction={{ base: "column", sm: "row" }}
-        justify="space-between"
-        align={{ base: "stretch", sm: "center" }}
-        mt={4}
-        gap={{ base: 2, sm: 0 }}
-      >
-        <HStack spacing={2} mb={{ base: 2, sm: 0 }}>
-          <FiClock />
-          <Text fontSize="xs">Posted {formatDate(new Date(postedDate))}</Text>
-          <Tooltip
-            label={
-              getListingFreshness(new Date(postedDate)) === "Fresh"
-                ? "Posted less than a week ago"
-                : getListingFreshness(new Date(postedDate)) === "Warm"
-                ? "Posted 1-2 weeks ago"
-                : "Posted more than 2 weeks ago"
-            }
-            placement="top"
-            hasArrow
-          >
-            <Badge
-              colorScheme={
-                getListingFreshness(new Date(postedDate)) === "Fresh"
-                  ? "green"
-                  : getListingFreshness(new Date(postedDate)) === "Warm"
-                  ? "orange"
-                  : "gray"
-              }
-              fontSize={{ base: "xx-small", md: "xs" }}
-            >
-              {getListingFreshness(new Date(postedDate))}
-            </Badge>
-          </Tooltip>
-        </HStack>
-        <HStack spacing={2}>
-          {(clicked || viewed || job.skipped) && (
-            <Badge
-              colorScheme={job.skipped ? "orange" : "green"}
-              fontSize={{ base: "xs", md: "sm" }}
-              whiteSpace="pre-wrap"
-              textAlign="center"
-            >
-              {job.skipped ? "Skipped" : "Visited"} on:{" "}
-              {formatDate(new Date(job.updatedAt))}
-            </Badge>
-          )}
-          {!job.skipped && (
+            )}
             <Button
               size={{ base: "xs", md: "sm" }}
               variant="outline"
-              onClick={() => skipMatch(matchId)}
+              onClick={() => setIsExpanded(!isExpanded)}
             >
-              Skip
+              {isExpanded ? "Show Less" : "Show More"}
             </Button>
-          )}
-          <Button
-            size={{ base: "xs", md: "sm" }}
-            variant="outline"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? "Show Less" : "Show More"}
-          </Button>
-          <Button
-            size={{ base: "xs", md: "sm" }}
-            colorScheme="blue"
-            onClick={handleApplyClick}
-            gap={2}
-          >
-            <FiExternalLink />
-            Apply
-          </Button>
-        </HStack>
-      </Flex>
-    </Box>
+            <Button
+              size={{ base: "xs", md: "sm" }}
+              colorScheme="blue"
+              onClick={handleApplyClick}
+              gap={2}
+            >
+              <FiExternalLink />
+              Apply
+            </Button>
+          </HStack>
+        </Flex>
+      </Box>
+
+      {/* Skip Reason Modal */}
+      <Modal isOpen={isReasonModalOpen} onClose={handleModalClose} size="md">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader fontSize="md">Why are you skipping this job?</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={4}>
+            <Text fontSize="sm" color="gray.600" mb={4}>
+              Help us improve your matches by telling us why this job
+              isn&apos;t right for you.
+            </Text>
+            <Wrap spacing={2}>
+              {(Object.keys(REASON_CATEGORIES) as ReasonCategory[]).map(
+                (category) => (
+                  <WrapItem key={category}>
+                    <Button
+                      size="sm"
+                      variant={
+                        selectedReason === category ? "solid" : "outline"
+                      }
+                      colorScheme={
+                        selectedReason === category ? "blue" : "gray"
+                      }
+                      onClick={() => setSelectedReason(category)}
+                    >
+                      {REASON_CATEGORIES[category]}
+                    </Button>
+                  </WrapItem>
+                )
+              )}
+            </Wrap>
+
+            {/* Show details textarea for any selection (optional for all) */}
+            {selectedReason && (
+              <Textarea
+                mt={4}
+                placeholder={
+                  selectedReason === "other"
+                    ? "Please tell us more..."
+                    : "Add details (optional)"
+                }
+                size="sm"
+                value={reasonDetails}
+                onChange={(e) => setReasonDetails(e.target.value)}
+                rows={3}
+              />
+            )}
+          </ModalBody>
+
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={handleModalClose} size="sm">
+              Cancel
+            </Button>
+            <Button
+              colorScheme="blue"
+              onClick={handleSkipSubmit}
+              isDisabled={!selectedReason}
+              isLoading={isSkipping}
+              loadingText="Skipping..."
+              size="sm"
+            >
+              Skip Job
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 

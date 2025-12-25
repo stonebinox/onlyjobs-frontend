@@ -210,14 +210,32 @@ export const useApi = () => {
     }
   };
 
-  const markMatchAsSkipped = async (matchId: string) => {
+  const markMatchAsSkipped = async (
+    matchId: string,
+    reason?: string,
+    details?: string
+  ) => {
     try {
+      const body: {
+        matchId: string;
+        reason?: string;
+        details?: string;
+      } = { matchId };
+
+      // Include reason/details if provided
+      if (reason) {
+        body.reason = reason;
+        if (details) {
+          body.details = details;
+        }
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches/skip`,
         {
           method: "POST",
           headers: getHeaders(),
-          body: JSON.stringify({ matchId }),
+          body: JSON.stringify(body),
         }
       );
 
@@ -233,14 +251,34 @@ export const useApi = () => {
     }
   };
 
-  const markMatchApplied = async (matchId: string, applied: boolean) => {
+  const markMatchApplied = async (
+    matchId: string,
+    applied: boolean,
+    reason?: string,
+    details?: string
+  ) => {
     try {
+      const body: {
+        matchId: string;
+        applied: boolean;
+        reason?: string;
+        details?: string;
+      } = { matchId, applied };
+
+      // Only include reason/details when not applied
+      if (!applied && reason) {
+        body.reason = reason;
+        if (details) {
+          body.details = details;
+        }
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches/applied`,
         {
           method: "POST",
           headers: getHeaders(),
-          body: JSON.stringify({ matchId, applied }),
+          body: JSON.stringify(body),
         }
       );
 
