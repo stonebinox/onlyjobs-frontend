@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Button,
   Heading,
@@ -39,7 +39,11 @@ import {
   useDisclosure,
   Icon,
 } from "@chakra-ui/react";
-import { FaDollarSign, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
+import {
+  FaDollarSign,
+  FaCheckCircle,
+  FaExclamationCircle,
+} from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
@@ -64,8 +68,12 @@ interface Transaction {
 
 const WalletPage = () => {
   const router = useRouter();
-  const { getWalletBalance, createPaymentOrder, verifyPayment, getTransactions } =
-    useApi();
+  const {
+    getWalletBalance,
+    createPaymentOrder,
+    verifyPayment,
+    getTransactions,
+  } = useApi();
 
   const [balance, setBalance] = useState<number>(0);
   const [customAmount, setCustomAmount] = useState("");
@@ -91,12 +99,7 @@ const WalletPage = () => {
   const textColor = useColorModeValue("gray.600", "gray.300");
   const highlightColor = useColorModeValue("blue.500", "blue.300");
 
-  useEffect(() => {
-    fetchBalance();
-    fetchTransactions();
-  }, []);
-
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     try {
       setLoading(true);
       const result = await getWalletBalance();
@@ -110,9 +113,9 @@ const WalletPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getWalletBalance]);
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       setTransactionsLoading(true);
       const result = await getTransactions(1, 50);
@@ -124,7 +127,12 @@ const WalletPage = () => {
     } finally {
       setTransactionsLoading(false);
     }
-  };
+  }, [getTransactions]);
+
+  useEffect(() => {
+    fetchBalance();
+    fetchTransactions();
+  }, [fetchBalance, fetchTransactions]);
 
   const validateCustomAmount = (value: string): string => {
     if (!value || value.trim() === "") {
@@ -206,7 +214,9 @@ const WalletPage = () => {
 
       // Check if Razorpay is loaded
       if (!window.Razorpay) {
-        setModalMessage("Payment gateway is not loaded. Please refresh the page.");
+        setModalMessage(
+          "Payment gateway is not loaded. Please refresh the page."
+        );
         onErrorModalOpen();
         setProcessing(false);
         return;
@@ -230,14 +240,18 @@ const WalletPage = () => {
             );
 
             if ("error" in verifyResult) {
-              setModalMessage(`Payment verification failed: ${verifyResult.error}`);
+              setModalMessage(
+                `Payment verification failed: ${verifyResult.error}`
+              );
               onErrorModalOpen();
             } else {
               // Refresh balance and transactions
               await fetchBalance();
               await fetchTransactions();
               setCustomAmount("");
-              setModalMessage("Payment successful! Your wallet has been credited.");
+              setModalMessage(
+                "Payment successful! Your wallet has been credited."
+              );
               onSuccessModalOpen();
             }
           } catch (error) {
@@ -289,7 +303,9 @@ const WalletPage = () => {
   const handleReportIssue = () => {
     const subject = encodeURIComponent("Wallet Issue - OnlyJobs");
     const body = encodeURIComponent(
-      `Please describe your issue:\n\nWallet Balance: $${balance.toFixed(2)}\n\n`
+      `Please describe your issue:\n\nWallet Balance: $${balance.toFixed(
+        2
+      )}\n\n`
     );
     window.location.href = `mailto:contact@auroradesignshq.com?subject=${subject}&body=${body}`;
   };
@@ -312,9 +328,9 @@ const WalletPage = () => {
               {loading ? (
                 <Spinner size="lg" />
               ) : (
-              <StatNumber fontSize="4xl" color={highlightColor}>
-                ${balance.toFixed(2)}
-              </StatNumber>
+                <StatNumber fontSize="4xl" color={highlightColor}>
+                  ${balance.toFixed(2)}
+                </StatNumber>
               )}
             </Stat>
           </CardBody>
@@ -359,31 +375,35 @@ const WalletPage = () => {
               </HStack>
 
               <Box>
-              <HStack>
-                <InputGroup>
-                  <InputLeftElement pointerEvents="none">
-                    <FaDollarSign color="gray.300" />
-                  </InputLeftElement>
-                  <Input
-                    type="number"
-                    placeholder="Custom amount"
-                    value={customAmount}
+                <HStack>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none">
+                      <FaDollarSign color="gray.300" />
+                    </InputLeftElement>
+                    <Input
+                      type="number"
+                      placeholder="Custom amount"
+                      value={customAmount}
                       onChange={handleCustomAmountChange}
                       isInvalid={!!customAmountError}
                       isDisabled={processing}
-                  />
-                </InputGroup>
-                <Button
-                  colorScheme="blue"
-                  onClick={() => handleTopUp(customAmount)}
-                    isDisabled={!customAmount || !!customAmountError || processing}
+                    />
+                  </InputGroup>
+                  <Button
+                    colorScheme="blue"
+                    onClick={() => handleTopUp(customAmount)}
+                    isDisabled={
+                      !customAmount || !!customAmountError || processing
+                    }
                     isLoading={processing}
-                >
-                  Top Up
-                </Button>
-              </HStack>
+                  >
+                    Top Up
+                  </Button>
+                </HStack>
                 {customAmountError && (
-                  <FormErrorMessage mt={2}>{customAmountError}</FormErrorMessage>
+                  <FormErrorMessage mt={2}>
+                    {customAmountError}
+                  </FormErrorMessage>
                 )}
                 {!customAmountError && customAmount && (
                   <Text fontSize="sm" color={textColor} mt={2}>
@@ -417,33 +437,35 @@ const WalletPage = () => {
               Transaction History
             </Heading>
             <TableContainer data-guide="transactions-table">
-            {transactionsLoading ? (
-              <Box textAlign="center" py={8}>
-                <Spinner size="lg" />
-              </Box>
-            ) : transactions.length === 0 ? (
-              <Text color={textColor} textAlign="center" py={8}>
-                No transactions yet
-              </Text>
-            ) : (
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th>Date</Th>
+              {transactionsLoading ? (
+                <Box textAlign="center" py={8}>
+                  <Spinner size="lg" />
+                </Box>
+              ) : transactions.length === 0 ? (
+                <Text color={textColor} textAlign="center" py={8}>
+                  No transactions yet
+                </Text>
+              ) : (
+                <Table variant="simple" size="sm">
+                  <Thead>
+                    <Tr>
+                      <Th>Date</Th>
                       <Th>Type</Th>
                       <Th>Description</Th>
                       <Th isNumeric>Amount</Th>
                       <Th>Status</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
                     {transactions.map((transaction) => (
                       <Tr key={transaction._id}>
                         <Td>{formatDate(transaction.timestamp)}</Td>
                         <Td>
                           <Text
                             color={
-                              transaction.type === "credit" ? "green.500" : "red.500"
+                              transaction.type === "credit"
+                                ? "green.500"
+                                : "red.500"
                             }
                             fontWeight="bold"
                           >
@@ -469,12 +491,12 @@ const WalletPage = () => {
                             {transaction.status}
                           </Text>
                         </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              )}
             </TableContainer>
-            )}
           </CardBody>
         </Card>
 
@@ -502,7 +524,11 @@ const WalletPage = () => {
       </VStack>
 
       {/* Success Modal */}
-      <Modal isOpen={isSuccessModalOpen} onClose={onSuccessModalClose} isCentered>
+      <Modal
+        isOpen={isSuccessModalOpen}
+        onClose={onSuccessModalClose}
+        isCentered
+      >
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>Success</ModalHeader>
