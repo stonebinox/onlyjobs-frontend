@@ -107,7 +107,7 @@ export default function Home() {
               fontSize={{ base: "3xl", sm: "4xl", lg: "6xl" }}
             >
               <Text as={"span"} position={"relative"} color="brand.800">
-                Hopping between job boards?
+                Stop applying everywhere.
               </Text>
               <br />
               <Text
@@ -115,18 +115,18 @@ export default function Home() {
                 fontSize={{ base: "2xl", sm: "3xl", lg: "4xl" }}
                 color={"brand.500"}
               >
-                Let&apos;s do it <StyledText>intelligently</StyledText>.
+                Start applying <StyledText>smarter</StyledText>.
               </Text>
             </Heading>
-            <Text color={"gray.500"}>
-              OnlyJobs is built by a single fullstack dev trying to help himself
-              find a remote job. He&apos;s a user here, too. He built these
-              based on his experience as an interviewee and interviewer.
+            <Text color={"gray.600"} fontSize="lg">
+              OnlyJobs matches you with jobs based on your actual experience and
+              preferences and not just keyword spam. Get a{" "}
+              <StyledText>confidence score</StyledText> for each match so you
+              know where to focus your effort.
             </Text>
             <Text color={"gray.500"}>
-              If you&apos;re looking for a tool to automatically apply for you,
-              this isn&apos;t it. You&apos;re an experienced dev. You don&apos;t
-              need that. You need <StyledText>better</StyledText>.
+              Built by a dev who was tired of the same broken job search. No
+              auto-apply, no spray-and-pray. Just smarter matching.
             </Text>
             {/* <Stack
               spacing={{ base: 4, sm: 6 }}
@@ -166,6 +166,9 @@ export default function Home() {
             <form onSubmit={handleSubmit}>
               <FormContainer>
                 <Heading size="sm">Login or Sign up</Heading>
+                <Text fontSize="sm" color="gray.500" textAlign="center">
+                  Free to start. See your matches in minutes.
+                </Text>
                 <Input
                   type="email"
                   name="email"
@@ -209,42 +212,35 @@ export default function Home() {
           <Stack direction={{ base: "column", md: "row" }} spacing={10}>
             <Box textAlign="center" p={5}>
               <Heading size="md" mb={4}>
-                Using AI the Smart Way
+                Upload Once, Done
               </Heading>
               <Text>
-                You{" "}
-                <StyledText>
-                  don&apos;t need to fill out your life&apos;s data
-                </StyledText>{" "}
-                anywhere. This uses AI to parse your CV and ask you follow up
-                questions to get a better understanding of your skills and
-                experience. Talk your way through it. It&apos;s that simple.
+                Upload your CV and <StyledText>we handle the rest</StyledText>.
+                AI parses your experience and asks follow-up questions
+                conversationally. No forms, no repetitive data entry. Talk your
+                way through it.
               </Text>
             </Box>
             <Box textAlign="center" p={5}>
               <Heading size="md" mb={4}>
-                Job Listings Everyday
+                Fresh Listings, Zero Noise
               </Heading>
               <Text>
-                OnlyJobs aggregates job listings from various platforms once a
-                day, ensuring you have access to the latest opportunities in one
-                place. Vague, weird, shady, and inconsistent job listings are
-                consolidated, cleaned up, and parsed for{" "}
-                <StyledText>your benefit</StyledText>.
+                Jobs aggregated daily from multiple platforms, all in one place.
+                Vague, shady, and inconsistent listings are filtered out and
+                cleaned up — so you only see{" "}
+                <StyledText>what&apos;s worth your time</StyledText>.
               </Text>
             </Box>
             <Box textAlign="center" p={5}>
               <Heading size="md" mb={4}>
-                Smartest Matching
+                Match Scores You Can Trust
               </Heading>
               <Text>
-                The AI-powered matching connects you with job listings that
-                align with your skills and preferences. It assigns a{" "}
-                <StyledText>
-                  match confidence score along with it&apos;s reasoning
-                </StyledText>{" "}
-                to each job listing, helping you prioritize your applications.
-                Completely customizable, too.
+                Every job comes with a{" "}
+                <StyledText>confidence score and reasoning</StyledText> — so you
+                know exactly why it&apos;s a good fit. Prioritize your
+                applications based on data, not guesswork.
               </Text>
             </Box>
           </Stack>
