@@ -167,7 +167,7 @@ export default function Home() {
               <FormContainer>
                 <Heading size="sm">Login or Sign up</Heading>
                 <Text fontSize="sm" color="gray.500" textAlign="center">
-                  Start with $2 free. See your matches in minutes.
+                  Start with $2 free. See fresh curated matches every day.
                 </Text>
                 <Input
                   type="email"
