@@ -17,13 +17,14 @@ import { useApi } from "@/hooks/useApi";
 const VerifyEmailPage = () => {
   const router = useRouter();
   const { token } = router.query;
-  const { verifyEmailChange } = useApi();
+  const { verifyEmailChange, verifyInitialEmail } = useApi();
   const [status, setStatus] = useState<"pending" | "success" | "error">(
     "pending"
   );
   const [message, setMessage] = useState<string>(
-    "Verifying your email change..."
+    "Verifying your email..."
   );
+  const [isEmailChange, setIsEmailChange] = useState<boolean>(false);
   const cardBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.700", "gray.200");
 
@@ -34,20 +35,36 @@ const VerifyEmailPage = () => {
         setMessage("Verification token is missing.");
         return;
       }
-      const response = await verifyEmailChange(token);
-      if (response.error) {
+      
+      // Try initial verification first
+      const initialResponse = await verifyInitialEmail(token);
+      if (!initialResponse.error) {
+        setStatus("success");
+        setMessage("Your email has been verified successfully!");
+        setIsEmailChange(false);
+        return;
+      }
+
+      // If initial verification fails, try email change verification
+      const changeResponse = await verifyEmailChange(token);
+      if (changeResponse.error) {
         setStatus("error");
-        setMessage(response.error);
+        setMessage(changeResponse.error);
       } else {
         setStatus("success");
         setMessage("Your email has been updated. Please sign in again.");
+        setIsEmailChange(true);
       }
     };
     doVerify();
-  }, [token, verifyEmailChange]);
+  }, [token, verifyEmailChange, verifyInitialEmail]);
 
   const handleGoToSignIn = () => {
     router.push("/signin");
+  };
+
+  const handleGoToDashboard = () => {
+    router.push("/dashboard");
   };
 
   return (
@@ -56,12 +73,17 @@ const VerifyEmailPage = () => {
         <Card bg={cardBg} shadow="md" maxW="lg" w="100%">
           <CardBody>
             <VStack spacing={4} align="center" textAlign="center">
-              <Heading size="md">Verify Email Change</Heading>
+              <Heading size="md">
+                {isEmailChange ? "Verify Email Change" : "Verify Email"}
+              </Heading>
               {status === "pending" && <Spinner size="lg" />}
               <Text color={textColor}>{message}</Text>
               {status !== "pending" && (
-                <Button colorScheme="blue" onClick={handleGoToSignIn}>
-                  Go to Sign In
+                <Button
+                  colorScheme="blue"
+                  onClick={isEmailChange ? handleGoToSignIn : handleGoToDashboard}
+                >
+                  {isEmailChange ? "Go to Sign In" : "Go to Dashboard"}
                 </Button>
               )}
             </VStack>

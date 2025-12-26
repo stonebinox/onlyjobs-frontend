@@ -620,6 +620,53 @@ export const useApi = () => {
     }
   };
 
+  const resendVerificationEmail = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/resend-verification`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to resend verification email");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Resend verification email error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const verifyInitialEmail = async (token: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/verify-email`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to verify email");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Verify initial email error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const factoryResetUserAccount = async () => {
     try {
       const response = await fetch(
@@ -973,6 +1020,8 @@ export const useApi = () => {
     updatePreferences,
     requestEmailChange,
     verifyEmailChange,
+    resendVerificationEmail,
+    verifyInitialEmail,
     factoryResetUserAccount,
     deleteUserAccount,
     updateUserProfile,

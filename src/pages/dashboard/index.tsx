@@ -26,6 +26,7 @@ import {
   AlertDescription,
   HStack,
 } from "@chakra-ui/react";
+import { EmailVerificationBanner } from "@/components/Dashboard/EmailVerificationBanner";
 import {
   FiBriefcase,
   FiCheckCircle,
@@ -68,6 +69,7 @@ const Dashboard = () => {
   const [showLowBalanceWarning, setShowLowBalanceWarning] = useState(false);
   const [pendingJobForDrawer, setPendingJobForDrawer] =
     useState<JobResult | null>(null);
+  const [user, setUser] = useState<{ isVerified?: boolean; email?: string } | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
@@ -78,6 +80,7 @@ const Dashboard = () => {
     getMatchCount,
     getMatches,
     checkWalletBalance,
+    getUserProfile,
   } = useApi();
 
   const fetchMatches = async (minScore: number = 65) => {
@@ -146,17 +149,23 @@ const Dashboard = () => {
       }
     };
 
+    const fetchUserProfile = async () => {
+      try {
+        const userData = await getUserProfile();
+        if (userData && !("error" in userData)) {
+          setUser(userData as { isVerified?: boolean; email?: string });
+        }
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
     fetchMatchCount();
     fetchAvailableJobsCount();
     fetchWalletBalance();
-  }, [
-    auth?.isLoggedIn,
-    getActiveUserCount,
-    getAvailableJobsCount,
-    getMatchCount,
-    checkWalletBalance,
-    router,
-  ]);
+    fetchUserProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth?.isLoggedIn]);
 
   // Handle page visibility change to auto-open drawer
   useEffect(() => {
@@ -256,9 +265,22 @@ const Dashboard = () => {
       />
       <DashboardLayout>
         <Box>
-          <Heading mb={5}>Dashboard</Heading>
+          {user && (
+            <EmailVerificationBanner
+              isVerified={user.isVerified ?? false}
+              email={user.email}
+              onVerificationSent={() => {
+                // Refresh user profile to check if verification status changed
+                getUserProfile().then((userData) => {
+                  if (userData && !("error" in userData)) {
+                    setUser(userData as { isVerified?: boolean; email?: string });
+                  }
+                });
+              }}
+            />
+          )}
           {showLowBalanceWarning && (
-            <Alert status="warning" mb={5} borderRadius="md">
+            <Alert status="warning" mb={user && !user.isVerified ? 4 : 5} borderRadius="md">
               <AlertIcon />
               <Box flex="1">
                 <AlertTitle>Low Wallet Balance</AlertTitle>
@@ -279,6 +301,7 @@ const Dashboard = () => {
               </Box>
             </Alert>
           )}
+          <Heading mb={5}>Dashboard</Heading>
           <SimpleGrid
             columns={{ base: 1, md: 3, lg: 3 }}
             spacing={{ base: 4, lg: 8 }}

@@ -8,4 +8,5 @@ export type User = {
   createdAt: Date;
   resume: Resume | null;
   preferences: Preferences | null;
+  isVerified?: boolean;
 };
