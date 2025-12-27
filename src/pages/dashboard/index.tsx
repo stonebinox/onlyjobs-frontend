@@ -322,7 +322,7 @@ const Dashboard = () => {
             data-guide="stat-cards"
           >
             <StatCard
-              title="Job Listings (in the last 30 days)"
+              title="Job Listings (in the last 15 days)"
               stat={new Intl.NumberFormat("en-US").format(availableJobsCount)}
               icon={<FiBriefcase size="3em" />}
             />

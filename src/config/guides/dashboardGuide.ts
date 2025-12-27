@@ -4,7 +4,7 @@ export const dashboardGuideSteps: Step[] = [
   {
     target: "[data-guide='stat-cards']",
     content:
-      "These stat cards show your key metrics: available jobs in the last 30 days, successful matches for you, and options to upload your CV and answer Q&A questions.",
+      "These stat cards show your key metrics: available jobs in the last 15 days, successful matches for you, and options to upload your CV and answer Q&A questions.",
     placement: "bottom",
     title: "Dashboard Overview",
   },
