@@ -27,6 +27,8 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { EmailVerificationBanner } from "@/components/Dashboard/EmailVerificationBanner";
+import { ResumeRequiredBanner } from "@/components/Dashboard/ResumeRequiredBanner";
+import { QnARecommendationBanner } from "@/components/Dashboard/QnARecommendationBanner";
 import {
   FiBriefcase,
   FiCheckCircle,
@@ -34,6 +36,7 @@ import {
   FiUpload,
   FiMessageSquare,
 } from "react-icons/fi";
+import { User } from "@/types/User";
 
 import DashboardLayout from "../../components/Layout/DashboardLayout";
 import StatCard from "../../components/Dashboard/StatCard";
@@ -69,7 +72,7 @@ const Dashboard = () => {
   const [showLowBalanceWarning, setShowLowBalanceWarning] = useState(false);
   const [pendingJobForDrawer, setPendingJobForDrawer] =
     useState<JobResult | null>(null);
-  const [user, setUser] = useState<{ isVerified?: boolean; email?: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
@@ -153,7 +156,7 @@ const Dashboard = () => {
       try {
         const userData = await getUserProfile();
         if (userData && !("error" in userData)) {
-          setUser(userData as { isVerified?: boolean; email?: string });
+          setUser(userData as User);
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -266,18 +269,29 @@ const Dashboard = () => {
       <DashboardLayout>
         <Box>
           {user && (
-            <EmailVerificationBanner
-              isVerified={user.isVerified ?? false}
-              email={user.email}
-              onVerificationSent={() => {
-                // Refresh user profile to check if verification status changed
-                getUserProfile().then((userData) => {
-                  if (userData && !("error" in userData)) {
-                    setUser(userData as { isVerified?: boolean; email?: string });
-                  }
-                });
-              }}
-            />
+            <>
+              <EmailVerificationBanner
+                isVerified={user.isVerified ?? false}
+                email={user.email}
+                onVerificationSent={() => {
+                  // Refresh user profile to check if verification status changed
+                  getUserProfile().then((userData) => {
+                    if (userData && !("error" in userData)) {
+                      setUser(userData as User);
+                    }
+                  });
+                }}
+              />
+              <ResumeRequiredBanner
+                resume={user.resume}
+                onUploadClick={onOpen}
+              />
+              <QnARecommendationBanner
+                answeredQuestionsCount={user.answeredQuestionsCount ?? 0}
+                resume={user.resume}
+                onStartQnA={() => setIsDrawerOpen(true)}
+              />
+            </>
           )}
           {showLowBalanceWarning && (
             <Alert status="warning" mb={user && !user.isVerified ? 4 : 5} borderRadius="md">

@@ -9,4 +9,5 @@ export type User = {
   resume: Resume | null;
   preferences: Preferences | null;
   isVerified?: boolean;
+  answeredQuestionsCount?: number;
 };
