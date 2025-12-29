@@ -13,6 +13,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import styled from "styled-components";
+import Link from "next/link";
 
 import theme from "@/theme/theme";
 import { useEffect, useState } from "react";
@@ -183,6 +184,18 @@ export default function Home() {
                   onChange={(e) => setPassword(e.target.value)}
                   isInvalid={fieldError}
                 />
+                <Box width="100%" textAlign="right">
+                  <Link href="/forgot-password">
+                    <Text
+                      fontSize="sm"
+                      color="brand.500"
+                      cursor="pointer"
+                      _hover={{ textDecoration: "underline" }}
+                    >
+                      Forgot Password?
+                    </Text>
+                  </Link>
+                </Box>
                 <Button
                   type="submit"
                   variant={"solid"}

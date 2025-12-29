@@ -995,6 +995,56 @@ export const useApi = () => {
     }
   };
 
+  const requestPasswordReset = async (email: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/forgot-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to request password reset");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Request password reset error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const resetPassword = async (token: string, newPassword: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ token, newPassword }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to reset password");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Reset password error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -1034,5 +1084,7 @@ export const useApi = () => {
     getGuideProgress,
     updateGuideProgress,
     resetGuideProgress,
+    requestPasswordReset,
+    resetPassword,
   };
 };
