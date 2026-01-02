@@ -57,6 +57,7 @@ export const GuideProvider = ({
       } else if (!isLoggedIn) {
         hasLoadedRef.current = false;
         setIsLoading(false);
+        setGuideProgress({});
       }
     };
 

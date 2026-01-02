@@ -44,7 +44,7 @@ const Guide: React.FC<GuideProps> = ({
   onSkip,
   run: controlledRun,
 }) => {
-  const { isPageGuideCompleted, isPageGuideSkipped, updatePageProgress } =
+  const { isPageGuideCompleted, isPageGuideSkipped, updatePageProgress, isLoading } =
     useGuide();
   const [run, setRun] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
@@ -108,8 +108,8 @@ const Guide: React.FC<GuideProps> = ({
   }, [run, mounted]);
 
   useEffect(() => {
-    // Only run checks after component is mounted on client
-    if (!mounted || hasStarted) return;
+    // Only run checks after component is mounted on client and guide progress is loaded
+    if (!mounted || hasStarted || isLoading) return;
 
     // Check if guide should run
     const shouldRun =
@@ -150,6 +150,7 @@ const Guide: React.FC<GuideProps> = ({
     mounted,
     hasStarted,
     steps,
+    isLoading,
   ]);
 
   const handleJoyrideCallback = useCallback(
