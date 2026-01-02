@@ -29,6 +29,7 @@ import {
 import { EmailVerificationBanner } from "@/components/Dashboard/EmailVerificationBanner";
 import { ResumeRequiredBanner } from "@/components/Dashboard/ResumeRequiredBanner";
 import { QnARecommendationBanner } from "@/components/Dashboard/QnARecommendationBanner";
+import { NoQnABanner } from "@/components/Dashboard/NoQnABanner";
 import {
   FiBriefcase,
   FiCheckCircle,
@@ -287,6 +288,11 @@ const Dashboard = () => {
                 onUploadClick={onOpen}
               />
               <QnARecommendationBanner
+                answeredQuestionsCount={user.answeredQuestionsCount ?? 0}
+                resume={user.resume}
+                onStartQnA={() => setIsDrawerOpen(true)}
+              />
+              <NoQnABanner
                 answeredQuestionsCount={user.answeredQuestionsCount ?? 0}
                 resume={user.resume}
                 onStartQnA={() => setIsDrawerOpen(true)}
