@@ -150,8 +150,8 @@ const WalletPage = () => {
       return "Amount must be a whole number (no decimals)";
     }
 
-    if (numValue < 5) {
-      return "Minimum amount is $5";
+    if (numValue < 1) {
+      return "Minimum amount is $1";
     }
 
     if (numValue > 500) {
@@ -189,8 +189,8 @@ const WalletPage = () => {
     }
 
     // Validate amount
-    if (topUpAmount < 5 || topUpAmount > 500) {
-      setCustomAmountError("Amount must be between $5 and $500");
+    if (topUpAmount < 1 || topUpAmount > 500) {
+      setCustomAmountError("Amount must be between $1 and $500");
       return;
     }
 
@@ -408,7 +408,7 @@ const WalletPage = () => {
                 )}
                 {!customAmountError && customAmount && (
                   <Text fontSize="sm" color={textColor} mt={2}>
-                    Enter an amount between $5 and $500 (whole numbers only)
+                    Enter an amount between $1 and $500 (whole numbers only)
                   </Text>
                 )}
               </Box>

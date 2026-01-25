@@ -215,6 +215,21 @@ export default function Home() {
                 </Text>
               </FormContainer>
             </form>
+            <Box mt={6} textAlign="center">
+              <a
+                href="https://www.producthunt.com/products/onlyjobs-beta?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-onlyjobs-beta"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img
+                  alt="OnlyJobs [BETA] - Daily job matcher built by someone who actually needed a job | Product Hunt"
+                  width="250"
+                  height="54"
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1058051&theme=light&t=1767616322906"
+                  style={{ display: "block", margin: "0 auto" }}
+                />
+              </a>
+            </Box>
           </Flex>
         </Stack>
 

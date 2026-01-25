@@ -32,7 +32,7 @@ const TermsConditions = () => {
               <li>
                 New accounts receive a $2 welcome bonus to get started. You may
                 add additional funds to your wallet (in USD). Minimum top-up is
-                $5; maximum is $500.
+                $1; maximum is $500.
               </li>
               <li>
                 Payments are processed by Razorpay; we don&apos;t store your
