@@ -300,7 +300,7 @@ const Dashboard = () => {
             </>
           )}
           {showLowBalanceWarning && (
-            <Alert status="warning" mb={user && !user.isVerified ? 4 : 5} borderRadius="md">
+            <Alert status="warning" mb={user && !user.isVerified ? 4 : 5} borderRadius="xl">
               <AlertIcon />
               <Box flex="1">
                 <AlertTitle>Low Wallet Balance</AlertTitle>
@@ -309,7 +309,7 @@ const Dashboard = () => {
                   receiving job matches.{" "}
                   <Text
                     as="span"
-                    color="blue.500"
+                    color="primary.600"
                     fontWeight="bold"
                     textDecoration="underline"
                     cursor="pointer"
@@ -321,36 +321,56 @@ const Dashboard = () => {
               </Box>
             </Alert>
           )}
-          <Heading mb={5}>Dashboard</Heading>
+          <Heading mb={6} fontFamily="heading" fontSize={{ base: "2xl", md: "3xl" }}>
+            Dashboard
+          </Heading>
           <SimpleGrid
             columns={{ base: 1, md: 3, lg: 3 }}
-            spacing={{ base: 4, lg: 8 }}
+            spacing={{ base: 4, lg: 6 }}
             data-guide="stat-cards"
           >
             <StatCard
-              title="Job Listings (in the last 15 days)"
+              title="Job Listings (15 days)"
               stat={new Intl.NumberFormat("en-US").format(availableJobsCount)}
-              icon={<FiBriefcase size="3em" />}
+              icon={<FiBriefcase size="1.5em" />}
+              accentColor="accent.500"
             />
             <StatCard
               title="Successful Matches"
               stat={new Intl.NumberFormat("en-US").format(matchCount)}
-              icon={<FiCheckCircle size="3em" />}
+              icon={<FiCheckCircle size="1.5em" />}
+              accentColor="match.strong"
             />
             <Box
+              position="relative"
               p={5}
-              shadow="md"
-              borderWidth="1px"
-              borderRadius="lg"
-              bg="white"
+              borderRadius="2xl"
+              border="1px solid"
+              borderColor="surface.border"
+              bg="surface.card"
+              boxShadow="card"
               display="flex"
               flexDirection="column"
               alignItems="center"
               justifyContent="center"
+              overflow="hidden"
+              _hover={{
+                boxShadow: "cardHover",
+                borderColor: "primary.200",
+              }}
             >
-              <HStack gap={4} width={"100%"}>
+              {/* Top accent bar */}
+              <Box
+                position="absolute"
+                top={0}
+                left={0}
+                right={0}
+                height="4px"
+                bgGradient="linear(135deg, primary.500, secondary.500)"
+              />
+              <HStack gap={3} width="100%">
                 <Button
-                  leftIcon={<FiTrendingUp size="1.5em" />}
+                  leftIcon={<FiTrendingUp size="1.2em" />}
                   colorScheme="blue"
                   variant="solid"
                   size="sm"
@@ -358,10 +378,10 @@ const Dashboard = () => {
                   w="100%"
                   data-guide="cv-upload-button"
                 >
-                  Upload Your CV
+                  Upload CV
                 </Button>
                 <Button
-                  leftIcon={<FiMessageSquare size="1.5em" />}
+                  leftIcon={<FiMessageSquare size="1.2em" />}
                   colorScheme="blue"
                   variant="outline"
                   size="sm"
@@ -372,18 +392,18 @@ const Dashboard = () => {
                   Q&amp;A
                 </Button>
               </HStack>
-              <Text fontSize="sm" mt={2} color="gray.500" textAlign="center">
+              <Text fontSize="xs" mt={3} color="text.tertiary" textAlign="center" fontWeight="medium">
                 Improve your match rate
               </Text>
             </Box>
           </SimpleGrid>
           <Box mt={10} maxW={{ base: "100%", lg: "1200px" }} mx="auto">
-            <Tabs colorScheme="blue">
-              <TabList data-guide="job-tabs">
-                <Tab>Matches for you</Tab>
-                <Tab>Applied</Tab>
-                <Tab>Viewed</Tab>
-                <Tab>Skipped</Tab>
+            <Tabs colorScheme="purple" variant="line">
+              <TabList data-guide="job-tabs" gap={2}>
+                <Tab fontWeight="semibold" px={4}>Matches for you</Tab>
+                <Tab fontWeight="semibold" px={4}>Applied</Tab>
+                <Tab fontWeight="semibold" px={4}>Viewed</Tab>
+                <Tab fontWeight="semibold" px={4}>Skipped</Tab>
               </TabList>
               <TabPanels>
                 <TabPanel px={0}>

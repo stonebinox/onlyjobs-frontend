@@ -17,7 +17,10 @@ import {
   Text,
   Textarea,
   Tooltip,
+  VStack,
+  Badge,
 } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
 import { useEffect, useState } from "react";
 import {
   FiArrowRight,
@@ -28,9 +31,9 @@ import {
   FiSquare,
   FiX,
 } from "react-icons/fi";
+import { TbSparkles } from "react-icons/tb";
 
 import { useApi } from "@/hooks/useApi";
-import theme from "@/theme/theme";
 import { Question } from "@/types/Question";
 import { AnsweredQuestion } from "@/types/AnsweredQuestion";
 import { AnsweredQuestions } from "./AnsweredQuestions";
@@ -39,6 +42,16 @@ interface QADrawerProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const pulse = keyframes`
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+`;
+
+const recordingPulse = keyframes`
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+`;
 
 export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
   const {
@@ -303,120 +316,166 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
 
   return (
     <Drawer placement="right" size="xl" isOpen={isOpen} onClose={onClose}>
-      <DrawerOverlay />
-      <DrawerContent>
+      <DrawerOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
+      <DrawerContent borderLeftRadius="2xl">
         <DrawerCloseButton />
-        <DrawerHeader>Let&apos;s improve your profile</DrawerHeader>
-        <DrawerBody>
-          <Text fontSize="md" mb={4}>
-            This section focuses on improving your profile and matching rate
-            based on your past experiences and work culture preferences. You
-            will be asked common interview questions and you can answer them in
-            a conversational manner. The AI model will help you refine your
-            answers and provide suggestions to improve them.
-          </Text>
-          <Alert status="info" variant="left-accent" borderRadius="md" mb={4}>
-            <AlertIcon />
-            <Box>
-              <AlertTitle fontWeight="bold">Note</AlertTitle>
-              <Text fontSize="md" mb={2}>
-                This section is primarily driven with an AI model to ease you
-                into the process. It also ensures that you cover a lot of ground
-                efficiently.
+
+        {/* Header with gradient background */}
+        <DrawerHeader
+          bgGradient="linear(135deg, #F5F3FF 0%, #FDF2F8 50%, #FFF7ED 100%)"
+          borderBottom="1px solid"
+          borderColor="primary.100"
+          py={6}
+        >
+          <HStack spacing={3}>
+            <Box
+              p={2}
+              borderRadius="lg"
+              bgGradient="linear(135deg, primary.500, secondary.500)"
+              color="white"
+            >
+              <TbSparkles size={20} />
+            </Box>
+            <VStack align="start" spacing={0}>
+              <Text fontFamily="heading" fontWeight="bold" fontSize="lg">
+                Interview Prep Q&A
               </Text>
-              <Text fontSize="sm" color={theme.colors.brand[500]}>
-                You can revisit this section whenever you want to update your
-                answers.
+              <Text fontSize="xs" color="text.tertiary" fontWeight="medium">
+                AI-powered profile improvement
+              </Text>
+            </VStack>
+          </HStack>
+        </DrawerHeader>
+
+        <DrawerBody py={6}>
+          <Text fontSize="sm" color="text.secondary" mb={4} lineHeight="relaxed">
+            Answer common interview questions to improve your profile and matching rate.
+            The AI will help refine your answers and provide suggestions.
+          </Text>
+
+          <Alert
+            status="info"
+            borderRadius="xl"
+            mb={6}
+            bg="primary.50"
+            border="1px solid"
+            borderColor="primary.200"
+          >
+            <AlertIcon color="primary.500" />
+            <Box>
+              <AlertTitle fontWeight="bold" fontSize="sm">AI-Powered</AlertTitle>
+              <Text fontSize="xs" color="text.secondary">
+                Don&apos;t worry about grammar or accent — your answers will be auto-refined.
               </Text>
             </Box>
           </Alert>
-          <Divider />
-          <Skeleton isLoaded={!isLoading}>
+
+          <Divider mb={6} />
+
+          <Skeleton isLoaded={!isLoading} borderRadius="xl">
             {!currentQuestion && (
               <Button
                 size="lg"
-                colorScheme="blue"
-                mt={4}
-                mb={4}
                 width="100%"
+                mb={6}
                 onClick={startConversationClick}
                 leftIcon={<FiMessageCircle />}
+                bgGradient="linear(135deg, primary.500, secondary.500)"
+                color="white"
+                borderRadius="xl"
+                _hover={{
+                  bgGradient: "linear(135deg, primary.600, secondary.600)",
+                  transform: "translateY(-1px)",
+                  boxShadow: "button",
+                }}
               >
                 Start conversation
               </Button>
             )}
+
             {currentQuestion && (
-              <>
-                <Text fontSize="md" mt={4} mb={4}>
-                  <strong>Question: </strong>
-                  {currentQuestion.question}
-                </Text>
+              <VStack spacing={4} align="stretch">
+                {/* Question Card */}
+                <Box
+                  p={5}
+                  borderRadius="xl"
+                  bg="surface.card"
+                  border="2px solid"
+                  borderColor="primary.200"
+                  boxShadow="card"
+                >
+                  <Badge
+                    fontSize="xs"
+                    fontWeight="bold"
+                    color="primary.600"
+                    bg="primary.100"
+                    px={2}
+                    py={1}
+                    borderRadius="md"
+                    mb={3}
+                  >
+                    QUESTION
+                  </Badge>
+                  <Text fontSize="md" fontWeight="medium" color="text.primary" lineHeight="relaxed">
+                    {currentQuestion.question}
+                  </Text>
+                </Box>
+
+                {/* Mode Selection */}
                 {!isTyping && !isSpeaking && (
                   <>
-                    <HStack width={"100%"} justifyContent="space-between">
+                    <HStack spacing={3}>
                       <Button
-                        size="md"
-                        colorScheme="blue"
-                        mt={4}
-                        mb={4}
-                        width="100%"
+                        flex={1}
+                        size="lg"
                         onClick={() => setIsTyping(true)}
                         leftIcon={<FiEdit />}
                         variant="outline"
+                        borderRadius="xl"
+                        borderWidth="2px"
+                        _hover={{
+                          bg: "primary.50",
+                          borderColor: "primary.400",
+                        }}
                       >
-                        Type an answer
+                        Type
                       </Button>
                       <Button
-                        size="md"
-                        colorScheme="blue"
-                        mt={4}
-                        mb={4}
-                        width="100%"
+                        flex={1}
+                        size="lg"
                         onClick={() => setIsSpeaking(true)}
                         leftIcon={<FiMic />}
                         variant="outline"
+                        borderRadius="xl"
+                        borderWidth="2px"
+                        _hover={{
+                          bg: "primary.50",
+                          borderColor: "primary.400",
+                        }}
                       >
-                        Talk
+                        Speak
                       </Button>
                     </HStack>
-                    <HStack justifyContent={"center"} width="100%" mb={4}>
-                      <Button
-                        size="xs"
-                        variant="link"
-                        textAlign={"center"}
-                        rightIcon={<FiArrowRight />}
-                        onClick={skipQuestionClick}
-                      >
-                        Skip question
-                      </Button>
-                    </HStack>
-                    <Text
-                      fontSize="sm"
-                      color={theme.colors.brand[500]}
-                      textAlign={"center"}
-                      mb={4}
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      color="text.tertiary"
+                      rightIcon={<FiArrowRight />}
+                      onClick={skipQuestionClick}
+                      alignSelf="center"
                     >
-                      Your answers will be auto-refined by AI. Don&apos;t worry
-                      about your accent or grammar.
-                    </Text>
+                      Skip question
+                    </Button>
                   </>
                 )}
+
+                {/* Typing Mode */}
                 {isTyping && (
-                  <>
+                  <VStack spacing={4}>
                     {answerError && (
-                      <Alert
-                        status="error"
-                        variant="left-accent"
-                        borderRadius="md"
-                        mb={4}
-                      >
+                      <Alert status="error" borderRadius="xl">
                         <AlertIcon />
-                        <Box>
-                          <AlertTitle fontWeight="bold">Error</AlertTitle>
-                          <Text fontSize="md" mb={2}>
-                            {answerError}
-                          </Text>
-                        </Box>
+                        <Text fontSize="sm">{answerError}</Text>
                       </Alert>
                     )}
                     <Textarea
@@ -424,123 +483,132 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
                       size="lg"
                       value={textAnswer}
                       onChange={(e) => setTextAnswer(e.target.value)}
-                      mt={4}
-                      mb={4}
                       resize="none"
-                      minHeight="200px"
-                      maxHeight="300px"
-                      borderColor={theme.colors.brand[500]}
+                      minHeight="150px"
+                      borderRadius="xl"
+                      borderColor="primary.300"
+                      borderWidth="2px"
                       _focus={{
-                        borderColor: theme.colors.brand[500],
-                        boxShadow: `0 0 0 1px ${theme.colors.brand[500]}`,
-                      }}
-                      _placeholder={{
-                        color: theme.colors.gray[500],
-                        fontStyle: "italic",
+                        borderColor: "primary.500",
+                        boxShadow: "0 0 0 3px rgba(139, 92, 246, 0.1)",
                       }}
                     />
                     <Button
-                      size="md"
-                      colorScheme="blue"
-                      mt={4}
                       width="100%"
+                      size="lg"
                       onClick={submitTypedAnswer}
-                      leftIcon={<FiEdit />}
+                      leftIcon={<FiSend />}
+                      bgGradient="linear(135deg, primary.500, secondary.500)"
+                      color="white"
+                      borderRadius="xl"
+                      _hover={{
+                        bgGradient: "linear(135deg, primary.600, secondary.600)",
+                      }}
                     >
                       Submit answer
                     </Button>
                     <Button
                       size="sm"
-                      colorScheme="blue"
-                      mt={4}
-                      mb={4}
-                      width="100%"
+                      variant="ghost"
+                      leftIcon={<FiMic />}
                       onClick={() => {
                         setIsSpeaking(true);
                         setTextAnswer("");
                       }}
-                      leftIcon={<FiMic />}
-                      variant="link"
                     >
                       Switch to voice
                     </Button>
-                  </>
+                  </VStack>
                 )}
+
+                {/* Speaking Mode */}
                 {isSpeaking && (
-                  <>
-                    <HStack
-                      width={"100%"}
-                      justifyContent="center"
-                      mb={4}
-                      mt={4}
-                    >
+                  <VStack spacing={4}>
+                    {audioError && (
+                      <Alert status="error" borderRadius="xl">
+                        <AlertIcon />
+                        <Text fontSize="sm">{audioError}</Text>
+                      </Alert>
+                    )}
+                    <VStack spacing={3} py={4}>
                       <Tooltip
                         hasArrow
-                        placement="auto"
-                        label={
-                          isRecording ? "Stop recording" : "Start recording"
-                        }
+                        label={isRecording ? "Stop recording" : "Start recording"}
                       >
                         <IconButton
                           icon={isRecording ? <FiSquare /> : <FiMic />}
                           variant="outline"
                           size="lg"
                           rounded="full"
-                          width={"100px"}
-                          height={"100px"}
+                          width="100px"
+                          height="100px"
                           fontSize="2xl"
-                          aria-label="Start talking"
+                          aria-label="Recording control"
                           onClick={isRecording ? stopRecording : startRecording}
+                          borderWidth="3px"
+                          borderColor={isRecording ? "red.500" : "primary.500"}
+                          color={isRecording ? "red.500" : "primary.500"}
+                          bg={isRecording ? "red.50" : "primary.50"}
+                          animation={isRecording ? `${recordingPulse} 1.5s infinite` : undefined}
+                          _hover={{
+                            transform: "scale(1.05)",
+                          }}
                         />
                       </Tooltip>
-                    </HStack>
+                      <Text fontSize="sm" color="text.tertiary">
+                        {isRecording ? "Recording... Click to stop" : "Click to start recording"}
+                      </Text>
+                    </VStack>
                     {isRecording && (
                       <Button
-                        size="xs"
-                        color="orange.300"
-                        width="100%"
-                        onClick={cancelRecording}
+                        size="sm"
+                        variant="ghost"
+                        color="red.500"
                         leftIcon={<FiX />}
-                        variant="link"
+                        onClick={cancelRecording}
                       >
                         Cancel recording
                       </Button>
                     )}
                     <Button
-                      size="md"
-                      colorScheme="blue"
-                      mt={4}
                       width="100%"
+                      size="lg"
                       onClick={submitAudioAnswer}
                       leftIcon={<FiSend />}
-                      disabled={
-                        audioError !== null || !audioBlob || isRecording
-                      }
+                      isDisabled={audioError !== null || !audioBlob || isRecording}
+                      bgGradient="linear(135deg, primary.500, secondary.500)"
+                      color="white"
+                      borderRadius="xl"
+                      _hover={{
+                        bgGradient: "linear(135deg, primary.600, secondary.600)",
+                      }}
+                      _disabled={{
+                        opacity: 0.5,
+                        cursor: "not-allowed",
+                      }}
                     >
                       Submit audio
                     </Button>
                     <Button
                       size="sm"
-                      colorScheme="blue"
-                      mt={4}
-                      mb={4}
-                      width="100%"
+                      variant="ghost"
+                      leftIcon={<FiEdit />}
                       onClick={() => {
                         setIsTyping(true);
                         setTextAnswer("");
                       }}
-                      leftIcon={<FiEdit />}
-                      variant="link"
                     >
                       Switch to text
                     </Button>
-                  </>
+                  </VStack>
                 )}
-              </>
+              </VStack>
             )}
           </Skeleton>
-          <Divider />
-          <Skeleton isLoaded={!answersLoading}>
+
+          <Divider my={6} />
+
+          <Skeleton isLoaded={!answersLoading} borderRadius="xl">
             <AnsweredQuestions
               answeredQuestions={answeredQuestions}
               changeCurrentQuestion={changeCurrentQuestion}
