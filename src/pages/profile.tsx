@@ -166,7 +166,11 @@ const ProfilePage = () => {
   };
 
   const handleSaveSocialLinks = async (socialLinks: SocialLinks) => {
-    await handleUpdateResume({ socialLinks });
+    const response = await updateUserProfile(undefined, undefined, undefined, socialLinks);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    await fetchUserProfile();
   };
 
   // Array item handlers (experience, projects, etc.)

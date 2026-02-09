@@ -733,7 +733,14 @@ export const useApi = () => {
       interests: string[];
     }>,
     name?: string,
-    phone?: string
+    phone?: string,
+    socialLinks?: {
+      linkedin?: string;
+      github?: string;
+      portfolio?: string;
+      twitter?: string;
+      website?: string;
+    }
   ) => {
     try {
       const body: any = {};
@@ -745,6 +752,9 @@ export const useApi = () => {
       }
       if (phone !== undefined) {
         body.phone = phone;
+      }
+      if (socialLinks !== undefined) {
+        body.socialLinks = socialLinks;
       }
 
       const response = await fetch(
