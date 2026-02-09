@@ -79,6 +79,17 @@ const styles = StyleSheet.create({
     textDecoration: "underline",
     marginBottom: 3,
   },
+  inlineLink: {
+    fontSize: 10,
+    color: "#666666",
+    textDecoration: "none",
+  },
+  itemRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "baseline",
+    marginBottom: 6,
+  },
   // Experience/Education item styles
   itemTitle: {
     fontSize: 12,
@@ -93,6 +104,15 @@ const styles = StyleSheet.create({
     color: "#000000",
   },
 });
+
+// Extract hostname from URL, fallback to original if invalid
+const getHostname = (url: string): string => {
+  try {
+    return new URL(url).hostname.replace("www.", "");
+  } catch {
+    return url;
+  }
+};
 
 interface CVDocumentProps {
   user: User;
@@ -167,12 +187,17 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ user }) => {
               const expLink = typeof exp === "string" ? undefined : exp.link;
               return (
                 <View key={index} style={{ marginBottom: 10 }}>
-                  <Text style={styles.itemText}>{expText}</Text>
-                  {expLink && (
-                    <Link src={expLink} style={styles.link}>
-                      {expLink}
-                    </Link>
-                  )}
+                  <View style={styles.itemRow}>
+                    <Text style={styles.itemText}>{expText}</Text>
+                    {expLink && (
+                      <>
+                        <Text style={styles.inlineLink}> | </Text>
+                        <Link src={expLink} style={styles.inlineLink}>
+                          {getHostname(expLink)}
+                        </Link>
+                      </>
+                    )}
+                  </View>
                 </View>
               );
             })}
@@ -222,12 +247,17 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ user }) => {
               const projectLink = typeof project === "string" ? undefined : project.link;
               return (
                 <View key={index} style={{ marginBottom: 10 }}>
-                  <Text style={styles.itemText}>{projectText}</Text>
-                  {projectLink && (
-                    <Link src={projectLink} style={styles.link}>
-                      {projectLink}
-                    </Link>
-                  )}
+                  <View style={styles.itemRow}>
+                    <Text style={styles.itemText}>{projectText}</Text>
+                    {projectLink && (
+                      <>
+                        <Text style={styles.inlineLink}> | </Text>
+                        <Link src={projectLink} style={styles.inlineLink}>
+                          {getHostname(projectLink)}
+                        </Link>
+                      </>
+                    )}
+                  </View>
                 </View>
               );
             })}
