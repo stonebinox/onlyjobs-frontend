@@ -11,6 +11,8 @@ import {
   FormControl,
   FormLabel,
   Textarea,
+  Input,
+  VStack,
   useToast,
 } from "@chakra-ui/react";
 
@@ -18,24 +20,30 @@ interface EditArrayItemModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentValue: string;
+  currentLink?: string;
   fieldLabel: string;
-  onSave: (value: string) => Promise<void>;
+  supportsLink?: boolean;
+  onSave: (value: string, link?: string) => Promise<void>;
 }
 
 const EditArrayItemModal: React.FC<EditArrayItemModalProps> = ({
   isOpen,
   onClose,
   currentValue,
+  currentLink,
   fieldLabel,
+  supportsLink = false,
   onSave,
 }) => {
   const [value, setValue] = useState(currentValue);
+  const [link, setLink] = useState(currentLink || "");
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
     setValue(currentValue);
-  }, [currentValue, isOpen]);
+    setLink(currentLink || "");
+  }, [currentValue, currentLink, isOpen]);
 
   const handleSave = async () => {
     if (!value.trim()) {
@@ -51,7 +59,7 @@ const EditArrayItemModal: React.FC<EditArrayItemModalProps> = ({
 
     try {
       setIsLoading(true);
-      await onSave(value.trim());
+      await onSave(value.trim(), link.trim() || undefined);
       toast({
         title: "Item updated",
         description: `Your ${fieldLabel.toLowerCase()} has been updated successfully`,
@@ -80,16 +88,29 @@ const EditArrayItemModal: React.FC<EditArrayItemModalProps> = ({
         <ModalHeader>Edit {fieldLabel}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <FormControl>
-            <FormLabel>{fieldLabel}</FormLabel>
-            <Textarea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder={`Enter ${fieldLabel.toLowerCase()}...`}
-              rows={4}
-              resize="vertical"
-            />
-          </FormControl>
+          <VStack spacing={4}>
+            <FormControl>
+              <FormLabel>{fieldLabel}</FormLabel>
+              <Textarea
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder={`Enter ${fieldLabel.toLowerCase()}...`}
+                rows={4}
+                resize="vertical"
+              />
+            </FormControl>
+            {supportsLink && (
+              <FormControl>
+                <FormLabel>Link (optional)</FormLabel>
+                <Input
+                  value={link}
+                  onChange={(e) => setLink(e.target.value)}
+                  placeholder="https://example.com"
+                  type="url"
+                />
+              </FormControl>
+            )}
+          </VStack>
         </ModalBody>
         <ModalFooter>
           <Button variant="outline" mr={3} onClick={onClose}>

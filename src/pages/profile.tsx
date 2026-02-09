@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import {
   Box,
   Heading,
@@ -23,6 +24,7 @@ import {
   ModalFooter,
   ModalCloseButton,
   useToast,
+  Link,
 } from "@chakra-ui/react";
 import {
   FaMapMarkerAlt,
@@ -37,12 +39,27 @@ import {
   FaGlobe,
   FaBriefcase,
   FaPhone,
+  FaDownload,
+  FaExternalLinkAlt,
 } from "react-icons/fa";
 import styled from "styled-components";
+import { CVDocument } from "../components/Profile/CVDocument";
+
+// PDFDownloadLink must be loaded client-side only (not SSR)
+const PDFDownloadLink = dynamic(
+  () => import("@react-pdf/renderer").then((mod) => mod.PDFDownloadLink),
+  { ssr: false }
+);
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
 import { useApi } from "@/hooks/useApi";
 import { User, SocialLinks } from "@/types/User";
+import {
+  ExperienceItem,
+  ProjectItem,
+  normalizeExperienceItem,
+  normalizeProjectItem,
+} from "@/types/Resume";
 import EditSummaryModal from "../components/Profile/EditSummaryModal";
 import EditArrayItemModal from "../components/Profile/EditArrayItemModal";
 import AddArrayItemModal from "../components/Profile/AddArrayItemModal";
@@ -186,18 +203,22 @@ const ProfilePage = () => {
     addArrayItemModal.onOpen();
   };
 
-  const handleSaveArrayItem = async (value: string) => {
+  const handleSaveArrayItem = async (value: string, link?: string) => {
     if (!editingField || !user) return;
 
     const currentArray = user.resume?.[editingField] || [];
+    // For experience and projects, support optional links
+    const supportsLinks = editingField === "experience" || editingField === "projects";
+    const newValue = supportsLinks && link ? { text: value, link } : value;
+
     if (editingIndex >= 0) {
       // Edit existing item
       const updatedArray = [...currentArray];
-      updatedArray[editingIndex] = value;
+      updatedArray[editingIndex] = newValue;
       await handleUpdateResume({ [editingField]: updatedArray });
     } else {
       // Add new item
-      await handleUpdateResume({ [editingField]: [...currentArray, value] });
+      await handleUpdateResume({ [editingField]: [...currentArray, newValue] });
     }
   };
 
@@ -220,7 +241,22 @@ const ProfilePage = () => {
 
   const getCurrentArrayItemValue = (): string => {
     if (!editingField || editingIndex < 0 || !user) return "";
-    return user.resume?.[editingField]?.[editingIndex] || "";
+    const item = user.resume?.[editingField]?.[editingIndex];
+    if (!item) return "";
+    // Handle both string and object formats
+    if (typeof item === "string") return item;
+    return item.text || "";
+  };
+
+  const getCurrentArrayItemLink = (): string | undefined => {
+    if (!editingField || editingIndex < 0 || !user) return undefined;
+    const item = user.resume?.[editingField]?.[editingIndex];
+    if (!item || typeof item === "string") return undefined;
+    return item.link;
+  };
+
+  const fieldSupportsLinks = (field: ArrayFieldType | null): boolean => {
+    return field === "experience" || field === "projects";
   };
 
   const getFieldLabel = (field: ArrayFieldType): string => {
@@ -238,7 +274,7 @@ const ProfilePage = () => {
 
   const renderArrayField = (
     field: ArrayFieldType,
-    items: string[],
+    items: (string | { text: string; link?: string })[],
     label: string
   ) => {
     return (
@@ -262,36 +298,56 @@ const ProfilePage = () => {
                 No {label.toLowerCase()} added yet
               </Text>
             ) : (
-              items.map((item, i) => (
-                <Box key={i}>
-                  <HStack justify="space-between" my={1}>
-                    <Text fontSize="sm" color={textColor}>
-                      {item}
-                    </Text>
-                    <HStack gap={4}>
-                      <Icon
-                        as={FaEdit}
-                        color="blue.500"
-                        boxSize={4}
-                        cursor="pointer"
-                        onClick={() => handleEditArrayItem(field, i)}
-                        _hover={{ color: "blue.600" }}
-                        title="Edit"
-                      />
-                      <Icon
-                        as={FaTrash}
-                        color="blue.500"
-                        boxSize={4}
-                        cursor="pointer"
-                        onClick={() => handleDeleteArrayItem(field, i)}
-                        _hover={{ color: "red.600" }}
-                        title="Delete"
-                      />
+              items.map((item, i) => {
+                const itemText = typeof item === "string" ? item : item.text;
+                const itemLink = typeof item === "string" ? undefined : item.link;
+                return (
+                  <Box key={i}>
+                    <HStack justify="space-between" my={1}>
+                      <VStack align="flex-start" spacing={1} flex={1}>
+                        <Text fontSize="sm" color={textColor}>
+                          {itemText}
+                        </Text>
+                        {itemLink && (
+                          <Link
+                            href={itemLink}
+                            isExternal
+                            color="blue.500"
+                            fontSize="xs"
+                            display="flex"
+                            alignItems="center"
+                            gap={1}
+                          >
+                            <Icon as={FaExternalLinkAlt} boxSize={3} />
+                            {itemLink}
+                          </Link>
+                        )}
+                      </VStack>
+                      <HStack gap={4}>
+                        <Icon
+                          as={FaEdit}
+                          color="blue.500"
+                          boxSize={4}
+                          cursor="pointer"
+                          onClick={() => handleEditArrayItem(field, i)}
+                          _hover={{ color: "blue.600" }}
+                          title="Edit"
+                        />
+                        <Icon
+                          as={FaTrash}
+                          color="blue.500"
+                          boxSize={4}
+                          cursor="pointer"
+                          onClick={() => handleDeleteArrayItem(field, i)}
+                          _hover={{ color: "red.600" }}
+                          title="Delete"
+                        />
+                      </HStack>
                     </HStack>
-                  </HStack>
-                  {i < items.length - 1 && <Divider my={3} />}
-                </Box>
-              ))
+                    {i < items.length - 1 && <Divider my={3} />}
+                  </Box>
+                );
+              })
             )}
           </VStack>
         </CardBody>
@@ -344,13 +400,33 @@ const ProfilePage = () => {
                     </HStack>
                   </VStack>
                 </HStack>
-                <Button
-                  leftIcon={<FaEdit />}
-                  size="sm"
-                  onClick={handleEditPersonalInfo}
-                >
-                  Edit
-                </Button>
+                <HStack spacing={2}>
+                  {user && (
+                    <PDFDownloadLink
+                      document={<CVDocument user={user} />}
+                      fileName={`${user.name || "resume"}-cv.pdf`}
+                    >
+                      {({ loading }) => (
+                        <Button
+                          leftIcon={<FaDownload />}
+                          size="sm"
+                          variant="outline"
+                          isLoading={loading}
+                          loadingText="Generating..."
+                        >
+                          Download CV
+                        </Button>
+                      )}
+                    </PDFDownloadLink>
+                  )}
+                  <Button
+                    leftIcon={<FaEdit />}
+                    size="sm"
+                    onClick={handleEditPersonalInfo}
+                  >
+                    Edit
+                  </Button>
+                </HStack>
               </HStack>
             </CardBody>
           </Card>
@@ -738,7 +814,9 @@ const ProfilePage = () => {
           setEditingIndex(-1);
         }}
         currentValue={getCurrentArrayItemValue()}
+        currentLink={getCurrentArrayItemLink()}
         fieldLabel={editingField ? getFieldLabel(editingField) : ""}
+        supportsLink={fieldSupportsLinks(editingField)}
         onSave={handleSaveArrayItem}
       />
 
@@ -750,6 +828,7 @@ const ProfilePage = () => {
           setEditingIndex(-1);
         }}
         fieldLabel={editingField ? getFieldLabel(editingField) : ""}
+        supportsLink={fieldSupportsLinks(editingField)}
         onSave={handleSaveArrayItem}
       />
 
