@@ -28,11 +28,10 @@ export const SortableItem: React.FC<SortableItemProps> = ({ id, children }) => {
 
   return (
     <Box ref={setNodeRef} style={style}>
-      <HStack spacing={2} align="flex-start">
+      <HStack spacing={2} align="center">
         <DragHandle
           listeners={listeners}
           attributes={attributes}
-          mt={1}
           boxSize={4}
         />
         <Box flex={1}>{children}</Box>

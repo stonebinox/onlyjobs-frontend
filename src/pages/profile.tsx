@@ -291,6 +291,12 @@ const ProfilePage = () => {
 
     try {
       await handleUpdateResume({ [field]: reorderedArray });
+      toast({
+        title: "Order updated",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
     } catch (error) {
       // Revert on failure
       await fetchUserProfile();
