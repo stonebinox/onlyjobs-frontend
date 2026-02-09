@@ -719,25 +719,40 @@ export const useApi = () => {
     }
   };
 
-  const updateUserProfile = async (resume: Partial<{
-    summary: string;
-    skills: string[];
-    experience: string[];
-    education: string[];
-    projects: string[];
-    certifications: string[];
-    languages: string[];
-    achievements: string[];
-    volunteerExperience: string[];
-    interests: string[];
-  }>) => {
+  const updateUserProfile = async (
+    resume?: Partial<{
+      summary: string;
+      skills: string[];
+      experience: string[];
+      education: string[];
+      projects: string[];
+      certifications: string[];
+      languages: string[];
+      achievements: string[];
+      volunteerExperience: string[];
+      interests: string[];
+    }>,
+    name?: string,
+    phone?: string
+  ) => {
     try {
+      const body: any = {};
+      if (resume) {
+        body.resume = resume;
+      }
+      if (name !== undefined) {
+        body.name = name;
+      }
+      if (phone !== undefined) {
+        body.phone = phone;
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/profile`,
         {
           method: "PUT",
           headers: getHeaders(),
-          body: JSON.stringify({ resume }),
+          body: JSON.stringify(body),
         }
       );
 

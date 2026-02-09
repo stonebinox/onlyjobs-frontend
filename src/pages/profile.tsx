@@ -31,17 +31,25 @@ import {
   FaTrash,
   FaDollarSign,
   FaPlus,
+  FaLinkedin,
+  FaGithub,
+  FaTwitter,
+  FaGlobe,
+  FaBriefcase,
+  FaPhone,
 } from "react-icons/fa";
 import styled from "styled-components";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
 import { useApi } from "@/hooks/useApi";
-import { User } from "@/types/User";
+import { User, SocialLinks } from "@/types/User";
 import EditSummaryModal from "../components/Profile/EditSummaryModal";
 import EditArrayItemModal from "../components/Profile/EditArrayItemModal";
 import AddArrayItemModal from "../components/Profile/AddArrayItemModal";
 import EditSkillsModal from "../components/Profile/EditSkillsModal";
 import EditLanguagesModal from "../components/Profile/EditLanguagesModal";
+import EditSocialLinksModal from "../components/Profile/EditSocialLinksModal";
+import EditPersonalInfoModal from "../components/Profile/EditPersonalInfoModal";
 import { parseSkill } from "@/utils/skillUtils";
 import Guide from "@/components/Guide/Guide";
 import { profileGuideConfig } from "@/config/guides/profileGuide";
@@ -73,6 +81,8 @@ const ProfilePage = () => {
   const summaryModal = useDisclosure();
   const skillsModal = useDisclosure();
   const languagesModal = useDisclosure();
+  const socialLinksModal = useDisclosure();
+  const personalInfoModal = useDisclosure();
   const editArrayItemModal = useDisclosure();
   const addArrayItemModal = useDisclosure();
   const deleteConfirmModal = useDisclosure();
@@ -135,6 +145,28 @@ const ProfilePage = () => {
 
   const handleSaveLanguages = async (languages: string[]) => {
     await handleUpdateResume({ languages });
+  };
+
+  // Personal info handlers
+  const handleEditPersonalInfo = () => {
+    personalInfoModal.onOpen();
+  };
+
+  const handleSavePersonalInfo = async (name: string, phone: string) => {
+    const response = await updateUserProfile(undefined, name, phone);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    await fetchUserProfile();
+  };
+
+  // Social links handlers
+  const handleEditSocialLinks = () => {
+    socialLinksModal.onOpen();
+  };
+
+  const handleSaveSocialLinks = async (socialLinks: SocialLinks) => {
+    await handleUpdateResume({ socialLinks });
   };
 
   // Array item handlers (experience, projects, etc.)
@@ -278,31 +310,154 @@ const ProfilePage = () => {
         <VStack spacing={6} align="stretch">
           <Card bg={cardBg} shadow="md">
             <CardBody>
-              <HStack spacing={6} align="center">
-                <Avatar size="xl" name={user?.name || "User"} />
-                <VStack align="flex-start" spacing={2}>
-                  <Heading as="h1" size="lg">
-                    {user?.name || "User"}
-                  </Heading>
-                  <HStack>
-                    <Icon as={FaEnvelope} color={textColor} />
-                    <Text color={textColor}>{user?.email || "-"}</Text>
-                  </HStack>
-                  <HStack>
-                    <Icon as={FaMapMarkerAlt} color={textColor} />
-                    <Text color={textColor}>
-                      {user?.preferences?.location.join(", ") || "-"} (
-                      {user?.preferences?.remoteOnly ? "Remote" : "On-site"})
-                    </Text>
-                  </HStack>
-                  <HStack>
-                    <Icon as={FaDollarSign} color={textColor} />
-                    <Text color={textColor}>
-                      {user?.preferences?.minSalary || "-"}
-                    </Text>
-                  </HStack>
-                </VStack>
+              <HStack justify="space-between" align="flex-start">
+                <HStack spacing={6} align="center">
+                  <Avatar size="xl" name={user?.name || "User"} />
+                  <VStack align="flex-start" spacing={2}>
+                    <Heading as="h1" size="lg">
+                      {user?.name || "User"}
+                    </Heading>
+                    <HStack>
+                      <Icon as={FaEnvelope} color={textColor} />
+                      <Text color={textColor}>{user?.email || "-"}</Text>
+                    </HStack>
+                    <HStack>
+                      <Icon as={FaPhone} color={textColor} />
+                      <Text color={textColor}>{user?.phone || "-"}</Text>
+                    </HStack>
+                    <HStack>
+                      <Icon as={FaMapMarkerAlt} color={textColor} />
+                      <Text color={textColor}>
+                        {user?.preferences?.location.join(", ") || "-"} (
+                        {user?.preferences?.remoteOnly ? "Remote" : "On-site"})
+                      </Text>
+                    </HStack>
+                    <HStack>
+                      <Icon as={FaDollarSign} color={textColor} />
+                      <Text color={textColor}>
+                        {user?.preferences?.minSalary || "-"}
+                      </Text>
+                    </HStack>
+                  </VStack>
+                </HStack>
+                <Button
+                  leftIcon={<FaEdit />}
+                  size="sm"
+                  onClick={handleEditPersonalInfo}
+                >
+                  Edit
+                </Button>
               </HStack>
+            </CardBody>
+          </Card>
+
+          {/* Social Links Card */}
+          <Card bg={cardBg} shadow="md">
+            <CardBody>
+              <HStack justify="space-between" mb={4}>
+                <Heading as="h2" size="md">
+                  Social Links
+                </Heading>
+                <Button
+                  leftIcon={<FaEdit />}
+                  size="sm"
+                  onClick={handleEditSocialLinks}
+                >
+                  Edit
+                </Button>
+              </HStack>
+              <VStack spacing={3} align="stretch">
+                {user?.socialLinks?.linkedin && (
+                  <HStack>
+                    <Icon as={FaLinkedin} color="blue.600" boxSize={5} />
+                    <Text
+                      as="a"
+                      href={user.socialLinks.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      color="blue.500"
+                      _hover={{ textDecoration: "underline" }}
+                      fontSize="sm"
+                    >
+                      {user.socialLinks.linkedin}
+                    </Text>
+                  </HStack>
+                )}
+                {user?.socialLinks?.github && (
+                  <HStack>
+                    <Icon as={FaGithub} color={textColor} boxSize={5} />
+                    <Text
+                      as="a"
+                      href={user.socialLinks.github}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      color="blue.500"
+                      _hover={{ textDecoration: "underline" }}
+                      fontSize="sm"
+                    >
+                      {user.socialLinks.github}
+                    </Text>
+                  </HStack>
+                )}
+                {user?.socialLinks?.portfolio && (
+                  <HStack>
+                    <Icon as={FaBriefcase} color={textColor} boxSize={5} />
+                    <Text
+                      as="a"
+                      href={user.socialLinks.portfolio}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      color="blue.500"
+                      _hover={{ textDecoration: "underline" }}
+                      fontSize="sm"
+                    >
+                      {user.socialLinks.portfolio}
+                    </Text>
+                  </HStack>
+                )}
+                {user?.socialLinks?.twitter && (
+                  <HStack>
+                    <Icon as={FaTwitter} color="blue.400" boxSize={5} />
+                    <Text
+                      as="a"
+                      href={user.socialLinks.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      color="blue.500"
+                      _hover={{ textDecoration: "underline" }}
+                      fontSize="sm"
+                    >
+                      {user.socialLinks.twitter}
+                    </Text>
+                  </HStack>
+                )}
+                {user?.socialLinks?.website && (
+                  <HStack>
+                    <Icon as={FaGlobe} color={textColor} boxSize={5} />
+                    <Text
+                      as="a"
+                      href={user.socialLinks.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      color="blue.500"
+                      _hover={{ textDecoration: "underline" }}
+                      fontSize="sm"
+                    >
+                      {user.socialLinks.website}
+                    </Text>
+                  </HStack>
+                )}
+                {(!user?.socialLinks ||
+                  (!user.socialLinks.linkedin &&
+                    !user.socialLinks.github &&
+                    !user.socialLinks.portfolio &&
+                    !user.socialLinks.twitter &&
+                    !user.socialLinks.website)) && (
+                  <Text color={textColor} fontStyle="italic">
+                    No social links added yet
+                  </Text>
+                )}
+              </VStack>
             </CardBody>
           </Card>
 
@@ -554,6 +709,21 @@ const ProfilePage = () => {
         onClose={languagesModal.onClose}
         currentLanguages={user?.resume?.languages || []}
         onSave={handleSaveLanguages}
+      />
+
+      <EditPersonalInfoModal
+        isOpen={personalInfoModal.isOpen}
+        onClose={personalInfoModal.onClose}
+        currentName={user?.name || ""}
+        currentPhone={user?.phone || ""}
+        onSave={handleSavePersonalInfo}
+      />
+
+      <EditSocialLinksModal
+        isOpen={socialLinksModal.isOpen}
+        onClose={socialLinksModal.onClose}
+        currentSocialLinks={user?.socialLinks || {}}
+        onSave={handleSaveSocialLinks}
       />
 
       <EditArrayItemModal
