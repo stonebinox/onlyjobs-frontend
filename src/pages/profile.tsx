@@ -70,6 +70,23 @@ import EditPersonalInfoModal from "../components/Profile/EditPersonalInfoModal";
 import { parseSkill } from "@/utils/skillUtils";
 import Guide from "@/components/Guide/Guide";
 import { profileGuideConfig } from "@/config/guides/profileGuide";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { SortableItem, SortableBadge } from "@/components/DragDrop";
+import { arrayMove } from "@/utils/arrayUtils";
 
 const StyledSkeleton = styled(Skeleton)`
   width: 100%;
@@ -84,7 +101,9 @@ type ArrayFieldType =
   | "achievements"
   | "certifications"
   | "volunteerExperience"
-  | "interests";
+  | "interests"
+  | "skills"
+  | "languages";
 
 const ProfilePage = () => {
   const { getUserProfile, updateUserProfile } = useApi();
@@ -111,6 +130,18 @@ const ProfilePage = () => {
     null
   );
   const [deletingIndex, setDeletingIndex] = useState<number>(-1);
+
+  // DnD sensors configuration
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     fetchUserProfile();
@@ -239,6 +270,55 @@ const ProfilePage = () => {
     setDeletingIndex(-1);
   };
 
+  // Reorder handler for array fields
+  const handleReorderArrayField = async (
+    field: ArrayFieldType,
+    oldIndex: number,
+    newIndex: number
+  ) => {
+    if (!user || oldIndex === newIndex) return;
+
+    const currentArray = user.resume?.[field] || [];
+    const reorderedArray = arrayMove(currentArray, oldIndex, newIndex);
+
+    // Optimistic update
+    setUser({
+      ...user,
+      resume: user.resume
+        ? { ...user.resume, [field]: reorderedArray }
+        : null,
+    });
+
+    try {
+      await handleUpdateResume({ [field]: reorderedArray });
+    } catch (error) {
+      // Revert on failure
+      await fetchUserProfile();
+      toast({
+        title: "Reorder failed",
+        description: "Failed to save the new order. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
+
+  // Generic drag end handler factory for array fields
+  const createDragEndHandler = (field: ArrayFieldType, items: any[]) => {
+    return (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const oldIndex = items.findIndex((_, i) => `${field}-${i}` === active.id);
+      const newIndex = items.findIndex((_, i) => `${field}-${i}` === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        handleReorderArrayField(field, oldIndex, newIndex);
+      }
+    };
+  };
+
   const getCurrentArrayItemValue = (): string => {
     if (!editingField || editingIndex < 0 || !user) return "";
     const item = user.resume?.[editingField]?.[editingIndex];
@@ -268,6 +348,8 @@ const ProfilePage = () => {
       certifications: "Certification",
       volunteerExperience: "Volunteer Experience",
       interests: "Interest",
+      skills: "Skill",
+      languages: "Language",
     };
     return labels[field];
   };
@@ -277,6 +359,8 @@ const ProfilePage = () => {
     items: (string | { text: string; link?: string })[],
     label: string
   ) => {
+    const itemIds = items.map((_, i) => `${field}-${i}`);
+
     return (
       <Card bg={cardBg} shadow="md">
         <CardBody>
@@ -292,64 +376,74 @@ const ProfilePage = () => {
               Add
             </Button>
           </HStack>
-          <VStack spacing={4} align="stretch">
-            {items.length === 0 ? (
-              <Text color={textColor} fontStyle="italic">
-                No {label.toLowerCase()} added yet
-              </Text>
-            ) : (
-              items.map((item, i) => {
-                const itemText = typeof item === "string" ? item : item.text;
-                const itemLink = typeof item === "string" ? undefined : item.link;
-                return (
-                  <Box key={i}>
-                    <HStack justify="space-between" my={1}>
-                      <VStack align="flex-start" spacing={1} flex={1}>
-                        <Text fontSize="sm" color={textColor}>
-                          {itemText}
-                        </Text>
-                        {itemLink && (
-                          <Link
-                            href={itemLink}
-                            isExternal
-                            color="blue.500"
-                            fontSize="xs"
-                            display="flex"
-                            alignItems="center"
-                            gap={1}
-                          >
-                            <Icon as={FaExternalLinkAlt} boxSize={3} />
-                            {itemLink}
-                          </Link>
-                        )}
-                      </VStack>
-                      <HStack gap={4}>
-                        <Icon
-                          as={FaEdit}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleEditArrayItem(field, i)}
-                          _hover={{ color: "blue.600" }}
-                          title="Edit"
-                        />
-                        <Icon
-                          as={FaTrash}
-                          color="blue.500"
-                          boxSize={4}
-                          cursor="pointer"
-                          onClick={() => handleDeleteArrayItem(field, i)}
-                          _hover={{ color: "red.600" }}
-                          title="Delete"
-                        />
-                      </HStack>
-                    </HStack>
-                    {i < items.length - 1 && <Divider my={3} />}
-                  </Box>
-                );
-              })
-            )}
-          </VStack>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={createDragEndHandler(field, items)}
+          >
+            <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+              <VStack spacing={4} align="stretch">
+                {items.length === 0 ? (
+                  <Text color={textColor} fontStyle="italic">
+                    No {label.toLowerCase()} added yet
+                  </Text>
+                ) : (
+                  items.map((item, i) => {
+                    const itemText = typeof item === "string" ? item : item.text;
+                    const itemLink = typeof item === "string" ? undefined : item.link;
+                    return (
+                      <SortableItem key={`${field}-${i}`} id={`${field}-${i}`}>
+                        <Box>
+                          <HStack justify="space-between" my={1}>
+                            <VStack align="flex-start" spacing={1} flex={1}>
+                              <Text fontSize="sm" color={textColor}>
+                                {itemText}
+                              </Text>
+                              {itemLink && (
+                                <Link
+                                  href={itemLink}
+                                  isExternal
+                                  color="blue.500"
+                                  fontSize="xs"
+                                  display="flex"
+                                  alignItems="center"
+                                  gap={1}
+                                >
+                                  <Icon as={FaExternalLinkAlt} boxSize={3} />
+                                  {itemLink}
+                                </Link>
+                              )}
+                            </VStack>
+                            <HStack gap={4}>
+                              <Icon
+                                as={FaEdit}
+                                color="blue.500"
+                                boxSize={4}
+                                cursor="pointer"
+                                onClick={() => handleEditArrayItem(field, i)}
+                                _hover={{ color: "blue.600" }}
+                                title="Edit"
+                              />
+                              <Icon
+                                as={FaTrash}
+                                color="blue.500"
+                                boxSize={4}
+                                cursor="pointer"
+                                onClick={() => handleDeleteArrayItem(field, i)}
+                                _hover={{ color: "red.600" }}
+                                title="Delete"
+                              />
+                            </HStack>
+                          </HStack>
+                          {i < items.length - 1 && <Divider my={3} />}
+                        </Box>
+                      </SortableItem>
+                    );
+                  })
+                )}
+              </VStack>
+            </SortableContext>
+          </DndContext>
         </CardBody>
       </Card>
     );
@@ -586,28 +680,41 @@ const ProfilePage = () => {
               </HStack>
               <Box>
                 {user?.resume?.skills && user.resume.skills.length > 0 ? (
-                  user.resume.skills.map((skill, index) => {
-                    const parsed = parseSkill(skill);
-                    return (
-                      <Badge
-                        key={index}
-                        mr={2}
-                        mb={2}
-                        colorScheme="blue"
-                        variant="solid"
-                        borderRadius="full"
-                        px={3}
-                        py={1}
-                      >
-                        {parsed.name}
-                        {parsed.rating !== null && (
-                          <Text as="span" opacity={0.8} fontSize="xs" ml={1}>
-                            ({parsed.rating}/10)
-                          </Text>
-                        )}
-                      </Badge>
-                    );
-                  })
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event: DragEndEvent) => {
+                      const { active, over } = event;
+                      if (!over || active.id === over.id || !user) return;
+
+                      const skills = user.resume?.skills || [];
+                      const oldIndex = skills.findIndex((_, i) => `skill-${i}` === active.id);
+                      const newIndex = skills.findIndex((_, i) => `skill-${i}` === over.id);
+
+                      if (oldIndex !== -1 && newIndex !== -1) {
+                        handleReorderArrayField("skills" as ArrayFieldType, oldIndex, newIndex);
+                      }
+                    }}
+                  >
+                    <SortableContext
+                      items={user.resume.skills.map((_, i) => `skill-${i}`)}
+                      strategy={rectSortingStrategy}
+                    >
+                      {user.resume.skills.map((skill, index) => {
+                        const parsed = parseSkill(skill);
+                        return (
+                          <SortableBadge key={`skill-${index}`} id={`skill-${index}`} colorScheme="blue">
+                            {parsed.name}
+                            {parsed.rating !== null && (
+                              <Text as="span" opacity={0.8} fontSize="xs" ml={1}>
+                                ({parsed.rating}/10)
+                              </Text>
+                            )}
+                          </SortableBadge>
+                        );
+                      })}
+                    </SortableContext>
+                  </DndContext>
                 ) : (
                   <Text color={textColor} fontStyle="italic">
                     No skills added yet
@@ -687,20 +794,33 @@ const ProfilePage = () => {
               </HStack>
               <Box>
                 {user?.resume?.languages && user.resume.languages.length > 0 ? (
-                  user.resume.languages.map((language, index) => (
-                    <Badge
-                      key={index}
-                      mr={2}
-                      mb={2}
-                      colorScheme="blue"
-                      variant="solid"
-                      borderRadius="full"
-                      px={3}
-                      py={1}
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event: DragEndEvent) => {
+                      const { active, over } = event;
+                      if (!over || active.id === over.id || !user) return;
+
+                      const languages = user.resume?.languages || [];
+                      const oldIndex = languages.findIndex((_, i) => `language-${i}` === active.id);
+                      const newIndex = languages.findIndex((_, i) => `language-${i}` === over.id);
+
+                      if (oldIndex !== -1 && newIndex !== -1) {
+                        handleReorderArrayField("languages" as ArrayFieldType, oldIndex, newIndex);
+                      }
+                    }}
+                  >
+                    <SortableContext
+                      items={user.resume.languages.map((_, i) => `language-${i}`)}
+                      strategy={rectSortingStrategy}
                     >
-                      {language}
-                    </Badge>
-                  ))
+                      {user.resume.languages.map((language, index) => (
+                        <SortableBadge key={`language-${index}`} id={`language-${index}`} colorScheme="blue">
+                          {language}
+                        </SortableBadge>
+                      ))}
+                    </SortableContext>
+                  </DndContext>
                 ) : (
                   <Text color={textColor} fontStyle="italic">
                     No languages added yet
