@@ -40,11 +40,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <Box
         ml={{ base: 0, md: 60 }}
         p="4"
-        pb={{ base: 52, md: 44 }}
+        pb={{ base: 12, md: 10 }}
       >
         {children}
       </Box>
-      <Footer />
+      <Footer minimal />
     </Box>
   );
 };

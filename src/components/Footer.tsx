@@ -21,10 +21,58 @@ const ContactLink = styled(Link)`
   }
 `;
 
-export const Footer = () => {
+const MinimalLink = styled(Link)`
+  color: ${theme.colors.semantic.primary};
+  font-size: 0.65rem;
+  @media (min-width: 48em) {
+    font-size: 0.75rem;
+  }
+`;
+
+interface FooterProps {
+  minimal?: boolean;
+}
+
+export const Footer = ({ minimal = false }: FooterProps) => {
+  const bgColor = useColorModeValue("gray.700", "gray.900");
+
+  if (minimal) {
+    return (
+      <Box
+        bg={bgColor}
+        py={2}
+        position={"fixed"}
+        width={"100%"}
+        bottom={"0px"}
+        left={"0px"}
+        zIndex={10}
+      >
+        <Container maxW="container.xl" px={{ base: 2, md: 4 }}>
+          <HStack
+            justify="space-between"
+            align="center"
+            flexWrap="wrap"
+            spacing={2}
+          >
+            <Text color="gray.400" fontSize="xs">
+              © {new Date().getFullYear()} OnlyJobs
+            </Text>
+            <HStack spacing={{ base: 2, md: 3 }} flexWrap="wrap">
+              <MinimalLink href="/privacy-policy">Privacy</MinimalLink>
+              <MinimalLink href="/terms-conditions">Terms</MinimalLink>
+              <MinimalLink href="mailto:contact@auroradesignshq.com">
+                Contact
+              </MinimalLink>
+            </HStack>
+          </HStack>
+        </Container>
+      </Box>
+    );
+  }
+
   return (
     <Box
-      bg={useColorModeValue("gray.700", "gray.900")}
+      bg={bgColor}
       py={{ base: 6, md: 10 }}
       position={"fixed"}
       width={"100%"}
