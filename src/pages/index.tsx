@@ -21,6 +21,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 
 const float = keyframes`
   0%, 100% { transform: translateY(0px); }
@@ -69,7 +70,13 @@ export default function Home() {
   }, [auth?.isLoggedIn, router]);
 
   return (
-    <Box minH="100vh" bg="surface.bg">
+    <>
+      <SEO
+        title="OnlyJobs - AI-Powered Job Matching"
+        description="Stop applying everywhere, start applying smarter. OnlyJobs uses AI to match you with jobs based on your actual experience and preferences, with confidence scores for each match."
+        canonical="/"
+      />
+      <Box minH="100vh" bg="surface.bg">
       {/* Navigation */}
       <Box
         bg="primary.900"
@@ -431,6 +438,7 @@ export default function Home() {
       </Container>
 
       <Footer />
-    </Box>
+      </Box>
+    </>
   );
 }

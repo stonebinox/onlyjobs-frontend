@@ -1,9 +1,16 @@
 import { Box, Heading } from "@chakra-ui/react";
 import Link from "next/link";
+import { SEO } from "@/components/SEO";
 
 const PrivacyPolicyPage = () => {
   return (
-    <Box p={8}>
+    <>
+      <SEO
+        title="Privacy Policy"
+        description="Learn how OnlyJobs collects, uses, and protects your personal data. We're committed to transparency and your privacy rights."
+        canonical="/privacy-policy"
+      />
+      <Box p={8}>
       <Heading size="lg">Privacy Policy (OnlyJobs)</Heading>
       <strong>Last updated: 25 Dec 2025</strong>
       <p>
@@ -135,7 +142,8 @@ const PrivacyPolicyPage = () => {
         <strong>Changes: </strong>If we make material changes, we’ll notify you
         by email or in-app.
       </p>
-    </Box>
+      </Box>
+    </>
   );
 };
 

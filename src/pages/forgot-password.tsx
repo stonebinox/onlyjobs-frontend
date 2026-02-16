@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useApi } from "@/hooks/useApi";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 
 const FormContainer = styled.div`
   display: flex;
@@ -70,12 +71,18 @@ export default function ForgotPassword() {
   };
 
   return (
-    <Box>
-      <Box
-        bg={useColorModeValue("brand.900", "brand.900")}
-        px={4}
-        color="white"
-      >
+    <>
+      <SEO
+        title="Forgot Password"
+        description="Reset your OnlyJobs password"
+        noindex
+      />
+      <Box>
+        <Box
+          bg={useColorModeValue("brand.900", "brand.900")}
+          px={4}
+          color="white"
+        >
         <Container maxW="container.xl">
           <Flex h={16} alignItems={"center"} justifyContent={"space-between"}>
             <Link href="/">
@@ -170,9 +177,10 @@ export default function ForgotPassword() {
             </form>
           )}
         </Flex>
-      </Container>
-      <Footer />
-    </Box>
+        </Container>
+        <Footer />
+      </Box>
+    </>
   );
 }
 

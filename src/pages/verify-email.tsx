@@ -19,6 +19,7 @@ import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 import { useApi } from "@/hooks/useApi";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 
 const VerifyEmailPage = () => {
   const router = useRouter();
@@ -78,7 +79,13 @@ const VerifyEmailPage = () => {
   };
 
   return (
-    <Box minH="100vh" bg={bgColor}>
+    <>
+      <SEO
+        title="Verify Email"
+        description="Verify your email address for OnlyJobs"
+        noindex
+      />
+      <Box minH="100vh" bg={bgColor}>
       {/* Simple header */}
       <Box
         bg={useColorModeValue("brand.900", "brand.900")}
@@ -153,8 +160,9 @@ const VerifyEmailPage = () => {
         </VStack>
       </Container>
 
-      <Footer />
-    </Box>
+        <Footer />
+      </Box>
+    </>
   );
 };
 

@@ -1,8 +1,15 @@
 import { Box, Heading } from "@chakra-ui/react";
+import { SEO } from "@/components/SEO";
 
 const RefundPolicy = () => {
   return (
-    <Box p={8}>
+    <>
+      <SEO
+        title="Refund Policy"
+        description="Learn about OnlyJobs refund and cancellation policies. Understand how wallet funds, billing, and refund requests are handled."
+        canonical="/refund-policy"
+      />
+      <Box p={8}>
       <Heading size="lg">Refund & Cancellation Policy (OnlyJobs)</Heading>
       <strong>Last updated: 25 Dec 2025</strong>
       <ul>
@@ -43,7 +50,8 @@ const RefundPolicy = () => {
           change cookie preferences in Settings → Privacy or your browser.
         </li>
       </ul>
-    </Box>
+      </Box>
+    </>
   );
 };
 

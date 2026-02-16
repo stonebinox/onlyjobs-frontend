@@ -1,8 +1,15 @@
 import { Box, Heading } from "@chakra-ui/react";
+import { SEO } from "@/components/SEO";
 
 const TermsConditions = () => {
   return (
-    <Box p={8}>
+    <>
+      <SEO
+        title="Terms & Conditions"
+        description="Read the terms and conditions for using OnlyJobs. Understand your rights and responsibilities when using our AI-powered job matching service."
+        canonical="/terms-conditions"
+      />
+      <Box p={8}>
       <Heading size="lg">Terms & Conditions (OnlyJobs)</Heading>{" "}
       <strong>Last updated: 25 Dec 2025</strong>
       <p>
@@ -113,7 +120,8 @@ const TermsConditions = () => {
           </li>
         </ol>
       </p>
-    </Box>
+      </Box>
+    </>
   );
 };
 
