@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Head from "next/head";
 import {
   Button,
   Heading,
@@ -312,8 +313,12 @@ const WalletPage = () => {
   };
 
   return (
-    <DashboardLayout>
-      <Guide
+    <>
+      <Head>
+        <title>Wallet | OnlyJobs</title>
+      </Head>
+      <DashboardLayout>
+        <Guide
         pageId={walletGuideConfig.pageId}
         steps={walletGuideConfig.steps}
         showModal={walletGuideConfig.showModal}
@@ -571,7 +576,8 @@ const WalletPage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </DashboardLayout>
+      </DashboardLayout>
+    </>
   );
 };
 

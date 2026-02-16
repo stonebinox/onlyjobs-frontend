@@ -1,3 +1,4 @@
+import Head from "next/head";
 import {
   Box,
   Heading,
@@ -152,7 +153,11 @@ const dummyCandidates: CandidateCardProps[] = [
 
 const CandidatesPage = () => {
   return (
-    <DashboardLayout>
+    <>
+      <Head>
+        <title>Candidates | OnlyJobs</title>
+      </Head>
+      <DashboardLayout>
       <Box>
         <Heading mb={5}>Candidates</Heading>
 
@@ -188,7 +193,8 @@ const CandidatesPage = () => {
           </TabPanels>
         </Tabs>
       </Box>
-    </DashboardLayout>
+      </DashboardLayout>
+    </>
   );
 };
 

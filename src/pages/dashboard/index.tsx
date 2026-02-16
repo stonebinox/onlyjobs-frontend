@@ -1,3 +1,4 @@
+import Head from "next/head";
 import {
   Box,
   SimpleGrid,
@@ -260,6 +261,9 @@ const Dashboard = () => {
 
   return (
     <>
+      <Head>
+        <title>Dashboard | OnlyJobs</title>
+      </Head>
       <Guide
         pageId={dashboardGuideConfig.pageId}
         steps={dashboardGuideConfig.steps}

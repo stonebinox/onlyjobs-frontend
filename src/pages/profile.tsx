@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Head from "next/head";
 import dynamic from "next/dynamic";
 import {
   Box,
@@ -456,8 +457,12 @@ const ProfilePage = () => {
   };
 
   return (
-    <DashboardLayout>
-      <Guide
+    <>
+      <Head>
+        <title>Profile | OnlyJobs</title>
+      </Head>
+      <DashboardLayout>
+        <Guide
         pageId={profileGuideConfig.pageId}
         steps={profileGuideConfig.steps}
         showModal={profileGuideConfig.showModal}
@@ -990,7 +995,8 @@ const ProfilePage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </DashboardLayout>
+      </DashboardLayout>
+    </>
   );
 };
 

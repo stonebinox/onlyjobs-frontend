@@ -1,3 +1,4 @@
+import Head from "next/head";
 import {
   Box,
   Heading,
@@ -73,10 +74,14 @@ const JobsPage = () => {
   const filteredJobs: any[] = [];
 
   return (
-    <DashboardLayout>
-      <Box>
-        <Flex justifyContent="space-between" alignItems="center" mb={5}>
-          <Heading>Job Listings</Heading>
+    <>
+      <Head>
+        <title>Job Listings | OnlyJobs</title>
+      </Head>
+      <DashboardLayout>
+        <Box>
+          <Flex justifyContent="space-between" alignItems="center" mb={5}>
+            <Heading>Job Listings</Heading>
           <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={onOpen}>
             Add Job
           </Button>
@@ -225,7 +230,8 @@ const JobsPage = () => {
           </ModalContent>
         </Modal>
       </Box>
-    </DashboardLayout>
+      </DashboardLayout>
+    </>
   );
 };
 

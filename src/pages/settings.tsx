@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Head from "next/head";
 import {
   Box,
   Button,
@@ -462,8 +463,12 @@ const SettingsPage = () => {
   };
 
   return (
-    <DashboardLayout>
-      <Guide
+    <>
+      <Head>
+        <title>Settings | OnlyJobs</title>
+      </Head>
+      <DashboardLayout>
+        <Guide
         pageId={settingsGuideConfig.pageId}
         steps={settingsGuideConfig.steps}
         showModal={settingsGuideConfig.showModal}
@@ -922,7 +927,8 @@ const SettingsPage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </DashboardLayout>
+      </DashboardLayout>
+    </>
   );
 };
 
