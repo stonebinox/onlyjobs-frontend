@@ -69,6 +69,7 @@ const Dashboard = () => {
     null
   );
   const [tabIndex, setTabIndex] = useState(0);
+  const [autoLaunchFollowup, setAutoLaunchFollowup] = useState(false);
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
@@ -178,6 +179,10 @@ const Dashboard = () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("tab") === "applied") {
       setTabIndex(1);
+    }
+    if (params.get("followup") === "true") {
+      setTabIndex(1);
+      setAutoLaunchFollowup(true);
     }
   }, []);
 
@@ -436,6 +441,8 @@ const Dashboard = () => {
                     loading={loading}
                     openJobQuestionsDrawer={openJobQuestionsDrawer}
                     onApplyClick={handleApplyClick}
+                    autoLaunchFollowup={autoLaunchFollowup}
+                    onFollowupLaunchHandled={() => setAutoLaunchFollowup(false)}
                   />
                 </TabPanel>
                 <TabPanel px={0}>

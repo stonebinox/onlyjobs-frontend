@@ -17,11 +17,16 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import styled from "styled-components";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { JobResult } from "@/types/JobResult";
 import { useApi } from "@/hooks/useApi";
 import JobListing from "./JobListing";
+import {
+  OUTCOME_OPTIONS,
+  OutcomeKey,
+  FollowUpWizardModal,
+} from "./FollowUpWizardModal";
 
 const StyledSkeleton = styled(Skeleton)`
   width: 100%;
@@ -30,16 +35,6 @@ const StyledSkeleton = styled(Skeleton)`
   border-radius: 8px;
 `;
 
-const OUTCOME_OPTIONS = {
-  heard_back: { label: "Heard Back", color: "blue" },
-  interview: { label: "Got Interview", color: "green" },
-  offer: { label: "Got Offer", color: "green" },
-  rejected: { label: "Rejected", color: "red" },
-  no_response: { label: "No Response", color: "gray" },
-} as const;
-
-type OutcomeKey = keyof typeof OUTCOME_OPTIONS;
-
 const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
 
 interface AppliedJobsProps {
@@ -47,6 +42,8 @@ interface AppliedJobsProps {
   jobs: JobResult[];
   openJobQuestionsDrawer: (jobResult: JobResult) => void;
   onApplyClick?: (jobResult: JobResult) => void;
+  autoLaunchFollowup?: boolean;
+  onFollowupLaunchHandled?: () => void;
 }
 
 export const AppliedJobs = ({
@@ -54,13 +51,29 @@ export const AppliedJobs = ({
   jobs,
   openJobQuestionsDrawer,
   onApplyClick,
+  autoLaunchFollowup,
+  onFollowupLaunchHandled,
 }: AppliedJobsProps) => {
   const [selectedJob, setSelectedJob] = useState<JobResult | null>(null);
   const [selectedOutcome, setSelectedOutcome] = useState<OutcomeKey | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [outcomeOverrides, setOutcomeOverrides] = useState<Record<string, string>>({});
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardIndex, setWizardIndex] = useState(0);
+  const [wizardJobs, setWizardJobs] = useState<JobResult[]>([]);
+  const [wizardError, setWizardError] = useState<string | null>(null);
+  const [isWizardSubmitting, setIsWizardSubmitting] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { recordApplicationOutcome } = useApi();
+
+  const getOutcome = (job: JobResult): string | undefined => {
+    return outcomeOverrides[job._id] ?? job.applicationOutcome;
+  };
+
+  const isStale = (job: JobResult): boolean => {
+    const appliedDate = job.appliedAt ? new Date(job.appliedAt).getTime() : new Date(job.updatedAt).getTime();
+    return Date.now() - appliedDate >= FOURTEEN_DAYS_MS;
+  };
 
   const appliedJobs = useMemo(() => {
     return jobs
@@ -70,6 +83,70 @@ export const AppliedJobs = ({
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
   }, [jobs]);
+
+  const staleJobsNeedingFollowup = useMemo(() => {
+    return appliedJobs.filter((job) => {
+      const outcome = getOutcome(job);
+      if (outcome) return false;
+      return isStale(job);
+    });
+  }, [appliedJobs, outcomeOverrides]);
+
+  useEffect(() => {
+    if (autoLaunchFollowup && !loading && staleJobsNeedingFollowup.length > 0) {
+      setWizardJobs([...staleJobsNeedingFollowup]);
+      setWizardIndex(0);
+      setWizardError(null);
+      setWizardOpen(true);
+      onFollowupLaunchHandled?.();
+    } else if (autoLaunchFollowup && !loading) {
+      onFollowupLaunchHandled?.();
+    }
+  }, [autoLaunchFollowup, loading, staleJobsNeedingFollowup.length]);
+
+  const currentWizardJob = wizardJobs[wizardIndex] ?? null;
+
+  const handleWizardOutcome = async (outcome: OutcomeKey) => {
+    if (!currentWizardJob) return;
+    setIsWizardSubmitting(true);
+    setWizardError(null);
+    try {
+      const result = await recordApplicationOutcome(currentWizardJob._id, outcome);
+      if (result?.error) {
+        setWizardError(result.error);
+        return;
+      }
+      setOutcomeOverrides((prev) => ({
+        ...prev,
+        [currentWizardJob._id]: outcome,
+      }));
+      if (wizardIndex < wizardJobs.length - 1) {
+        setWizardIndex((prev) => prev + 1);
+        setWizardError(null);
+      } else {
+        setWizardOpen(false);
+      }
+    } catch {
+      setWizardError("Something went wrong. Please try again.");
+    } finally {
+      setIsWizardSubmitting(false);
+    }
+  };
+
+  const handleWizardSkip = () => {
+    if (wizardIndex < wizardJobs.length - 1) {
+      setWizardIndex((prev) => prev + 1);
+      setWizardError(null);
+    } else {
+      setWizardOpen(false);
+    }
+  };
+
+  const handleWizardClose = () => {
+    setWizardOpen(false);
+    setWizardError(null);
+    setWizardJobs([]);
+  };
 
   const handleOpenModal = (job: JobResult) => {
     setSelectedJob(job);
@@ -102,15 +179,6 @@ export const AppliedJobs = ({
       setIsSubmitting(false);
       handleModalClose();
     }
-  };
-
-  const getOutcome = (job: JobResult): string | undefined => {
-    return outcomeOverrides[job._id] ?? job.applicationOutcome;
-  };
-
-  const isStale = (job: JobResult): boolean => {
-    const appliedDate = job.appliedAt ? new Date(job.appliedAt).getTime() : new Date(job.updatedAt).getTime();
-    return Date.now() - appliedDate >= FOURTEEN_DAYS_MS;
   };
 
   return (
@@ -245,6 +313,26 @@ export const AppliedJobs = ({
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <FollowUpWizardModal
+        isOpen={wizardOpen}
+        currentJob={
+          currentWizardJob
+            ? {
+                matchId: currentWizardJob._id,
+                title: currentWizardJob.job?.title ?? "Unknown Position",
+                company: currentWizardJob.job?.company ?? "Unknown Company",
+              }
+            : null
+        }
+        step={wizardIndex + 1}
+        total={wizardJobs.length}
+        isSubmitting={isWizardSubmitting}
+        error={wizardError}
+        onSelectOutcome={handleWizardOutcome}
+        onSkip={handleWizardSkip}
+        onClose={handleWizardClose}
+      />
     </Flex>
   );
 };
