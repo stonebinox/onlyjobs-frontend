@@ -12,5 +12,9 @@ export type JobResult = {
   updatedAt: string;
   skipped: boolean;
   applied: boolean | null;
+  appliedAt?: string;
+  followUpSentAt?: string;
+  applicationOutcome?: string;
+  outcomeRecordedAt?: string;
   job: Job | null;
 };

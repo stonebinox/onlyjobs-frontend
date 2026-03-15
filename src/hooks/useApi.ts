@@ -1070,6 +1070,29 @@ export const useApi = () => {
     }
   };
 
+  const recordApplicationOutcome = async (matchId: string, outcome: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/${matchId}/outcome`,
+        {
+          method: "POST",
+          headers: getHeaders(),
+          body: JSON.stringify({ outcome }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to record application outcome");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Record application outcome error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -1111,5 +1134,6 @@ export const useApi = () => {
     resetGuideProgress,
     requestPasswordReset,
     resetPassword,
+    recordApplicationOutcome,
   };
 };

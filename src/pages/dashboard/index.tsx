@@ -68,6 +68,7 @@ const Dashboard = () => {
   const [selectedJobResult, setSelectedJobResult] = useState<JobResult | null>(
     null
   );
+  const [tabIndex, setTabIndex] = useState(0);
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
@@ -171,6 +172,14 @@ const Dashboard = () => {
     fetchUserProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.isLoggedIn]);
+
+  // Handle follow-up redirect from email
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("tab") === "applied") {
+      setTabIndex(1);
+    }
+  }, []);
 
   // Handle page visibility change to auto-open drawer
   useEffect(() => {
@@ -402,7 +411,7 @@ const Dashboard = () => {
             </Box>
           </SimpleGrid>
           <Box mt={10} maxW={{ base: "100%", lg: "1200px" }} mx="auto">
-            <Tabs colorScheme="purple" variant="line">
+            <Tabs colorScheme="purple" variant="line" index={tabIndex} onChange={setTabIndex}>
               <TabList data-guide="job-tabs" gap={2}>
                 <Tab fontWeight="semibold" px={4}>Matches for you</Tab>
                 <Tab fontWeight="semibold" px={4}>Applied</Tab>
