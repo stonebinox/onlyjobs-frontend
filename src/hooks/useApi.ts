@@ -1070,6 +1070,52 @@ export const useApi = () => {
     }
   };
 
+  const sendChatMessage = async (message: string, conversationId?: string) => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify({ message, conversationId }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Chat failed");
+    }
+    return response.json();
+  };
+
+  const getChatConversations = async () => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/conversations`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch conversations");
+    return response.json();
+  };
+
+  const getChatConversation = async (id: string) => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/conversations/${id}`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch conversation");
+    return response.json();
+  };
+
+  const getChatMemory = async () => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/memory`, {
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to fetch memory");
+    return response.json();
+  };
+
+  const deleteChatMemory = async () => {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/memory`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!response.ok) throw new Error("Failed to delete memory");
+    return response.json();
+  };
+
   const recordApplicationOutcome = async (matchId: string, outcome: string) => {
     try {
       const response = await fetch(
@@ -1135,5 +1181,10 @@ export const useApi = () => {
     requestPasswordReset,
     resetPassword,
     recordApplicationOutcome,
+    sendChatMessage,
+    getChatConversations,
+    getChatConversation,
+    getChatMemory,
+    deleteChatMemory,
   };
 };

@@ -6,10 +6,13 @@ import {
   useDisclosure,
   useColorModeValue,
 } from "@chakra-ui/react";
+import dynamic from "next/dynamic";
 
 import { TopNav } from "./TopNav";
 import { SidebarContent } from "./SidebarContent";
 import { Footer } from "@/components/Footer";
+
+const ChatWidget = dynamic(() => import("@/components/Chat/ChatWidget"), { ssr: false });
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -45,6 +48,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         {children}
       </Box>
       <Footer minimal />
+      <ChatWidget />
     </Box>
   );
 };
