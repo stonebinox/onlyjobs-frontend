@@ -7,6 +7,7 @@ interface AuthContextProps {
   authenticate: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isLoggedIn: boolean;
+  isReady: boolean;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -15,6 +16,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userId, setUserId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isReady, setIsReady] = useState<boolean>(false);
   const { authenticateUser } = useApi();
 
   const authenticate = async (email: string, password: string) => {
@@ -49,11 +51,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserId(storedUserId);
       setIsLoggedIn(true);
     }
+    setIsReady(true);
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ userId, token, authenticate, logout, isLoggedIn }}
+      value={{ userId, token, authenticate, logout, isLoggedIn, isReady }}
     >
       {children}
     </AuthContext.Provider>

@@ -122,8 +122,13 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    if (!auth?.isReady) return;
+
     if (!auth?.isLoggedIn) {
-      router.push("/");
+      const returnTo = window.location.pathname + window.location.search;
+      sessionStorage.setItem('onlyjobs_returnTo', returnTo);
+      router.push(`/?returnTo=${encodeURIComponent(returnTo)}`);
+      return;
     }
 
     const fetchAvailableJobsCount = async () => {
@@ -172,7 +177,7 @@ const Dashboard = () => {
     fetchWalletBalance();
     fetchUserProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [auth?.isLoggedIn]);
+  }, [auth?.isReady, auth?.isLoggedIn]);
 
   // Handle follow-up redirect from email
   useEffect(() => {

@@ -66,7 +66,15 @@ export default function Home() {
   useEffect(() => {
     if (!auth?.isLoggedIn) return;
 
-    router.push("/dashboard");
+    const urlReturnTo = new URLSearchParams(window.location.search).get("returnTo");
+    const storageReturnTo = sessionStorage.getItem('onlyjobs_returnTo');
+    sessionStorage.removeItem('onlyjobs_returnTo');
+    const returnTo = urlReturnTo ?? storageReturnTo;
+    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
+      router.push(returnTo);
+    } else {
+      router.push("/dashboard");
+    }
   }, [auth?.isLoggedIn, router]);
 
   return (

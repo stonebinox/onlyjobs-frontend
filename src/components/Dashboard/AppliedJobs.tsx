@@ -92,14 +92,22 @@ export const AppliedJobs = ({
     });
   }, [appliedJobs, outcomeOverrides]);
 
+  const stripFollowupParam = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("followup");
+    window.history.replaceState(null, "", url.toString());
+  };
+
   useEffect(() => {
     if (autoLaunchFollowup && !loading && staleJobsNeedingFollowup.length > 0) {
       setWizardJobs([...staleJobsNeedingFollowup]);
       setWizardIndex(0);
       setWizardError(null);
       setWizardOpen(true);
+      stripFollowupParam();
       onFollowupLaunchHandled?.();
     } else if (autoLaunchFollowup && !loading) {
+      stripFollowupParam();
       onFollowupLaunchHandled?.();
     }
   }, [autoLaunchFollowup, loading, staleJobsNeedingFollowup.length]);
