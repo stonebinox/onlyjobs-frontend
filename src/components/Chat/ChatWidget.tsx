@@ -200,6 +200,7 @@ export default function ChatWidget() {
         placement="right"
         onClose={handleClose}
         size={drawerSize}
+        blockScrollOnMount={false}
       >
         <DrawerOverlay bg="blackAlpha.400" />
         <DrawerContent borderLeftRadius={{ md: "2xl" }}>
