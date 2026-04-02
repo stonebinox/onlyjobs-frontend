@@ -35,6 +35,25 @@ const styles = StyleSheet.create({
     marginBottom: 3,
     color: "#333333",
   },
+  contactRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 3,
+  },
+  contactItem: {
+    fontSize: 10,
+    color: "#333333",
+  },
+  contactSeparator: {
+    fontSize: 10,
+    color: "#999999",
+    marginHorizontal: 4,
+  },
+  contactLink: {
+    fontSize: 10,
+    color: "#0066CC",
+    textDecoration: "none",
+  },
   // Section styles
   section: {
     marginBottom: 16,
@@ -79,16 +98,10 @@ const styles = StyleSheet.create({
     textDecoration: "underline",
     marginBottom: 3,
   },
-  inlineLink: {
-    fontSize: 10,
-    color: "#666666",
+  entryLink: {
+    fontSize: 11,
+    color: "#0066CC",
     textDecoration: "none",
-  },
-  itemRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "baseline",
-    marginBottom: 6,
   },
   // Experience/Education item styles
   itemTitle: {
@@ -100,6 +113,25 @@ const styles = StyleSheet.create({
   itemText: {
     fontSize: 11,
     marginBottom: 6,
+    lineHeight: 1.4,
+    color: "#000000",
+  },
+  // Skills tiers
+  tierRow: {
+    marginBottom: 4,
+    lineHeight: 1.4,
+  },
+  tierLabel: {
+    fontSize: 11,
+    fontFamily: "Helvetica-Bold",
+  },
+  tierSkills: {
+    fontSize: 11,
+    color: "#333333",
+  },
+  // Inline list for languages/interests
+  inlineList: {
+    fontSize: 11,
     lineHeight: 1.4,
     color: "#000000",
   },
@@ -122,58 +154,99 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ user }) => {
   const resume = user.resume;
   const location = user.preferences?.location?.join(", ");
 
+  // Build contact row elements
+  const contactElements: React.ReactNode[] = [];
+  if (user.email) {
+    contactElements.push(
+      <Link key="email" src={'mailto:' + user.email} style={styles.contactLink}>{user.email}</Link>
+    );
+  }
+  if (user.socialLinks?.linkedin) {
+    contactElements.push(
+      <Link key="linkedin" src={user.socialLinks.linkedin} style={styles.contactLink}>
+        {getHostname(user.socialLinks.linkedin)}
+      </Link>
+    );
+  }
+  if (user.socialLinks?.github) {
+    contactElements.push(
+      <Link key="github" src={user.socialLinks.github} style={styles.contactLink}>
+        {getHostname(user.socialLinks.github)}
+      </Link>
+    );
+  }
+  if (user.socialLinks?.portfolio) {
+    contactElements.push(
+      <Link key="portfolio" src={user.socialLinks.portfolio} style={styles.contactLink}>
+        {getHostname(user.socialLinks.portfolio)}
+      </Link>
+    );
+  }
+  if (user.socialLinks?.website) {
+    contactElements.push(
+      <Link key="website" src={user.socialLinks.website} style={styles.contactLink}>
+        {getHostname(user.socialLinks.website)}
+      </Link>
+    );
+  }
+  if (location) {
+    contactElements.push(
+      <Text key="location" style={styles.contactItem}>{location}</Text>
+    );
+  }
+
+  // Interleave separators between contact elements
+  const contactRow = contactElements.reduce<React.ReactNode[]>((acc, el, i) => {
+    if (i > 0) {
+      acc.push(
+        <Text key={`sep-${i}`} style={styles.contactSeparator}> | </Text>
+      );
+    }
+    acc.push(el);
+    return acc;
+  }, []);
+
+  // Build skills tiers
+  const skillTiers = (() => {
+    if (!resume?.skills || resume.skills.length === 0) return null;
+    const expert: string[] = [];
+    const proficient: string[] = [];
+    const familiar: string[] = [];
+    const other: string[] = [];
+
+    for (const skill of resume.skills) {
+      const parsed = parseSkill(skill);
+      const r = parsed.rating;
+      if (r !== null && r >= 8 && r <= 10) {
+        expert.push(parsed.name);
+      } else if (r !== null && r >= 6 && r <= 7) {
+        proficient.push(parsed.name);
+      } else if (r !== null && r >= 3 && r <= 5) {
+        familiar.push(parsed.name);
+      } else {
+        other.push(parsed.name);
+      }
+    }
+
+    return { expert, proficient, familiar, other };
+  })();
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header - Name and Contact Information */}
         <View style={styles.header}>
           <Text style={styles.name}>{user.name || "Applicant"}</Text>
-          {user.email && (
-            <Text style={styles.contactInfo}>Email: {user.email}</Text>
-          )}
-          {user.phone && (
-            <Text style={styles.contactInfo}>Phone: {user.phone}</Text>
-          )}
-          {location && (
-            <Text style={styles.contactInfo}>Location: {location}</Text>
-          )}
-        </View>
-
-        {/* Social Links Section */}
-        {user.socialLinks &&
-          (user.socialLinks.linkedin ||
-            user.socialLinks.github ||
-            user.socialLinks.portfolio ||
-            user.socialLinks.website) && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Professional Links</Text>
-              {user.socialLinks.linkedin && (
-                <Link src={user.socialLinks.linkedin} style={styles.link}>
-                  LinkedIn: {user.socialLinks.linkedin}
-                </Link>
-              )}
-              {user.socialLinks.github && (
-                <Link src={user.socialLinks.github} style={styles.link}>
-                  GitHub: {user.socialLinks.github}
-                </Link>
-              )}
-              {user.socialLinks.portfolio && (
-                <Link src={user.socialLinks.portfolio} style={styles.link}>
-                  Portfolio: {user.socialLinks.portfolio}
-                </Link>
-              )}
-              {user.socialLinks.website && (
-                <Link src={user.socialLinks.website} style={styles.link}>
-                  Website: {user.socialLinks.website}
-                </Link>
-              )}
+          {contactRow.length > 0 && (
+            <View style={styles.contactRow}>
+              {contactRow}
             </View>
           )}
+        </View>
 
         {/* Summary/Objective Section */}
         {resume?.summary && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Professional Summary</Text>
             <Text style={styles.text}>{resume.summary}</Text>
           </View>
         )}
@@ -186,18 +259,16 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ user }) => {
               const expText = typeof exp === "string" ? exp : exp.text;
               const expLink = typeof exp === "string" ? undefined : exp.link;
               return (
-                <View key={index} style={{ marginBottom: 10 }}>
-                  <View style={styles.itemRow}>
-                    <Text style={styles.itemText}>{expText}</Text>
+                <View key={index} style={{ marginBottom: 4 }}>
+                  <Text style={styles.itemText}>
+                    {expText}
                     {expLink && (
                       <>
-                        <Text style={styles.inlineLink}> | </Text>
-                        <Link src={expLink} style={styles.inlineLink}>
-                          {getHostname(expLink)}
-                        </Link>
+                        {"  "}
+                        <Link src={expLink} style={styles.entryLink}>{getHostname(expLink)}</Link>
                       </>
                     )}
-                  </View>
+                  </Text>
                 </View>
               );
             })}
@@ -217,24 +288,33 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ user }) => {
         )}
 
         {/* Skills Section */}
-        {resume?.skills && resume.skills.length > 0 && (
+        {resume?.skills && resume.skills.length > 0 && skillTiers && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Skills</Text>
-            <View style={styles.skillsContainer}>
-              {resume.skills.map((skill, index) => {
-                const parsed = parseSkill(skill);
-                const skillText =
-                  parsed.rating !== null
-                    ? `${parsed.name} (${parsed.rating}/10)`
-                    : parsed.name;
-                return (
-                  <Text key={index} style={styles.skill}>
-                    {skillText}
-                    {index < resume.skills.length - 1 ? " •" : ""}
-                  </Text>
-                );
-              })}
-            </View>
+            {skillTiers.expert.length > 0 && (
+              <Text style={styles.tierRow}>
+                <Text style={styles.tierLabel}>Expert</Text>
+                <Text style={styles.tierSkills}>{": "}{skillTiers.expert.join(", ")}</Text>
+              </Text>
+            )}
+            {skillTiers.proficient.length > 0 && (
+              <Text style={styles.tierRow}>
+                <Text style={styles.tierLabel}>Proficient</Text>
+                <Text style={styles.tierSkills}>{": "}{skillTiers.proficient.join(", ")}</Text>
+              </Text>
+            )}
+            {skillTiers.familiar.length > 0 && (
+              <Text style={styles.tierRow}>
+                <Text style={styles.tierLabel}>Familiar</Text>
+                <Text style={styles.tierSkills}>{": "}{skillTiers.familiar.join(", ")}</Text>
+              </Text>
+            )}
+            {skillTiers.other.length > 0 && (
+              <Text style={styles.tierRow}>
+                <Text style={styles.tierLabel}>Other</Text>
+                <Text style={styles.tierSkills}>{": "}{skillTiers.other.join(", ")}</Text>
+              </Text>
+            )}
           </View>
         )}
 
@@ -246,18 +326,16 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ user }) => {
               const projectText = typeof project === "string" ? project : project.text;
               const projectLink = typeof project === "string" ? undefined : project.link;
               return (
-                <View key={index} style={{ marginBottom: 10 }}>
-                  <View style={styles.itemRow}>
-                    <Text style={styles.itemText}>{projectText}</Text>
+                <View key={index} style={{ marginBottom: 4 }}>
+                  <Text style={styles.itemText}>
+                    {projectText}
                     {projectLink && (
                       <>
-                        <Text style={styles.inlineLink}> | </Text>
-                        <Link src={projectLink} style={styles.inlineLink}>
-                          {getHostname(projectLink)}
-                        </Link>
+                        {"  "}
+                        <Link src={projectLink} style={styles.entryLink}>{getHostname(projectLink)}</Link>
                       </>
                     )}
-                  </View>
+                  </Text>
                 </View>
               );
             })}
@@ -305,14 +383,7 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ user }) => {
         {resume?.languages && resume.languages.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Languages</Text>
-            <View style={styles.skillsContainer}>
-              {resume.languages.map((language, index) => (
-                <Text key={index} style={styles.skill}>
-                  {language}
-                  {index < resume.languages.length - 1 ? " •" : ""}
-                </Text>
-              ))}
-            </View>
+            <Text style={styles.inlineList}>{resume.languages.join(", ")}</Text>
           </View>
         )}
 
@@ -320,14 +391,7 @@ export const CVDocument: React.FC<CVDocumentProps> = ({ user }) => {
         {resume?.interests && resume.interests.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Interests</Text>
-            <View style={styles.skillsContainer}>
-              {resume.interests.map((interest, index) => (
-                <Text key={index} style={styles.skill}>
-                  {interest}
-                  {index < resume.interests.length - 1 ? " •" : ""}
-                </Text>
-              ))}
-            </View>
+            <Text style={styles.inlineList}>{resume.interests.join(", ")}</Text>
           </View>
         )}
       </Page>
