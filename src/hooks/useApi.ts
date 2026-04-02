@@ -1078,7 +1078,10 @@ export const useApi = () => {
     });
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || "Chat failed");
+      if (response.status === 401) {
+        throw new Error("Your session has expired. Please log in again.");
+      }
+      throw new Error(errorData.error || errorData.message || "Chat failed");
     }
     return response.json();
   };

@@ -160,7 +160,12 @@ export default function ChatWidget() {
         localStorage.setItem(CONVERSATION_ID_KEY, data.conversationId);
       }
     } catch (err) {
-      setError((err as Error).message || "Something went wrong.");
+      const errMsg = (err as Error).message || "";
+      if (errMsg.toLowerCase().includes("session has expired") || errMsg.toLowerCase().includes("not authorized")) {
+        setError("Your session has expired. Please log in again.");
+      } else {
+        setError(errMsg || "Something went wrong.");
+      }
       setFailedMessage(sentMessage);
     } finally {
       setIsLoading(false);
