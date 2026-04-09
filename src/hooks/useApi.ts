@@ -435,14 +435,24 @@ export const useApi = () => {
     }
   };
 
-  const createAnswer = async (question: string, jobResultId?: string) => {
+  const createAnswer = async (
+    question: string,
+    jobResultId?: string,
+    customInstructions?: string,
+    regenerate?: boolean
+  ) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/create-answer`,
         {
           method: "POST",
           headers: getHeaders(),
-          body: JSON.stringify({ question, jobResultId }),
+          body: JSON.stringify({
+            question,
+            jobResultId,
+            customInstructions,
+            regenerate,
+          }),
         }
       );
 
