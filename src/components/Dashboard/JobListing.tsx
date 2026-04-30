@@ -30,7 +30,7 @@ import {
   FiExternalLink,
 } from "react-icons/fi";
 
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
 import { Salary } from "@/types/Salary";
 import { formatDate } from "@/utils/date-formatter";
@@ -88,7 +88,7 @@ const JobListing = ({
     null
   );
   const [reasonDetails, setReasonDetails] = useState("");
-  const { markMatchClick, markMatchAsSkipped } = useApi();
+  const { markMatchClick, markMatchAsSkipped } = createApiClient();
   const {
     isOpen: isReasonModalOpen,
     onOpen: openReasonModal,

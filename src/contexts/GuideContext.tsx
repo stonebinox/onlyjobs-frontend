@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { useAuth } from "./AuthContext";
 
 export interface GuideProgress {
@@ -34,7 +34,7 @@ export const GuideProvider = ({
 }) => {
   const [guideProgress, setGuideProgress] = useState<GuideProgress>({});
   const [isLoading, setIsLoading] = useState(true);
-  const { getGuideProgress, updateGuideProgress, resetGuideProgress: resetGuideProgressApi } = useApi();
+  const { getGuideProgress, updateGuideProgress, resetGuideProgress: resetGuideProgressApi } = createApiClient();
   const { isLoggedIn } = useAuth();
   const hasLoadedRef = useRef(false);
 

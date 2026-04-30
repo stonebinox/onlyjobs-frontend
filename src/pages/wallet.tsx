@@ -48,7 +48,7 @@ import {
 import { useRouter } from "next/navigation";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { trackEvent } from "@/utils/analytics";
 import Guide from "@/components/Guide/Guide";
 import { walletGuideConfig } from "@/config/guides/walletGuide";
@@ -75,7 +75,7 @@ const WalletPage = () => {
     createPaymentOrder,
     verifyPayment,
     getTransactions,
-  } = useApi();
+  } = createApiClient();
 
   const [balance, setBalance] = useState<number>(0);
   const [customAmount, setCustomAmount] = useState("");

@@ -21,7 +21,7 @@ import { FiChevronDown, FiMenu } from "react-icons/fi";
 import { FaWallet } from "react-icons/fa";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 
 interface TopNavProps extends FlexProps {
   onOpen: () => void;
@@ -30,7 +30,7 @@ interface TopNavProps extends FlexProps {
 export const TopNav = ({ onOpen, ...rest }: TopNavProps) => {
   const [username, setUsername] = useState<string>("User");
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
-  const { getUserName, getWalletBalance } = useApi();
+  const { getUserName, getWalletBalance } = createApiClient();
   const auth = useAuth();
   const router = useRouter();
 

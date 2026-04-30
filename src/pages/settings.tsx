@@ -41,7 +41,7 @@ import { FaRedo, FaSave, FaSkull } from "react-icons/fa";
 import { FaEnvelope } from "react-icons/fa6";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { User } from "@/types/User";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/router";
@@ -82,7 +82,7 @@ const SettingsPage = () => {
     factoryResetUserAccount,
     deleteUserAccount,
     resetGuideProgress,
-  } = useApi();
+  } = createApiClient();
   const auth = useAuth();
   const router = useRouter();
   const { resetPageProgress, guideProgress } = useGuide();

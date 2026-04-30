@@ -19,7 +19,7 @@ import styled from "styled-components";
 import Link from "next/link";
 
 import { useState } from "react";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 
@@ -41,7 +41,7 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  const { requestPasswordReset } = useApi();
+  const { requestPasswordReset } = createApiClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

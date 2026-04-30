@@ -30,7 +30,7 @@ import {
   FiX,
 } from "react-icons/fi";
 
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 
 const CONVERSATION_ID_KEY = "onlyjobs_chat_conversationId";
 
@@ -70,7 +70,7 @@ function renderMarkdown(text: string): string {
 }
 
 export default function ChatWidget() {
-  const { sendChatMessage, getChatConversations, getChatConversation } = useApi();
+  const { sendChatMessage, getChatConversations, getChatConversation } = createApiClient();
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);

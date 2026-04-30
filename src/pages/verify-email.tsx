@@ -17,13 +17,13 @@ import {
 } from "@chakra-ui/react";
 import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 
 const VerifyEmailPage = () => {
   const router = useRouter();
-  const { verifyEmailChange, verifyInitialEmail } = useApi();
+  const { verifyEmailChange, verifyInitialEmail } = createApiClient();
   const [status, setStatus] = useState<"loading" | "pending" | "success" | "error">(
     "loading"
   );

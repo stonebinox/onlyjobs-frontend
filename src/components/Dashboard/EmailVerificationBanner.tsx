@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { FiMail } from "react-icons/fi";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 
 interface EmailVerificationBannerProps {
   isVerified: boolean;
@@ -24,7 +24,7 @@ export const EmailVerificationBanner = ({
   email,
   onVerificationSent,
 }: EmailVerificationBannerProps) => {
-  const { resendVerificationEmail } = useApi();
+  const { resendVerificationEmail } = createApiClient();
   const [isResending, setIsResending] = useState(false);
   const toast = useToast();
 

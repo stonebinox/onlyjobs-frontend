@@ -21,7 +21,7 @@ import { MdAutoAwesome, MdRefresh } from "react-icons/md";
 import { FaCopy } from "react-icons/fa";
 import { useState, useEffect } from "react";
 
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 
 interface GenerateAnswerProps {
   jobResultId?: string;
@@ -46,7 +46,7 @@ export const GenerateAnswer = ({ jobResultId }: GenerateAnswerProps) => {
   const [customInstructions, setCustomInstructions] = useState<string>("");
   const [showCustomInstructions, setShowCustomInstructions] =
     useState<boolean>(false);
-  const { createAnswer, getMatchQnAHistory } = useApi();
+  const { createAnswer, getMatchQnAHistory } = createApiClient();
 
   // Reset state when jobResultId changes to avoid cross-job leakage
   useEffect(() => {

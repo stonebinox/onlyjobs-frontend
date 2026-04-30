@@ -19,7 +19,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
 
 // Reason categories matching the backend
@@ -54,7 +54,7 @@ export const ApplicationStatusBanner = ({
     null
   );
   const [reasonDetails, setReasonDetails] = useState("");
-  const { markMatchApplied } = useApi();
+  const { markMatchApplied } = createApiClient();
   const {
     isOpen: isReasonModalOpen,
     onOpen: openReasonModal,

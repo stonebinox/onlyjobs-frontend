@@ -20,7 +20,7 @@ import styled from "styled-components";
 import { useEffect, useMemo, useState } from "react";
 
 import { JobResult } from "@/types/JobResult";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import JobListing from "./JobListing";
 import {
   OUTCOME_OPTIONS,
@@ -64,7 +64,7 @@ export const AppliedJobs = ({
   const [wizardError, setWizardError] = useState<string | null>(null);
   const [isWizardSubmitting, setIsWizardSubmitting] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const { recordApplicationOutcome } = useApi();
+  const { recordApplicationOutcome } = createApiClient();
 
   const getOutcome = (job: JobResult): string | undefined => {
     return outcomeOverrides[job._id] ?? job.applicationOutcome;

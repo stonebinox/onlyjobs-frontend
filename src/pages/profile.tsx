@@ -53,7 +53,7 @@ const PDFDownloadLink = dynamic(
 );
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { User, SocialLinks } from "@/types/User";
 import {
   ExperienceItem,
@@ -107,7 +107,7 @@ type ArrayFieldType =
   | "languages";
 
 const ProfilePage = () => {
-  const { getUserProfile, updateUserProfile } = useApi();
+  const { getUserProfile, updateUserProfile } = createApiClient();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const cardBg = useColorModeValue("white", "gray.700");

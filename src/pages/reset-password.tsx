@@ -23,7 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 import { useEffect, useState } from "react";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 
@@ -49,7 +49,7 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [passwordError, setPasswordError] = useState<string>("");
-  const { resetPassword } = useApi();
+  const { resetPassword } = createApiClient();
 
   const validatePassword = () => {
     if (newPassword.length < 8) {

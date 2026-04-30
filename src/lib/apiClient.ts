@@ -11,7 +11,7 @@ const getHeaders = () => {
   return headers;
 };
 
-export const useApi = () => {
+export const createApiClient = () => {
   const authenticateUser = async (email: string, password: string) => {
     try {
       const response = await fetch(

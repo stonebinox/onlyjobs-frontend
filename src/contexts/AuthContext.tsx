@@ -1,4 +1,4 @@
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { createContext, useContext, useEffect, useState } from "react";
 import { identifyUser, trackEvent } from "@/utils/analytics";
 
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isReady, setIsReady] = useState<boolean>(false);
-  const { authenticateUser } = useApi();
+  const { authenticateUser } = createApiClient();
 
   const authenticate = async (email: string, password: string) => {
     const response = await authenticateUser(email, password);

@@ -28,7 +28,7 @@ import {
   ListItem,
 } from "@chakra-ui/react";
 import { FaPlus, FaTimes, FaEdit } from "react-icons/fa";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { parseSkill, formatSkill, getSkillName } from "@/utils/skillUtils";
 
 interface EditSkillsModalProps {
@@ -44,7 +44,7 @@ const EditSkillsModal: React.FC<EditSkillsModalProps> = ({
   currentSkills,
   onSave,
 }) => {
-  const { searchSkills } = useApi();
+  const { searchSkills } = createApiClient();
   const [skills, setSkills] = useState<string[]>(currentSkills);
   const [newSkill, setNewSkill] = useState("");
   const [skillRating, setSkillRating] = useState<number>(5);

@@ -48,7 +48,7 @@ import StatCard from "../../components/Dashboard/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { JobMatches } from "@/components/Dashboard/JobMatches";
 import { QADrawer } from "@/components/Dashboard/QADrawer";
 import { JobResult } from "@/types/JobResult";
@@ -96,7 +96,7 @@ const Dashboard = () => {
     checkWalletBalance,
     getUserProfile,
     triggerMatchForMe,
-  } = useApi();
+  } = createApiClient();
 
   const fetchMatches = async (minScore: number = 30) => {
     try {

@@ -33,7 +33,7 @@ import {
 } from "react-icons/fi";
 import { TbSparkles } from "react-icons/tb";
 
-import { useApi } from "@/hooks/useApi";
+import { createApiClient } from "@/lib/apiClient";
 import { Question } from "@/types/Question";
 import { AnsweredQuestion } from "@/types/AnsweredQuestion";
 import { AnsweredQuestions } from "./AnsweredQuestions";
@@ -62,7 +62,7 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
     uploadAudio,
     getAnsweredQuestions,
     skipQuestion,
-  } = useApi();
+  } = createApiClient();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [answersLoading, setAnswersLoading] = useState<boolean>(false);
