@@ -81,6 +81,7 @@ const Dashboard = () => {
   const [pendingJobForDrawer, setPendingJobForDrawer] =
     useState<JobResult | null>(null);
   const [currentMinScore, setCurrentMinScore] = useState<number>(30);
+  const [pendingFirstMatch, setPendingFirstMatch] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
@@ -274,30 +275,15 @@ const Dashboard = () => {
       setUploadedFile(null);
       trackEvent("cv_uploaded");
 
-      // Reset the file input (optional)
-      const fileInput = document.getElementById(
-        "cv-upload"
-      ) as HTMLInputElement;
-
+      const fileInput = document.getElementById("cv-upload") as HTMLInputElement;
       if (fileInput) fileInput.value = "";
 
-      // Fire-and-forget: trigger first match run for this user
-      triggerMatchForMe().then((result) => {
-        if (!result.error) {
-          toast({
-            title: "Running your first match",
-            description: "Results will appear in your dashboard in a few minutes.",
-            status: "info",
-            duration: 6000,
-            isClosable: true,
-          });
-        }
-      });
-
+      // After CV upload, open Q&A in onboarding mode — match fires when done
       setTimeout(() => {
         onClose();
         setUploadSuccess(false);
-        setIsDrawerOpen(true); // we prompt users to update their Q&A
+        setPendingFirstMatch(true);
+        setIsDrawerOpen(true);
       }, 2000);
     } catch (error) {
       console.error("Error uploading CV:", error);
@@ -607,7 +593,25 @@ const Dashboard = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      <QADrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+      <QADrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        onboardingMode={pendingFirstMatch}
+        onComplete={() => {
+          setPendingFirstMatch(false);
+          triggerMatchForMe().then((result) => {
+            if (!result.error) {
+              toast({
+                title: "Finding your matches",
+                description: "Results will appear in your dashboard in a few minutes.",
+                status: "info",
+                duration: 6000,
+                isClosable: true,
+              });
+            }
+          });
+        }}
+      />
       <JobQuestionsDrawer
         isOpen={isJobDrawerOpen}
         onClose={() => setIsJobDrawerOpen(false)}

@@ -41,6 +41,8 @@ import { AnsweredQuestions } from "./AnsweredQuestions";
 interface QADrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onboardingMode?: boolean;
+  onComplete?: () => void;
 }
 
 const pulse = keyframes`
@@ -53,7 +55,7 @@ const recordingPulse = keyframes`
   50% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
 `;
 
-export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
+export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADrawerProps) => {
   const {
     getQuestion,
     postAnswer,
@@ -271,6 +273,11 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
     setIsSpeaking(false);
   };
 
+  const handleClose = () => {
+    if (onboardingMode) onComplete?.();
+    onClose();
+  };
+
   const resetAll = () => {
     setCurrentQuestion(null);
     setIsLoading(false);
@@ -315,7 +322,7 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
   }, [isOpen]);
 
   return (
-    <Drawer placement="right" size="xl" isOpen={isOpen} onClose={onClose}>
+    <Drawer placement="right" size="xl" isOpen={isOpen} onClose={handleClose}>
       <DrawerOverlay bg="blackAlpha.600" backdropFilter="blur(4px)" />
       <DrawerContent borderLeftRadius="2xl">
         <DrawerCloseButton />
@@ -338,37 +345,57 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
             </Box>
             <VStack align="start" spacing={0}>
               <Text fontFamily="heading" fontWeight="bold" fontSize="lg">
-                Interview Prep Q&A
+                {onboardingMode ? "Boost your first match" : "Interview Prep Q&A"}
               </Text>
               <Text fontSize="xs" color="text.tertiary" fontWeight="medium">
-                AI-powered profile improvement
+                {onboardingMode ? "Answer 2–3 questions before we run matching" : "AI-powered profile improvement"}
               </Text>
             </VStack>
           </HStack>
         </DrawerHeader>
 
         <DrawerBody py={6}>
-          <Text fontSize="sm" color="text.secondary" mb={4} lineHeight="relaxed">
-            Answer common interview questions to improve your profile and matching rate.
-            The AI will help refine your answers and provide suggestions.
-          </Text>
-
-          <Alert
-            status="info"
-            borderRadius="xl"
-            mb={6}
-            bg="primary.50"
-            border="1px solid"
-            borderColor="primary.200"
-          >
-            <AlertIcon color="primary.500" />
-            <Box>
-              <AlertTitle fontWeight="bold" fontSize="sm">AI-Powered</AlertTitle>
-              <Text fontSize="xs" color="text.secondary">
-                Don&apos;t worry about grammar or accent — your answers will be auto-refined.
+          {onboardingMode ? (
+            <Alert
+              status="success"
+              borderRadius="xl"
+              mb={6}
+              bg="primary.50"
+              border="1px solid"
+              borderColor="primary.200"
+            >
+              <AlertIcon color="primary.500" />
+              <Box>
+                <AlertTitle fontWeight="bold" fontSize="sm">CV uploaded! One more step</AlertTitle>
+                <Text fontSize="xs" color="text.secondary">
+                  Answer 2–3 questions so the AI can match you more precisely. Each answer meaningfully improves your score.
+                </Text>
+              </Box>
+            </Alert>
+          ) : (
+            <>
+              <Text fontSize="sm" color="text.secondary" mb={4} lineHeight="relaxed">
+                Answer common interview questions to improve your profile and matching rate.
+                The AI will help refine your answers and provide suggestions.
               </Text>
-            </Box>
-          </Alert>
+              <Alert
+                status="info"
+                borderRadius="xl"
+                mb={6}
+                bg="primary.50"
+                border="1px solid"
+                borderColor="primary.200"
+              >
+                <AlertIcon color="primary.500" />
+                <Box>
+                  <AlertTitle fontWeight="bold" fontSize="sm">AI-Powered</AlertTitle>
+                  <Text fontSize="xs" color="text.secondary">
+                    Don&apos;t worry about grammar or accent — your answers will be auto-refined.
+                  </Text>
+                </Box>
+              </Alert>
+            </>
+          )}
 
           <Divider mb={6} />
 
@@ -614,6 +641,40 @@ export const QADrawer = ({ isOpen, onClose }: QADrawerProps) => {
               changeCurrentQuestion={changeCurrentQuestion}
             />
           </Skeleton>
+
+          {onboardingMode && answeredQuestions.length >= 1 && (
+            <Button
+              mt={6}
+              width="100%"
+              size="lg"
+              rightIcon={<FiArrowRight />}
+              bgGradient="linear(135deg, primary.500, secondary.500)"
+              color="white"
+              fontWeight="bold"
+              borderRadius="xl"
+              onClick={() => { onComplete?.(); onClose(); }}
+              _hover={{
+                bgGradient: "linear(135deg, primary.600, secondary.600)",
+                transform: "translateY(-1px)",
+                boxShadow: "button",
+              }}
+            >
+              Find my matches
+            </Button>
+          )}
+
+          {onboardingMode && answeredQuestions.length === 0 && (
+            <Button
+              mt={4}
+              width="100%"
+              size="sm"
+              variant="ghost"
+              color="text.tertiary"
+              onClick={handleClose}
+            >
+              Skip for now — run matching without Q&A
+            </Button>
+          )}
         </DrawerBody>
       </DrawerContent>
     </Drawer>
