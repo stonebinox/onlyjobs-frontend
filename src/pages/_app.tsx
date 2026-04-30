@@ -10,6 +10,7 @@ import theme from "../theme/theme";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GuideProvider } from "@/contexts/GuideContext";
 import { initAnalytics, trackPageView } from "@/utils/analytics";
+import { CookieConsent } from "@/components/CookieConsent";
 
 // Load fonts with next/font for optimal performance
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -67,6 +68,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <AuthProvider>
           <GuideProvider>
             <Component {...pageProps} />
+            <CookieConsent />
           </GuideProvider>
         </AuthProvider>
       </ChakraProvider>

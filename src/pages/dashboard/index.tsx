@@ -58,6 +58,7 @@ import { AppliedJobs } from "@/components/Dashboard/AppliedJobs";
 import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
 import Guide from "@/components/Guide/Guide";
 import { dashboardGuideConfig } from "@/config/guides/dashboardGuide";
+import { GettingStartedChecklist } from "@/components/Dashboard/GettingStartedChecklist";
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
@@ -240,14 +241,14 @@ const Dashboard = () => {
       return;
     }
 
-    // Check file type (PDF, DOCX)
+    // Check file type (PDF, DOCX only — DOC not supported by backend parser)
     const validTypes = [
       "application/pdf",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
 
     if (!validTypes.includes(uploadedFile.type)) {
-      setUploadError("Please upload a PDF or Word document");
+      setUploadError("Unsupported file type. Please upload a PDF or DOCX file.");
 
       return;
     }
@@ -322,6 +323,12 @@ const Dashboard = () => {
         <Box>
           {user && (
             <>
+              <GettingStartedChecklist
+                user={user}
+                walletBalance={walletBalance}
+                onUploadCV={onOpen}
+                onStartQnA={() => setIsDrawerOpen(true)}
+              />
               <EmailVerificationBanner
                 isVerified={user.isVerified ?? false}
                 email={user.email}
@@ -535,27 +542,50 @@ const Dashboard = () => {
             )}
 
             {uploadError && (
-              <Alert status="error" mb={4}>
+              <Alert status="error" mb={4} borderRadius="lg">
                 <AlertIcon />
-                {uploadError}
+                <Box flex={1}>
+                  <AlertTitle fontSize="sm">Upload failed</AlertTitle>
+                  <AlertDescription fontSize="sm">
+                    {uploadError.includes("10mb") || uploadError.toLowerCase().includes("large")
+                      ? "File is too large. Please upload a file under 10 MB."
+                      : uploadError.includes("type") || uploadError.toLowerCase().includes("format")
+                      ? "Unsupported file type. Please upload a PDF or DOCX file."
+                      : uploadError}
+                  </AlertDescription>
+                  <Button
+                    size="xs"
+                    mt={2}
+                    variant="outline"
+                    colorScheme="red"
+                    onClick={() => { setUploadError(null); setUploadedFile(null); }}
+                  >
+                    Try again
+                  </Button>
+                </Box>
               </Alert>
             )}
 
             <FormControl>
               <FormLabel htmlFor="cv-upload">
-                Select your CV (PDF or Word document)
+                Select your CV (PDF or DOCX)
               </FormLabel>
               <Input
                 id="cv-upload"
                 type="file"
                 py={1}
-                accept=".pdf,.doc,.docx"
+                accept=".pdf,.docx"
                 onChange={handleFileChange}
               />
               <Text mt={2} fontSize="sm" color="gray.500">
-                Supported formats: PDF, DOC, DOCX. We extract relevant
-                information (skills, experience, education) but don&apos;t store
-                your file.
+                Supported formats: PDF, DOCX (max 10 MB). We extract skills, experience, and education — your file is not stored.
+              </Text>
+              <Text mt={1} fontSize="xs" color="gray.400">
+                Having trouble?{" "}
+                <Text as="span" color="blue.500" cursor="pointer" textDecoration="underline" onClick={() => router.push("/profile")}>
+                  Paste your CV text in your profile instead
+                </Text>
+                .
               </Text>
             </FormControl>
           </ModalBody>

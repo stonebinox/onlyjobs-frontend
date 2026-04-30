@@ -59,6 +59,16 @@ export const useApi = () => {
     }
   };
 
+  const getPublicStats = async (): Promise<{ jobCount: number; userCount: number } | null> => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/stats`);
+      if (!response.ok) return null;
+      return await response.json();
+    } catch {
+      return null;
+    }
+  };
+
   const getAvailableJobsCount = async () => {
     try {
       const response = await fetch(
@@ -1220,5 +1230,6 @@ export const useApi = () => {
     getChatMemory,
     deleteChatMemory,
     triggerMatchForMe,
+    getPublicStats,
   };
 };

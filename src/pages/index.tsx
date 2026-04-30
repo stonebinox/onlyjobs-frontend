@@ -18,7 +18,8 @@ import {
 import { FiCheck } from "react-icons/fi";
 import { keyframes } from "@emotion/react";
 import Link from "next/link";
-import { FiUpload, FiTarget, FiZap } from "react-icons/fi";
+import Image from "next/image";
+import { FiUpload, FiTarget, FiZap, FiMessageCircle } from "react-icons/fi";
 import { TbSparkles } from "react-icons/tb";
 
 import { useEffect, useState } from "react";
@@ -43,8 +44,16 @@ export default function Home() {
   const [fieldError, setFieldError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<"signup" | "login">("signup");
+  const [stats, setStats] = useState<{ jobCount: number; userCount: number } | null>(null);
   const auth = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/stats`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setStats(data); })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -362,6 +371,29 @@ export default function Home() {
         </Container>
       </Box>
 
+      {/* Live Stats Strip */}
+      {stats && (
+        <Box borderY="1px solid" borderColor="surface.border" bg="surface.card" py={5}>
+          <Container maxW="container.xl">
+            <HStack justify="center" spacing={{ base: 8, md: 16 }} flexWrap="wrap">
+              <VStack spacing={0}>
+                <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold" color="primary.600">
+                  {stats.userCount.toLocaleString()}+
+                </Text>
+                <Text fontSize="sm" color="text.secondary">job seekers using OnlyJobs</Text>
+              </VStack>
+              <Box w="1px" h={10} bg="surface.border" display={{ base: "none", md: "block" }} />
+              <VStack spacing={0}>
+                <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold" color="primary.600">
+                  {stats.jobCount.toLocaleString()}+
+                </Text>
+                <Text fontSize="sm" color="text.secondary">live jobs in database</Text>
+              </VStack>
+            </HStack>
+          </Container>
+        </Box>
+      )}
+
       {/* How It Works Section */}
       <Container maxW="container.xl" py={{ base: 16, md: 24 }}>
         <VStack spacing={{ base: 10, md: 16 }}>
@@ -383,11 +415,11 @@ export default function Home() {
               fontFamily="heading"
               color="text.primary"
             >
-              Smart matching in three steps
+              Smart matching in four steps
             </Heading>
           </VStack>
 
-          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 6, md: 10 }} width="100%">
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 6, md: 8 }} width="100%">
             {/* Feature 1 */}
             <Box
               p={8}
@@ -498,9 +530,92 @@ export default function Home() {
                 . Prioritize applications based on data, not guesswork.
               </Text>
             </Box>
+            {/* Feature 4 */}
+            <Box
+              p={8}
+              borderRadius="2xl"
+              bg="surface.card"
+              border="1px solid"
+              borderColor="surface.border"
+              textAlign="center"
+              transition="all 0.2s ease"
+              _hover={{
+                transform: "translateY(-4px)",
+                boxShadow: "cardHover",
+                borderColor: "primary.200",
+              }}
+            >
+              <Box
+                mx="auto"
+                mb={5}
+                p={4}
+                borderRadius="2xl"
+                bg="primary.50"
+                display="inline-flex"
+              >
+                <FiMessageCircle size={32} color="#8B5CF6" />
+              </Box>
+              <Heading size="md" mb={3} fontFamily="heading">
+                AI-Drafted Answers
+              </Heading>
+              <Text color="text.secondary" fontSize="sm" lineHeight="relaxed">
+                For jobs with application questions, AI{" "}
+                <Text as="span" fontWeight="bold" color="primary.600">
+                  drafts tailored answers
+                </Text>{" "}
+                from your profile so you always have a strong starting point.
+              </Text>
+            </Box>
           </SimpleGrid>
         </VStack>
       </Container>
+
+      {/* Product Preview Section */}
+      <Box bg="primary.900" py={{ base: 16, md: 24 }} overflow="hidden">
+        <Container maxW="container.xl">
+          <VStack spacing={{ base: 10, md: 14 }}>
+            <VStack spacing={4} textAlign="center">
+              <Badge px={4} py={1} borderRadius="full" bg="primary.700" color="primary.100" fontWeight="semibold" fontSize="sm">
+                See it in action
+              </Badge>
+              <Heading as="h2" size="xl" fontFamily="heading" color="white">
+                Your personalized job feed
+              </Heading>
+              <Text color="primary.200" fontSize="md" maxW="lg">
+                Every match includes a confidence score, reasoning, and AI-drafted answers to application questions.
+              </Text>
+            </VStack>
+
+            {/* Dashboard screenshot */}
+            <Box
+              w="100%"
+              maxW="900px"
+              borderRadius="2xl"
+              overflow="hidden"
+              border="1px solid"
+              borderColor="primary.700"
+              boxShadow="0 25px 50px rgba(0,0,0,0.5)"
+            >
+              {/* Browser chrome */}
+              <Box bg="gray.800" px={4} py={3} display="flex" alignItems="center" gap={2}>
+                <Box w={3} h={3} borderRadius="full" bg="red.400" />
+                <Box w={3} h={3} borderRadius="full" bg="yellow.400" />
+                <Box w={3} h={3} borderRadius="full" bg="green.400" />
+                <Box flex={1} bg="gray.700" borderRadius="md" px={3} py={1} ml={2}>
+                  <Text fontSize="xs" color="gray.400">onlyjobs.app/dashboard</Text>
+                </Box>
+              </Box>
+              <Image
+                src="/screenshot-dashboard.png"
+                alt="OnlyJobs dashboard showing job matches with confidence scores"
+                width={1200}
+                height={750}
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            </Box>
+          </VStack>
+        </Container>
+      </Box>
 
       {/* Pricing Section */}
       <Box bg="surface.bg" py={{ base: 16, md: 24 }}>
