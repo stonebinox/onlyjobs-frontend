@@ -11,7 +11,11 @@ import {
   Badge,
   HStack,
   SimpleGrid,
+  List,
+  ListItem,
+  ListIcon,
 } from "@chakra-ui/react";
+import { FiCheck } from "react-icons/fi";
 import { keyframes } from "@emotion/react";
 import Link from "next/link";
 import { FiUpload, FiTarget, FiZap } from "react-icons/fi";
@@ -172,12 +176,14 @@ export default function Home() {
                 </Text>
               </Heading>
               <Text color="text.secondary" fontSize={{ base: "md", md: "lg" }} lineHeight="relaxed">
-                OnlyJobs matches you with jobs based on your actual experience and
-                preferences — not keyword spam. Get a{" "}
+                OnlyJobs matches you with{" "}
                 <Text as="span" fontWeight="bold" color="primary.600">
-                  confidence score
+                  remote jobs
                 </Text>{" "}
-                for each match so you know where to focus.
+                based on your actual experience and preferences — not keyword spam. Get a confidence score for each match so you know where to focus.{" "}
+                <Text as="span" fontWeight="medium" color="text.primary">
+                  Starts free.
+                </Text>
               </Text>
               <Text color="text.tertiary" fontSize="sm">
                 Built by a dev who was tired of the same broken job search. No
@@ -194,6 +200,7 @@ export default function Home() {
               width={{ base: "100%", lg: "auto" }}
             >
               <Box
+                id="signup"
                 as="form"
                 onSubmit={handleSubmit}
                 p={8}
@@ -444,6 +451,121 @@ export default function Home() {
           </SimpleGrid>
         </VStack>
       </Container>
+
+      {/* Pricing Section */}
+      <Box bg="surface.bg" py={{ base: 16, md: 24 }}>
+        <Container maxW="container.xl">
+          <VStack spacing={{ base: 10, md: 14 }}>
+            <VStack spacing={4} textAlign="center">
+              <Badge
+                px={4}
+                py={1}
+                borderRadius="full"
+                bg="accent.100"
+                color="accent.700"
+                fontWeight="semibold"
+                fontSize="sm"
+              >
+                Pricing
+              </Badge>
+              <Heading as="h2" size="xl" fontFamily="heading" color="text.primary">
+                Simple, honest pricing
+              </Heading>
+              <Text color="text.secondary" fontSize={{ base: "md", md: "lg" }}>
+                Start free. Only pay when we find you matches.
+              </Text>
+            </VStack>
+
+            <Box
+              maxW="420px"
+              w="100%"
+              p={{ base: 8, md: 10 }}
+              borderRadius="2xl"
+              bg="surface.card"
+              border="2px solid"
+              borderColor="primary.200"
+              boxShadow="elevated"
+              textAlign="center"
+            >
+              <VStack spacing={6}>
+                <VStack spacing={1}>
+                  <HStack align="baseline" spacing={1}>
+                    <Text fontSize="4xl" fontWeight="800" color="text.primary" lineHeight={1}>
+                      $0.30
+                    </Text>
+                    <Text fontSize="lg" color="text.secondary">
+                      / day
+                    </Text>
+                  </HStack>
+                  <Text fontSize="sm" color="text.tertiary">
+                    only on days we find matches
+                  </Text>
+                </VStack>
+
+                <Badge
+                  px={4}
+                  py={2}
+                  borderRadius="full"
+                  bg="secondary.50"
+                  color="secondary.700"
+                  border="1px solid"
+                  borderColor="secondary.200"
+                  fontSize="sm"
+                  fontWeight="semibold"
+                >
+                  Start with $2 free credit — no card required
+                </Badge>
+
+                <List spacing={3} textAlign="left" w="100%">
+                  <ListItem display="flex" alignItems="center">
+                    <ListIcon as={FiCheck} color="primary.500" boxSize={5} mr={2} />
+                    <Text fontSize="sm" color="text.secondary">
+                      Charged once per day, never more
+                    </Text>
+                  </ListItem>
+                  <ListItem display="flex" alignItems="center">
+                    <ListIcon as={FiCheck} color="primary.500" boxSize={5} mr={2} />
+                    <Text fontSize="sm" color="text.secondary">
+                      Only when matches are found — free days cost nothing
+                    </Text>
+                  </ListItem>
+                  <ListItem display="flex" alignItems="center">
+                    <ListIcon as={FiCheck} color="primary.500" boxSize={5} mr={2} />
+                    <Text fontSize="sm" color="text.secondary">
+                      Pause or cancel anytime from settings
+                    </Text>
+                  </ListItem>
+                  <ListItem display="flex" alignItems="center">
+                    <ListIcon as={FiCheck} color="primary.500" boxSize={5} mr={2} />
+                    <Text fontSize="sm" color="text.secondary">
+                      No auto-apply — you review every match before applying
+                    </Text>
+                  </ListItem>
+                </List>
+
+                <Button
+                  as="a"
+                  href="#signup"
+                  w="100%"
+                  size="lg"
+                  bgGradient="linear(135deg, primary.500, secondary.500)"
+                  color="white"
+                  fontWeight="bold"
+                  borderRadius="xl"
+                  _hover={{
+                    bgGradient: "linear(135deg, primary.600, secondary.600)",
+                    transform: "translateY(-1px)",
+                    boxShadow: "button",
+                  }}
+                  _active={{ transform: "scale(0.98)" }}
+                >
+                  Get started free
+                </Button>
+              </VStack>
+            </Box>
+          </VStack>
+        </Container>
+      </Box>
 
       <Footer />
       </Box>
