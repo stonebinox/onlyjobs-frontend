@@ -399,7 +399,7 @@ const SettingsPage = () => {
       });
       onEmailChangeClose();
       auth.logout();
-      router.push("/signin");
+      router.push("/");
     } catch (error: any) {
       console.error("Email change request error:", error);
       toast({

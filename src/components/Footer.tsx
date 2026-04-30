@@ -74,11 +74,8 @@ export const Footer = ({ minimal = false }: FooterProps) => {
     <Box
       bg={bgColor}
       py={{ base: 6, md: 10 }}
-      position={"fixed"}
+      position={"relative"}
       width={"100%"}
-      bottom={"0px"}
-      left={"0px"}
-      zIndex={10}
     >
       <Container maxW="container.xl" px={{ base: 4, md: 6 }}>
         <VStack spacing={{ base: 2, md: 4 }}>
