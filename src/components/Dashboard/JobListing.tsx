@@ -430,7 +430,7 @@ const JobListing = ({
               onClick={() => openJobQuestionsDrawer(job)}
               data-guide="job-application-help"
             >
-              Get Help
+              Write Answer with AI
             </Button>
             {!job.skipped && (
               <Button

@@ -79,6 +79,7 @@ const Dashboard = () => {
   const [showLowBalanceWarning, setShowLowBalanceWarning] = useState(false);
   const [pendingJobForDrawer, setPendingJobForDrawer] =
     useState<JobResult | null>(null);
+  const [currentMinScore, setCurrentMinScore] = useState<number>(30);
   const [user, setUser] = useState<User | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
@@ -95,7 +96,7 @@ const Dashboard = () => {
     triggerMatchForMe,
   } = useApi();
 
-  const fetchMatches = async (minScore: number = 65) => {
+  const fetchMatches = async (minScore: number = 30) => {
     try {
       setLoading(true);
       const response = await getMatches(minScore);
@@ -175,7 +176,10 @@ const Dashboard = () => {
       try {
         const userData = await getUserProfile();
         if (userData && !("error" in userData)) {
-          setUser(userData as User);
+          const typedUser = userData as User;
+          setUser(typedUser);
+          const savedMinScore = typedUser.preferences?.minScore ?? 30;
+          setCurrentMinScore(savedMinScore);
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -461,6 +465,8 @@ const Dashboard = () => {
                       fetchMatches={fetchMatches}
                       openJobQuestionsDrawer={openJobQuestionsDrawer}
                       onApplyClick={handleApplyClick}
+                      initialMinScore={user?.preferences?.minScore ?? 30}
+                      onMinScoreChange={setCurrentMinScore}
                     />
                     {!loading && jobs.length === 0 && (
                       <Box
@@ -578,7 +584,7 @@ const Dashboard = () => {
         jobResult={selectedJobResult}
         onStatusUpdate={() => {
           // Refresh jobs list to get updated applied status
-          fetchMatches();
+          fetchMatches(currentMinScore);
         }}
       />
     </>

@@ -42,6 +42,7 @@ export default function Home() {
   const [password, setPassword] = useState<string>("");
   const [fieldError, setFieldError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
+  const [authMode, setAuthMode] = useState<"signup" | "login">("signup");
   const auth = useAuth();
   const router = useRouter();
 
@@ -213,23 +214,25 @@ export default function Home() {
               >
                 <VStack spacing={5}>
                   <Heading size="md" fontFamily="heading" textAlign="center">
-                    Login or Sign up
+                    {authMode === "signup" ? "Create your account" : "Sign in"}
                   </Heading>
 
-                  {/* Free credits badge */}
-                  <HStack
-                    px={4}
-                    py={2}
-                    borderRadius="full"
-                    bg="secondary.50"
-                    border="1px solid"
-                    borderColor="secondary.200"
-                  >
-                    <Box as={TbSparkles} color="secondary.500" animation={`${pulse} 2s infinite`} />
-                    <Text fontSize="sm" fontWeight="semibold" color="secondary.700">
-                      Start with $2 free credit
-                    </Text>
-                  </HStack>
+                  {/* Free credits badge — only shown for signup */}
+                  {authMode === "signup" && (
+                    <HStack
+                      px={4}
+                      py={2}
+                      borderRadius="full"
+                      bg="secondary.50"
+                      border="1px solid"
+                      borderColor="secondary.200"
+                    >
+                      <Box as={TbSparkles} color="secondary.500" animation={`${pulse} 2s infinite`} />
+                      <Text fontSize="sm" fontWeight="semibold" color="secondary.700">
+                        Start with $2 free credit
+                      </Text>
+                    </HStack>
+                  )}
 
                   <Input
                     type="email"
@@ -282,14 +285,61 @@ export default function Home() {
                       transform: "scale(0.98)",
                     }}
                   >
-                    Get started
+                    {authMode === "signup" ? "Create account" : "Sign in"}
                   </Button>
+                  <Text fontSize="sm" color="text.secondary" textAlign="center">
+                    {authMode === "signup" ? (
+                      <>
+                        Already have an account?{" "}
+                        <Text
+                          as="span"
+                          color="primary.500"
+                          fontWeight="medium"
+                          cursor="pointer"
+                          _hover={{ textDecoration: "underline" }}
+                          onClick={() => setAuthMode("login")}
+                        >
+                          Sign in
+                        </Text>
+                      </>
+                    ) : (
+                      <>
+                        New here?{" "}
+                        <Text
+                          as="span"
+                          color="primary.500"
+                          fontWeight="medium"
+                          cursor="pointer"
+                          _hover={{ textDecoration: "underline" }}
+                          onClick={() => setAuthMode("signup")}
+                        >
+                          Create account
+                        </Text>
+                      </>
+                    )}
+                  </Text>
                   <Text fontSize="xs" color="text.tertiary" textAlign="center" lineHeight="tall">
                     By proceeding, you consent to having your personal information
                     processed. OnlyJobs won&apos;t share your data directly, but uses AI to parse your information.
                   </Text>
                 </VStack>
               </Box>
+
+              {/* Trust badges */}
+              <HStack justify="center" spacing={6} mt={4} flexWrap="wrap">
+                <HStack spacing={1}>
+                  <Box as={FiCheck} color="primary.500" boxSize={4} />
+                  <Text fontSize="sm" color="text.secondary" fontWeight="semibold">No auto-apply</Text>
+                </HStack>
+                <HStack spacing={1}>
+                  <Box as={FiCheck} color="primary.500" boxSize={4} />
+                  <Text fontSize="sm" color="text.secondary" fontWeight="semibold">You review every match</Text>
+                </HStack>
+                <HStack spacing={1}>
+                  <Box as={FiCheck} color="primary.500" boxSize={4} />
+                  <Text fontSize="sm" color="text.secondary" fontWeight="semibold">Cancel anytime</Text>
+                </HStack>
+              </HStack>
 
               {/* Product Hunt Badge */}
               <Box mt={6} textAlign="center">

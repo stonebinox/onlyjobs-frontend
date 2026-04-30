@@ -9,7 +9,7 @@ import {
   SliderTrack,
   Text,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
 import JobListing from "./JobListing";
@@ -29,6 +29,8 @@ interface JobMatchesProps {
   fetchMatches: (minScore?: number) => void;
   openJobQuestionsDrawer: (jobResult: JobResult) => void;
   onApplyClick?: (jobResult: JobResult) => void;
+  initialMinScore?: number;
+  onMinScoreChange?: (minScore: number) => void;
 }
 
 export const JobMatches = ({
@@ -37,13 +39,25 @@ export const JobMatches = ({
   fetchMatches,
   openJobQuestionsDrawer,
   onApplyClick,
+  initialMinScore,
+  onMinScoreChange,
 }: JobMatchesProps) => {
-  const [minScore, setMinScore] = useState<number>(65);
+  const [minScore, setMinScore] = useState<number>(initialMinScore ?? 30);
+  const initialSynced = useRef(false);
 
   const unviewedJobs = jobs.filter((job) => !job.clicked && !job.skipped);
 
+  // Sync slider to saved preference once user profile loads
+  useEffect(() => {
+    if (initialMinScore !== undefined && !initialSynced.current) {
+      initialSynced.current = true;
+      setMinScore(initialMinScore);
+    }
+  }, [initialMinScore]);
+
   useEffect(() => {
     fetchMatches(minScore);
+    onMinScoreChange?.(minScore);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [minScore]);
 
@@ -57,7 +71,7 @@ export const JobMatches = ({
           <Slider
             aria-label="match-score"
             onChangeEnd={(val) => setMinScore(val)}
-            defaultValue={minScore}
+            value={minScore}
             data-guide="match-score-slider"
           >
             <SliderMark
