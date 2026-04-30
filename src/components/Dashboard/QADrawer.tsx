@@ -21,7 +21,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FiArrowRight,
   FiEdit,
@@ -273,8 +273,16 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
     setIsSpeaking(false);
   };
 
+  const onCompleteCalledRef = useRef(false);
+
+  const fireOnComplete = () => {
+    if (!onComplete || onCompleteCalledRef.current) return;
+    onCompleteCalledRef.current = true;
+    onComplete();
+  };
+
   const handleClose = () => {
-    if (onboardingMode) onComplete?.();
+    if (onboardingMode) fireOnComplete();
     onClose();
   };
 
@@ -316,6 +324,7 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
     if (!isOpen) {
       resetAll();
     } else {
+      onCompleteCalledRef.current = false;
       fetchAnsweredQuestions();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -652,7 +661,7 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
               color="white"
               fontWeight="bold"
               borderRadius="xl"
-              onClick={() => { onComplete?.(); onClose(); }}
+              onClick={() => { fireOnComplete(); onClose(); }}
               _hover={{
                 bgGradient: "linear(135deg, primary.600, secondary.600)",
                 transform: "translateY(-1px)",
