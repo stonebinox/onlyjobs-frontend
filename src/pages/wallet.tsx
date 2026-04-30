@@ -49,6 +49,7 @@ import { useRouter } from "next/navigation";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
 import { useApi } from "@/hooks/useApi";
+import { trackEvent } from "@/utils/analytics";
 import Guide from "@/components/Guide/Guide";
 import { walletGuideConfig } from "@/config/guides/walletGuide";
 
@@ -251,6 +252,7 @@ const WalletPage = () => {
               await fetchBalance();
               await fetchTransactions();
               setCustomAmount("");
+              trackEvent("wallet_topup", { amount: topUpAmount });
               setModalMessage(
                 "Payment successful! Your wallet has been credited."
               );

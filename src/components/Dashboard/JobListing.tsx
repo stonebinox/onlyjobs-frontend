@@ -37,6 +37,7 @@ import { formatDate } from "@/utils/date-formatter";
 import { numberFormatter } from "@/utils/text-formatter";
 import { MatchScoreRing } from "./MatchScoreRing";
 import { AIReasoningBox } from "./AIReasoningBox";
+import { trackEvent } from "@/utils/analytics";
 
 // Reason categories matching the backend
 const REASON_CATEGORIES = {
@@ -133,6 +134,7 @@ const JobListing = ({
       );
       setSkippedLocally(true);
       closeReasonModal();
+      trackEvent("match_skipped", { reason: selectedReason });
     } catch (error) {
       console.error("Error skipping match:", error);
     } finally {
@@ -181,6 +183,7 @@ const JobListing = ({
     window.open(url, "_blank");
     setViewed(true);
     await markMatchClick(matchId);
+    trackEvent("match_applied");
     if (onApplyClick) {
       onApplyClick(job);
     }

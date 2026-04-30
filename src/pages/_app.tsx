@@ -3,10 +3,13 @@ import { AppProps } from "next/app";
 import Head from "next/head";
 import Script from "next/script";
 import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
+import { useRouter } from "next/router";
+import { useEffect } from "react";
 
 import theme from "../theme/theme";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GuideProvider } from "@/contexts/GuideContext";
+import { initAnalytics, trackPageView } from "@/utils/analytics";
 
 // Load fonts with next/font for optimal performance
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -31,6 +34,17 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+
+  useEffect(() => {
+    initAnalytics();
+    trackPageView(window.location.pathname + window.location.search);
+
+    const handleRouteChange = (url: string) => trackPageView(url);
+    router.events.on("routeChangeComplete", handleRouteChange);
+    return () => router.events.off("routeChangeComplete", handleRouteChange);
+  }, [router.events]);
+
   return (
     <>
       <Head>

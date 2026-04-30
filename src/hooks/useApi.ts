@@ -1152,6 +1152,26 @@ export const useApi = () => {
     }
   };
 
+  const triggerMatchForMe = async (): Promise<{ message?: string; retryAfterMinutes?: number; error?: string }> => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/trigger-for-me`,
+        { method: "POST", headers: getHeaders() }
+      );
+      const data = await response.json();
+      if (response.status === 429) {
+        return { retryAfterMinutes: data.retryAfterMinutes, error: data.message };
+      }
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to trigger matching");
+      }
+      return { message: data.message };
+    } catch (error) {
+      console.error("Trigger match error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   return {
     authenticateUser,
     getUserName,
@@ -1199,5 +1219,6 @@ export const useApi = () => {
     getChatConversation,
     getChatMemory,
     deleteChatMemory,
+    triggerMatchForMe,
   };
 };

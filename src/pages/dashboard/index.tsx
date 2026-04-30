@@ -26,6 +26,8 @@ import {
   AlertTitle,
   AlertDescription,
   HStack,
+  useToast,
+  Spinner,
 } from "@chakra-ui/react";
 import { EmailVerificationBanner } from "@/components/Dashboard/EmailVerificationBanner";
 import { ResumeRequiredBanner } from "@/components/Dashboard/ResumeRequiredBanner";
@@ -40,6 +42,7 @@ import {
 } from "react-icons/fi";
 import { User } from "@/types/User";
 
+import { trackEvent } from "@/utils/analytics";
 import DashboardLayout from "../../components/Layout/DashboardLayout";
 import StatCard from "../../components/Dashboard/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
@@ -80,6 +83,7 @@ const Dashboard = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
+  const toast = useToast();
   const {
     getAvailableJobsCount,
     getActiveUserCount,
@@ -88,6 +92,7 @@ const Dashboard = () => {
     getMatches,
     checkWalletBalance,
     getUserProfile,
+    triggerMatchForMe,
   } = useApi();
 
   const fetchMatches = async (minScore: number = 65) => {
@@ -99,6 +104,11 @@ const Dashboard = () => {
         console.error("Error fetching matches:", response.error);
       } else {
         setJobs(response);
+        // Track first time user views matches this session
+        if (response.length > 0 && !sessionStorage.getItem("oj_first_match_viewed")) {
+          sessionStorage.setItem("oj_first_match_viewed", "1");
+          trackEvent("first_match_viewed");
+        }
       }
     } catch (error) {
       console.error("Error fetching matches:", error);
@@ -257,6 +267,7 @@ const Dashboard = () => {
 
       setUploadSuccess(true);
       setUploadedFile(null);
+      trackEvent("cv_uploaded");
 
       // Reset the file input (optional)
       const fileInput = document.getElementById(
@@ -264,6 +275,19 @@ const Dashboard = () => {
       ) as HTMLInputElement;
 
       if (fileInput) fileInput.value = "";
+
+      // Fire-and-forget: trigger first match run for this user
+      triggerMatchForMe().then((result) => {
+        if (!result.error) {
+          toast({
+            title: "Running your first match",
+            description: "Results will appear in your dashboard in a few minutes.",
+            status: "info",
+            duration: 6000,
+            isClosable: true,
+          });
+        }
+      });
 
       setTimeout(() => {
         onClose();
@@ -438,6 +462,26 @@ const Dashboard = () => {
                       openJobQuestionsDrawer={openJobQuestionsDrawer}
                       onApplyClick={handleApplyClick}
                     />
+                    {!loading && jobs.length === 0 && (
+                      <Box
+                        textAlign="center"
+                        py={12}
+                        px={4}
+                        borderRadius="2xl"
+                        bg="surface.card"
+                        border="1px dashed"
+                        borderColor="surface.border"
+                        mt={4}
+                      >
+                        <Spinner size="sm" color="primary.400" mb={3} />
+                        <Heading size="sm" color="text.primary" mb={2}>
+                          Your matches are on their way
+                        </Heading>
+                        <Text color="text.secondary" fontSize="sm" maxW="360px" mx="auto">
+                          Matching runs nightly around 3 AM UTC. Upload your CV and complete your Q&amp;A to ensure the best results. New accounts get a first match run shortly after uploading.
+                        </Text>
+                      </Box>
+                    )}
                   </Box>
                 </TabPanel>
                 <TabPanel px={0}>

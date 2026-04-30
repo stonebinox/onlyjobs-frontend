@@ -1,5 +1,6 @@
 import { useApi } from "@/hooks/useApi";
 import { createContext, useContext, useEffect, useState } from "react";
+import { identifyUser, trackEvent } from "@/utils/analytics";
 
 interface AuthContextProps {
   userId: string | null;
@@ -28,6 +29,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(response.token);
       setUserId(response.id);
       setIsLoggedIn(true);
+      identifyUser(response.id);
+      if (response.isNewUser) {
+        trackEvent("signup_complete");
+      }
     } else {
       console.error(response.error);
       throw new Error("Authentication failed");
