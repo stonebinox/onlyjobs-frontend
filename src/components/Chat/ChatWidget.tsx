@@ -200,10 +200,9 @@ export default function ChatWidget() {
         placement="right"
         onClose={handleClose}
         size={drawerSize}
-        blockScrollOnMount={false}
       >
         <DrawerOverlay bg="blackAlpha.400" />
-        <DrawerContent borderLeftRadius={{ md: "2xl" }}>
+        <DrawerContent borderLeftRadius={{ md: "2xl" }} h="100dvh">
           <DrawerHeader
             bgGradient="linear(135deg, #F5F3FF 0%, #FDF2F8 50%, #FFF7ED 100%)"
             borderBottom="1px solid"
@@ -239,7 +238,7 @@ export default function ChatWidget() {
             </HStack>
           </DrawerHeader>
 
-          <DrawerBody p={0}>
+          <DrawerBody p={0} flex="1" minH="0" overflowY="auto">
             {showHistory ? (
               <VStack align="stretch" spacing={0} p={4}>
                 <Text fontSize="sm" fontWeight="semibold" color="text.secondary" mb={3}>
@@ -272,8 +271,8 @@ export default function ChatWidget() {
               </VStack>
             ) : (
               <Box
-                h="full"
-                overflowY="auto"
+                flex="1"
+                minH="0"
                 p={4}
                 display="flex"
                 flexDirection="column"
@@ -375,7 +374,13 @@ export default function ChatWidget() {
           </DrawerBody>
 
           {!showHistory && (
-            <DrawerFooter borderTop="1px solid" borderColor="gray.200" p={3}>
+            <DrawerFooter
+              borderTop="1px solid"
+              borderColor="gray.200"
+              px={3}
+              pt={3}
+              style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+            >
               <HStack w="full" spacing={2}>
                 <Input
                   placeholder="Type a message..."
