@@ -59,6 +59,7 @@ import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
 import Guide from "@/components/Guide/Guide";
 import { dashboardGuideConfig } from "@/config/guides/dashboardGuide";
 import { GettingStartedChecklist } from "@/components/Dashboard/GettingStartedChecklist";
+import { AllJobsTab } from "@/components/AllJobsTab";
 
 const Dashboard = () => {
   const [availableJobsCount, setAvailableJobsCount] = useState<number>(0);
@@ -448,6 +449,9 @@ const Dashboard = () => {
                 <Tab fontWeight="semibold" px={4}>Applied</Tab>
                 <Tab fontWeight="semibold" px={4}>Viewed</Tab>
                 <Tab fontWeight="semibold" px={4}>Skipped</Tab>
+                {user?.isVerified && (
+                  <Tab fontWeight="semibold" px={4}>All Jobs</Tab>
+                )}
               </TabList>
               <TabPanels>
                 <TabPanel px={0}>
@@ -509,6 +513,11 @@ const Dashboard = () => {
                     onApplyClick={handleApplyClick}
                   />
                 </TabPanel>
+                {user?.isVerified && (
+                  <TabPanel px={0}>
+                    <AllJobsTab user={user} walletBalance={walletBalance} openJobQuestionsDrawer={openJobQuestionsDrawer} onApplyClick={handleApplyClick} onBalanceChange={(newBalance) => setWalletBalance(newBalance)} />
+                  </TabPanel>
+                )}
               </TabPanels>
             </Tabs>
           </Box>

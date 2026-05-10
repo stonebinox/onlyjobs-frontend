@@ -1162,6 +1162,42 @@ export const createApiClient = () => {
     }
   };
 
+  const getAllJobs = async (page: number = 1, source?: string) => {
+    try {
+      const params = new URLSearchParams({ page: String(page) });
+      if (source) params.set("source", source);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/jobs?${params.toString()}`,
+        { method: "GET", headers: getHeaders() }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch jobs");
+      }
+      return await response.json(); // { jobs, total, page, pages, sources }
+    } catch (error) {
+      console.error("Fetch all jobs error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const matchJobOnDemand = async (jobId: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/match`,
+        { method: "POST", headers: getHeaders() }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.message || "Failed to match job");
+      }
+      return await response.json(); // { success, match }
+    } catch (error) {
+      console.error("Match job on-demand error:", error);
+      throw error;
+    }
+  };
+
   const triggerMatchForMe = async (): Promise<{ message?: string; retryAfterMinutes?: number; error?: string }> => {
     try {
       const response = await fetch(
@@ -1231,5 +1267,7 @@ export const createApiClient = () => {
     deleteChatMemory,
     triggerMatchForMe,
     getPublicStats,
+    getAllJobs,
+    matchJobOnDemand,
   };
 };
