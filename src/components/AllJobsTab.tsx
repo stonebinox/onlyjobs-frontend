@@ -324,7 +324,7 @@ const JobCard = ({
 
   return (
     <Box
-      p={5}
+      p={{ base: 4, md: 5 }}
       borderRadius="2xl"
       border="1px solid"
       borderColor="surface.border"
@@ -332,7 +332,7 @@ const JobCard = ({
       boxShadow="card"
       _hover={{ boxShadow: "cardHover", borderColor: "primary.200" }}
     >
-      <Flex gap={4} align="flex-start">
+      <Flex gap={4} align="flex-start" direction={{ base: "column", sm: "row" }}>
         {/* Match score (if analyzed) */}
         {hasMatch && (
           <Box flexShrink={0}>
@@ -398,7 +398,7 @@ const JobCard = ({
         </Box>
 
         {/* Actions */}
-        <VStack spacing={2} align="flex-end" flexShrink={0}>
+        <VStack spacing={2} align={{ base: "flex-start", sm: "flex-end" }} flexShrink={0} width={{ base: "full", sm: "auto" }}>
           <Button
             as="a"
             href={job.url}
@@ -407,6 +407,7 @@ const JobCard = ({
             size="sm"
             variant="outline"
             rightIcon={<FiExternalLink />}
+            width={{ base: "full", sm: "auto" }}
           >
             View
           </Button>
@@ -424,8 +425,9 @@ const JobCard = ({
                 isLoading={isMatchingThisJob}
                 loadingText="Analyzing"
                 onClick={onMatch}
+                width={{ base: "full", sm: "auto" }}
               >
-                Check Compatibility ($0.05)
+                Analyze ($0.05)
               </Button>
             </Tooltip>
           )}
