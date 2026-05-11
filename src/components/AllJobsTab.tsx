@@ -40,6 +40,7 @@ interface RawJob {
     reasoning: string;
     skipped: boolean;
     applied: boolean | null;
+    updatedAt: string;
   } | null;
 }
 
@@ -61,7 +62,7 @@ function toJobResult(job: RawJob): JobResult {
     reasoning: job.match!.reasoning,
     clicked: false,
     createdAt: "",
-    updatedAt: "",
+    updatedAt: job.match!.updatedAt || new Date().toISOString(),
     skipped: job.match!.skipped,
     applied: job.match!.applied,
     job: {
