@@ -14,6 +14,7 @@ export type User = {
   name: string | null;
   email: string;
   phone: string | null;
+  currentLocation?: string | null;
   createdAt: Date;
   resume: Resume | null;
   preferences: Preferences | null;

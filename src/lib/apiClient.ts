@@ -760,7 +760,8 @@ export const createApiClient = () => {
       portfolio?: string;
       twitter?: string;
       website?: string;
-    }
+    },
+    currentLocation?: string | null
   ) => {
     try {
       const body: any = {};
@@ -775,6 +776,9 @@ export const createApiClient = () => {
       }
       if (socialLinks !== undefined) {
         body.socialLinks = socialLinks;
+      }
+      if (currentLocation !== undefined) {
+        body.currentLocation = currentLocation;
       }
 
       const response = await fetch(

@@ -61,6 +61,8 @@ const SettingsPage = () => {
   const [locations, setLocations] = useState<string>("");
   const [remoteOnly, setRemoteOnly] = useState<boolean>(false);
   const [minSalary, setMinSalary] = useState<number>(0);
+  const [currentLocation, setCurrentLocation] = useState<string>("");
+  const [locationSaving, setLocationSaving] = useState<boolean>(false);
   const [newEmailInput, setNewEmailInput] = useState<string>("");
   const [emailChangeLoading, setEmailChangeLoading] = useState<boolean>(false);
   const [matchingEnabled, setMatchingEnabled] = useState<boolean>(true);
@@ -82,6 +84,7 @@ const SettingsPage = () => {
     factoryResetUserAccount,
     deleteUserAccount,
     resetGuideProgress,
+    updateUserProfile,
   } = createApiClient();
   const auth = useAuth();
   const router = useRouter();
@@ -353,6 +356,36 @@ const SettingsPage = () => {
     fontSize: "sm",
   };
 
+  const handleSaveCurrentLocation = async () => {
+    try {
+      setLocationSaving(true);
+      const normalizedLocation = currentLocation.trim() || null;
+      const response = await updateUserProfile(undefined, undefined, undefined, undefined, normalizedLocation);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      setUser((prev) => prev ? { ...prev, currentLocation: currentLocation || null } : prev);
+      toast({
+        title: "Location saved",
+        description: "Your current location has been updated",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error: any) {
+      console.error("Error saving location:", error);
+      toast({
+        title: "Error saving location",
+        description: error.message || "There was an error saving your location",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    } finally {
+      setLocationSaving(false);
+    }
+  };
+
   const handleEmailUpdate = async () => {
     // legacy handler no-op; email change is handled via verified flow
   };
@@ -423,6 +456,7 @@ const SettingsPage = () => {
     if (!user) return;
 
     setEmail(user.email);
+    setCurrentLocation(user.currentLocation || "");
     setMatchScore(user.preferences?.minScore || 0);
     setRemoteOnly(user.preferences?.remoteOnly || false);
     setMinSalary(user.preferences?.minSalary || 0);
@@ -494,6 +528,31 @@ const SettingsPage = () => {
                 </FormControl>
                 <Button variant="outline" onClick={onEmailChangeOpen}>
                   Change Email
+                </Button>
+              </Skeleton>
+              <Divider />
+              <Skeleton isLoaded={!loading}>
+                <FormControl id="currentLocation">
+                  <FormLabel>Current Location</FormLabel>
+                  <Text color={textColor} fontSize="sm" mb={2}>
+                    Where you are currently based. Used for remote eligibility assessment.
+                  </Text>
+                  <Input
+                    value={currentLocation}
+                    onChange={(e) => setCurrentLocation(e.target.value)}
+                    placeholder="e.g. London, UK"
+                    disabled={locationSaving}
+                  />
+                </FormControl>
+                <Button
+                  colorScheme="blue"
+                  variant="outline"
+                  onClick={handleSaveCurrentLocation}
+                  isLoading={locationSaving}
+                  leftIcon={<FaSave />}
+                  mt={2}
+                >
+                  Save Location
                 </Button>
               </Skeleton>
               <Divider />
