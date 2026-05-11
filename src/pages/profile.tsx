@@ -493,7 +493,7 @@ const ProfilePage = () => {
                     <HStack>
                       <Icon as={FaMapMarkerAlt} color={textColor} />
                       <Text color={textColor}>
-                        {user?.preferences?.location.join(", ") || "-"} (
+                        {user?.currentLocation || "-"} (
                         {user?.preferences?.remoteOnly ? "Remote" : "On-site"})
                       </Text>
                     </HStack>
