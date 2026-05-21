@@ -35,12 +35,15 @@ export const GuideProvider = ({
   const [guideProgress, setGuideProgress] = useState<GuideProgress>({});
   const [isLoading, setIsLoading] = useState(true);
   const { getGuideProgress, updateGuideProgress, resetGuideProgress: resetGuideProgressApi } = createApiClient();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, isReady } = useAuth();
   const hasLoadedRef = useRef(false);
 
   // Load guide progress on mount and when user logs in
   useEffect(() => {
     const loadGuideProgress = async () => {
+      if (!isReady) {
+        return;
+      }
       if (isLoggedIn && !hasLoadedRef.current) {
         hasLoadedRef.current = true;
         try {
@@ -63,7 +66,7 @@ export const GuideProvider = ({
 
     loadGuideProgress();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoggedIn]);
+  }, [isLoggedIn, isReady]);
 
   const updatePageProgress = useCallback(
     async (pageId: string, completed?: boolean, skipped?: boolean) => {
