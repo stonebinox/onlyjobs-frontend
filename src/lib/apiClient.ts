@@ -11,6 +11,26 @@ const getHeaders = () => {
   return headers;
 };
 
+const authFetch = async (url: string, options: RequestInit = {}): Promise<Response> => {
+  const headers = getHeaders();
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      ...headers,
+      ...(options.headers || {}),
+    },
+  });
+
+  if (response.status === 401) {
+    localStorage.removeItem("onlyjobs_token");
+    localStorage.removeItem("onlyjobs_user_id");
+    window.dispatchEvent(new Event("auth:expired"));
+    throw new Error("Session expired");
+  }
+
+  return response;
+};
+
 export const createApiClient = () => {
   const authenticateUser = async (email: string, password: string) => {
     try {
@@ -39,11 +59,10 @@ export const createApiClient = () => {
 
   const getUserName = async (userId: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/username`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -71,11 +90,10 @@ export const createApiClient = () => {
 
   const getAvailableJobsCount = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/jobs/available-count`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -95,11 +113,10 @@ export const createApiClient = () => {
 
   const getActiveUserCount = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/active-count`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -151,11 +168,10 @@ export const createApiClient = () => {
 
   const getMatchCount = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches/count`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -175,11 +191,10 @@ export const createApiClient = () => {
 
   const getMatches = async (minScore: number = 0) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches?minMatchScore=${minScore}`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -199,11 +214,10 @@ export const createApiClient = () => {
 
   const markMatchClick = async (matchId: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches/click`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({ matchId }),
         }
       );
@@ -240,11 +254,10 @@ export const createApiClient = () => {
         }
       }
 
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches/skip`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify(body),
         }
       );
@@ -283,11 +296,10 @@ export const createApiClient = () => {
         }
       }
 
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches/applied`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify(body),
         }
       );
@@ -308,11 +320,10 @@ export const createApiClient = () => {
 
   const getQuestion = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/question`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -336,11 +347,10 @@ export const createApiClient = () => {
     mode: "text" | "voice" = "text"
   ) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/answer`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({
             answer: {
               answer,
@@ -398,11 +408,10 @@ export const createApiClient = () => {
 
   const getAnsweredQuestions = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/answers`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -424,11 +433,10 @@ export const createApiClient = () => {
 
   const skipQuestion = async (questionId: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/skip-question`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({ questionId }),
         }
       );
@@ -452,11 +460,10 @@ export const createApiClient = () => {
     regenerate?: boolean
   ) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/create-answer`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({
             question,
             jobResultId,
@@ -480,11 +487,10 @@ export const createApiClient = () => {
 
   const getMatchQnAHistory = async (matchRecordId: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/match-qna/${matchRecordId}`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -502,11 +508,10 @@ export const createApiClient = () => {
 
   const getUserProfile = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/profile`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
       if (!response.ok) {
@@ -523,11 +528,10 @@ export const createApiClient = () => {
 
   const updateUserEmail = async (email: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/update-email`,
         {
           method: "PUT",
-          headers: getHeaders(),
           body: JSON.stringify({ email }),
         }
       );
@@ -548,11 +552,10 @@ export const createApiClient = () => {
     newPassword: string
   ) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/password`,
         {
           method: "PUT",
-          headers: getHeaders(),
           body: JSON.stringify({ oldPassword: currentPassword, newPassword }),
         }
       );
@@ -570,11 +573,10 @@ export const createApiClient = () => {
 
   const updateMinMatchScore = async (minScore: number) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/update-mini-score`,
         {
           method: "PUT",
-          headers: getHeaders(),
           body: JSON.stringify({ minScore }),
         }
       );
@@ -594,11 +596,10 @@ export const createApiClient = () => {
 
   const requestEmailChange = async (newEmail: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/email-change/request`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({ newEmail }),
         }
       );
@@ -642,11 +643,10 @@ export const createApiClient = () => {
 
   const resendVerificationEmail = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/resend-verification`,
         {
           method: "POST",
-          headers: getHeaders(),
         }
       );
 
@@ -689,11 +689,10 @@ export const createApiClient = () => {
 
   const factoryResetUserAccount = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/factory-reset`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({}),
         }
       );
@@ -716,11 +715,10 @@ export const createApiClient = () => {
 
   const deleteUserAccount = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/delete`,
         {
           method: "DELETE",
-          headers: getHeaders(),
           body: JSON.stringify({}),
         }
       );
@@ -781,11 +779,10 @@ export const createApiClient = () => {
         body.currentLocation = currentLocation;
       }
 
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/profile`,
         {
           method: "PUT",
-          headers: getHeaders(),
           body: JSON.stringify(body),
         }
       );
@@ -814,11 +811,10 @@ export const createApiClient = () => {
     matchingEnabled: boolean;
   }>) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/preferences`,
         {
           method: "PUT",
-          headers: getHeaders(),
           body: JSON.stringify(preferences),
         }
       );
@@ -839,11 +835,10 @@ export const createApiClient = () => {
 
   const searchSkills = async (query: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/skills/search?q=${encodeURIComponent(query)}`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -863,11 +858,10 @@ export const createApiClient = () => {
 
   const getWalletBalance = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/wallet/balance`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -886,11 +880,10 @@ export const createApiClient = () => {
 
   const createPaymentOrder = async (amount: number) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/wallet/create-order`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({ amount }),
         }
       );
@@ -913,11 +906,10 @@ export const createApiClient = () => {
     signature: string
   ) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/wallet/verify-payment`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({ orderId, paymentId, signature }),
         }
       );
@@ -936,11 +928,10 @@ export const createApiClient = () => {
 
   const getTransactions = async (page: number = 1, limit: number = 20) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/wallet/transactions?page=${page}&limit=${limit}`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -973,11 +964,10 @@ export const createApiClient = () => {
 
   const getGuideProgress = async () => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/guide-progress`,
         {
           method: "GET",
-          headers: getHeaders(),
         }
       );
 
@@ -1000,11 +990,10 @@ export const createApiClient = () => {
     skipped?: boolean
   ) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/guide-progress`,
         {
           method: "PUT",
-          headers: getHeaders(),
           body: JSON.stringify({ pageId, completed, skipped }),
         }
       );
@@ -1023,11 +1012,10 @@ export const createApiClient = () => {
 
   const resetGuideProgress = async (pageId?: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/guide-progress/reset`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({ pageId }),
         }
       );
@@ -1095,49 +1083,38 @@ export const createApiClient = () => {
   };
 
   const sendChatMessage = async (message: string, conversationId?: string) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+    const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
       method: "POST",
-      headers: getHeaders(),
       body: JSON.stringify({ message, conversationId }),
     });
     if (!response.ok) {
       const errorData = await response.json();
-      if (response.status === 401) {
-        throw new Error("Your session has expired. Please log in again.");
-      }
       throw new Error(errorData.error || errorData.message || "Chat failed");
     }
     return response.json();
   };
 
   const getChatConversations = async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/conversations`, {
-      headers: getHeaders(),
-    });
+    const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/conversations`);
     if (!response.ok) throw new Error("Failed to fetch conversations");
     return response.json();
   };
 
   const getChatConversation = async (id: string) => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/conversations/${id}`, {
-      headers: getHeaders(),
-    });
+    const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/conversations/${id}`);
     if (!response.ok) throw new Error("Failed to fetch conversation");
     return response.json();
   };
 
   const getChatMemory = async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/memory`, {
-      headers: getHeaders(),
-    });
+    const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/memory`);
     if (!response.ok) throw new Error("Failed to fetch memory");
     return response.json();
   };
 
   const deleteChatMemory = async () => {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/memory`, {
+    const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/memory`, {
       method: "DELETE",
-      headers: getHeaders(),
     });
     if (!response.ok) throw new Error("Failed to delete memory");
     return response.json();
@@ -1145,11 +1122,10 @@ export const createApiClient = () => {
 
   const recordApplicationOutcome = async (matchId: string, outcome: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches/${matchId}/outcome`,
         {
           method: "POST",
-          headers: getHeaders(),
           body: JSON.stringify({ outcome }),
         }
       );
@@ -1170,9 +1146,9 @@ export const createApiClient = () => {
     try {
       const params = new URLSearchParams({ page: String(page) });
       if (source) params.set("source", source);
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/jobs?${params.toString()}`,
-        { method: "GET", headers: getHeaders() }
+        { method: "GET" }
       );
       if (!response.ok) {
         const errorData = await response.json();
@@ -1187,9 +1163,9 @@ export const createApiClient = () => {
 
   const matchJobOnDemand = async (jobId: string) => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/jobs/${jobId}/match`,
-        { method: "POST", headers: getHeaders() }
+        { method: "POST" }
       );
       if (!response.ok) {
         const errorData = await response.json();
@@ -1204,9 +1180,9 @@ export const createApiClient = () => {
 
   const triggerMatchForMe = async (): Promise<{ message?: string; retryAfterMinutes?: number; error?: string }> => {
     try {
-      const response = await fetch(
+      const response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches/trigger-for-me`,
-        { method: "POST", headers: getHeaders() }
+        { method: "POST" }
       );
       const data = await response.json();
       if (response.status === 429) {

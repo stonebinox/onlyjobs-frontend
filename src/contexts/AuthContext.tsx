@@ -59,6 +59,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setIsReady(true);
   }, []);
 
+  useEffect(() => {
+    const handleExpired = () => {
+      setToken(null);
+      setUserId(null);
+      setIsLoggedIn(false);
+    };
+    window.addEventListener("auth:expired", handleExpired);
+    return () => window.removeEventListener("auth:expired", handleExpired);
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{ userId, token, authenticate, logout, isLoggedIn, isReady }}
