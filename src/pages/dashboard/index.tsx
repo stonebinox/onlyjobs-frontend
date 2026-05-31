@@ -97,6 +97,7 @@ const Dashboard = () => {
     checkWalletBalance,
     getUserProfile,
     triggerMatchForMe,
+    touchSession,
   } = createApiClient();
 
   const fetchMatches = async (minScore: number = 30) => {
@@ -193,6 +194,7 @@ const Dashboard = () => {
     fetchAvailableJobsCount();
     fetchWalletBalance();
     fetchUserProfile();
+    touchSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.isReady, auth?.isLoggedIn]);
 

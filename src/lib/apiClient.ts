@@ -1178,6 +1178,17 @@ export const createApiClient = () => {
     }
   };
 
+  const touchSession = async () => {
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/session/touch`, {
+        method: "POST",
+        headers: getHeaders(),
+      });
+    } catch {
+      // Fire-and-forget: don't block dashboard if touch fails
+    }
+  };
+
   const triggerMatchForMe = async (): Promise<{ message?: string; retryAfterMinutes?: number; error?: string }> => {
     try {
       const response = await authFetch(
@@ -1246,6 +1257,7 @@ export const createApiClient = () => {
     getChatMemory,
     deleteChatMemory,
     triggerMatchForMe,
+    touchSession,
     getPublicStats,
     getAllJobs,
     matchJobOnDemand,
