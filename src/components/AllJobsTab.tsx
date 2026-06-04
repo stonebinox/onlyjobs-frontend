@@ -346,7 +346,7 @@ const JobCard = ({
 
         {/* Job info */}
         <Box flex={1} minW={0}>
-          <HStack spacing={2} mb={1} flexWrap="wrap">
+          <HStack spacing={2} mb={1} flexWrap="wrap" minW={0}>
             <Heading size="sm" noOfLines={1} color="text.primary">
               {job.title}
             </Heading>
@@ -367,7 +367,7 @@ const JobCard = ({
           {job.location && job.location.length > 0 && (
             <HStack spacing={1} mb={1}>
               <FiMapPin size="12px" color="var(--chakra-colors-text-tertiary)" />
-              <Text fontSize="xs" color="text.tertiary">
+              <Text fontSize="xs" color="text.tertiary" noOfLines={1}>
                 {job.location.join(", ")}
               </Text>
             </HStack>

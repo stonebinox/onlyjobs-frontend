@@ -44,6 +44,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         ml={{ base: 0, md: 60 }}
         p="4"
         pb={{ base: 12, md: 10 }}
+        overflow="hidden"
       >
         {children}
       </Box>

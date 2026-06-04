@@ -243,7 +243,7 @@ const JobListing = ({
           borderColor="surface.borderSubtle"
         >
           {/* Left: Job Info */}
-          <VStack align="start" spacing={2} flex={1}>
+          <VStack align="start" spacing={2} flex={1} minW={0}>
             <Heading
               as="h3"
               size={{ base: "sm", md: "md" }}
@@ -274,7 +274,7 @@ const JobListing = ({
                   fontWeight="medium"
                 >
                   <FiMapPin size={12} />
-                  <Text>{location.join(", ")}</Text>
+                  <Text noOfLines={1}>{location.join(", ")}</Text>
                 </HStack>
               </WrapItem>
               <WrapItem>
