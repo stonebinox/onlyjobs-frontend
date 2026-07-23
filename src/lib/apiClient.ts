@@ -616,7 +616,7 @@ export const createApiClient = () => {
     }
   };
 
-  const verifyEmailChange = async (token: string) => {
+  const verifyEmailChange = async (token: string, signal?: AbortSignal) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/email-change/verify`,
@@ -626,6 +626,7 @@ export const createApiClient = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ token }),
+          signal,
         }
       );
 
@@ -662,7 +663,7 @@ export const createApiClient = () => {
     }
   };
 
-  const verifyInitialEmail = async (token: string) => {
+  const verifyInitialEmail = async (token: string, signal?: AbortSignal) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/verify-email`,
@@ -672,6 +673,7 @@ export const createApiClient = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ token }),
+          signal,
         }
       );
 

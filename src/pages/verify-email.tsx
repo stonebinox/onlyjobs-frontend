@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import {
   Badge,
@@ -21,6 +21,8 @@ import { createApiClient } from "@/lib/apiClient";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 
+const VERIFY_TIMEOUT_MS = 15_000;
+
 const VerifyEmailPage = () => {
   const router = useRouter();
   const { verifyEmailChange, verifyInitialEmail } = createApiClient();
@@ -33,46 +35,76 @@ const VerifyEmailPage = () => {
   const textColor = useColorModeValue("gray.700", "gray.200");
   const bgColor = useColorModeValue("gray.50", "gray.900");
 
-  useEffect(() => {
-    // Wait for router to be ready before accessing query params
-    if (!router.isReady) return;
+  const hasRun = useRef(false);
 
-    const token = router.query.token;
+  useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+
+    const token = new URLSearchParams(window.location.search).get("token");
+
+    if (!token) {
+      setStatus("error");
+      setMessage("Verification token is missing from the URL.");
+      return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), VERIFY_TIMEOUT_MS);
+
+    const TIMEOUT_MSG =
+      "Verification timed out — the link may be invalid or the server is slow. Please try again or request a new verification link.";
 
     const doVerify = async () => {
-      if (!token || typeof token !== "string") {
-        setStatus("error");
-        setMessage("Verification token is missing from the URL.");
-        return;
-      }
-
       setStatus("pending");
       setMessage("Verifying your email...");
 
-      // Try initial verification first
-      const initialResponse = await verifyInitialEmail(token);
-      if (!initialResponse.error) {
-        setStatus("success");
-        setMessage("Your email has been verified successfully! You can now receive job matches.");
-        setIsEmailChange(false);
-        return;
-      }
+      try {
+        const initialResponse = await verifyInitialEmail(token, controller.signal);
 
-      // If initial verification fails, try email change verification
-      const changeResponse = await verifyEmailChange(token);
-      if (changeResponse.error) {
+        if (controller.signal.aborted) {
+          clearTimeout(timeoutId);
+          setStatus("error");
+          setMessage(TIMEOUT_MSG);
+          return;
+        }
+
+        if (!initialResponse.error) {
+          clearTimeout(timeoutId);
+          setStatus("success");
+          setMessage("Your email has been verified successfully! You can now receive job matches.");
+          setIsEmailChange(false);
+          return;
+        }
+
+        const changeResponse = await verifyEmailChange(token, controller.signal);
+        clearTimeout(timeoutId);
+
+        if (controller.signal.aborted) {
+          setStatus("error");
+          setMessage(TIMEOUT_MSG);
+          return;
+        }
+
+        if (changeResponse.error) {
+          setStatus("error");
+          setMessage(changeResponse.error);
+        } else {
+          setStatus("success");
+          setMessage("Your email has been updated successfully. Please sign in with your new email.");
+          setIsEmailChange(true);
+        }
+      } catch (err: unknown) {
+        clearTimeout(timeoutId);
+        void err;
         setStatus("error");
-        setMessage(changeResponse.error);
-      } else {
-        setStatus("success");
-        setMessage("Your email has been updated successfully. Please sign in with your new email.");
-        setIsEmailChange(true);
+        setMessage("An unexpected error occurred during verification. Please try again or request a new verification link.");
       }
     };
 
     doVerify();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.isReady, router.query.token]);
+  }, []);
 
   const handleGoToLogin = () => {
     router.push("/");
