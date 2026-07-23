@@ -37,6 +37,7 @@ import { createApiClient } from "@/lib/apiClient";
 import { Question } from "@/types/Question";
 import { AnsweredQuestion } from "@/types/AnsweredQuestion";
 import { AnsweredQuestions } from "./AnsweredQuestions";
+import { GenerateAnswer } from "./GenerateAnswer";
 
 interface QADrawerProps {
   isOpen: boolean;
@@ -650,6 +651,13 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
               changeCurrentQuestion={changeCurrentQuestion}
             />
           </Skeleton>
+
+          {!onboardingMode && (
+            <>
+              <Divider my={6} />
+              <GenerateAnswer />
+            </>
+          )}
 
           {onboardingMode && answeredQuestions.length >= 1 && (
             <Button

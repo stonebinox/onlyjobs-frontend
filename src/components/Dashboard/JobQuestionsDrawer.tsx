@@ -33,7 +33,7 @@ export const JobQuestionsDrawer = ({
           {jobResult?.job?.title} at {jobResult?.job?.company}
         </DrawerHeader>
         <DrawerBody pt={6}>
-          <GenerateAnswer jobResultId={jobResult?._id || ""} />
+          {jobResult?._id && <GenerateAnswer jobResultId={jobResult._id} />}
           <ApplicationStatusBanner
             jobResult={jobResult}
             onStatusUpdate={onStatusUpdate}

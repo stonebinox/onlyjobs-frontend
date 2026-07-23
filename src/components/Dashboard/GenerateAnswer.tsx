@@ -146,14 +146,20 @@ export const GenerateAnswer = ({ jobResultId }: GenerateAnswerProps) => {
         Generate Answer
       </Heading>
       <Text size="md" color="gray.700">
-        Paste a question here from any job application to generate an answer
-        based on your profile. The AI will do its best to match your{" "}
-        <i>style</i> of writing and maintain consistency with previous answers
-        for this application.
+        {jobResultId ? (
+          <>
+            Paste a question here from any job application to generate an answer
+            based on your profile. The AI will do its best to match your{" "}
+            <i>style</i> of writing and maintain consistency with previous answers
+            for this application.
+          </>
+        ) : (
+          "Paste any job-application question and get an answer drafted from your profile, in your writing style."
+        )}
       </Text>
 
-      {/* Q&A History */}
-      {qnaHistory.length > 0 && (
+      {/* Q&A History — only shown in job context */}
+      {jobResultId && qnaHistory.length > 0 && (
         <Box width="100%">
           <Text fontWeight="semibold" fontSize="sm" color="gray.600" mb={3}>
             Previous Q&A ({qnaHistory.length})
