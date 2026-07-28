@@ -43,6 +43,9 @@ export const JobMatches = ({
   onMinScoreChange,
 }: JobMatchesProps) => {
   const [minScore, setMinScore] = useState<number>(initialMinScore ?? 30);
+  const [displayScore, setDisplayScore] = useState<number>(
+    initialMinScore ?? 30
+  );
   const initialSynced = useRef(false);
 
   const unviewedJobs = jobs.filter((job) => !job.clicked && !job.skipped);
@@ -52,6 +55,7 @@ export const JobMatches = ({
     if (initialMinScore !== undefined && !initialSynced.current) {
       initialSynced.current = true;
       setMinScore(initialMinScore);
+      setDisplayScore(initialMinScore);
     }
   }, [initialMinScore]);
 
@@ -70,12 +74,16 @@ export const JobMatches = ({
           </Text>
           <Slider
             aria-label="match-score"
+            min={30}
+            max={100}
+            step={5}
+            value={displayScore}
+            onChange={(val) => setDisplayScore(val)}
             onChangeEnd={(val) => setMinScore(val)}
-            value={minScore}
             data-guide="match-score-slider"
           >
             <SliderMark
-              value={minScore}
+              value={displayScore}
               textAlign={"center"}
               bg={theme.colors.brand[50]}
               color={theme.colors.brand[800]}
@@ -84,7 +92,7 @@ export const JobMatches = ({
               ml="-5"
               w="12"
             >
-              {minScore}%
+              {displayScore}%
             </SliderMark>
             <SliderTrack>
               <SliderFilledTrack bg={theme.colors.brand[900]} />

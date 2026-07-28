@@ -46,7 +46,7 @@ import { trackEvent } from "@/utils/analytics";
 import DashboardLayout from "../../components/Layout/DashboardLayout";
 import StatCard from "../../components/Dashboard/StatCard";
 import { useAuth } from "@/contexts/AuthContext";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createApiClient } from "@/lib/apiClient";
 import { JobMatches } from "@/components/Dashboard/JobMatches";
@@ -84,6 +84,7 @@ const Dashboard = () => {
   const [currentMinScore, setCurrentMinScore] = useState<number>(30);
   const [pendingFirstMatch, setPendingFirstMatch] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
+  const fetchMatchesSeqRef = useRef(0);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const auth = useAuth();
   const router = useRouter();
@@ -101,9 +102,12 @@ const Dashboard = () => {
   } = createApiClient();
 
   const fetchMatches = async (minScore: number = 30) => {
+    const seq = ++fetchMatchesSeqRef.current;
     try {
       setLoading(true);
       const response = await getMatches(minScore);
+      // Ignore stale responses: a newer fetchMatches started after this one
+      if (seq !== fetchMatchesSeqRef.current) return;
 
       if (response.error) {
         console.error("Error fetching matches:", response.error);
@@ -116,9 +120,13 @@ const Dashboard = () => {
         }
       }
     } catch (error) {
+      if (seq !== fetchMatchesSeqRef.current) return;
       console.error("Error fetching matches:", error);
     } finally {
-      setLoading(false);
+      // Only the latest in-flight request may clear the loading state
+      if (seq === fetchMatchesSeqRef.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -464,7 +472,7 @@ const Dashboard = () => {
                       fetchMatches={fetchMatches}
                       openJobQuestionsDrawer={openJobQuestionsDrawer}
                       onApplyClick={handleApplyClick}
-                      initialMinScore={user?.preferences?.minScore ?? 30}
+                      initialMinScore={user?.preferences?.minScore}
                       onMinScoreChange={setCurrentMinScore}
                     />
                     {!loading && jobs.length === 0 && (
