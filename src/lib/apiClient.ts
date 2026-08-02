@@ -1198,6 +1198,23 @@ export const createApiClient = () => {
     }
   };
 
+  const getTracker = async () => {
+    try {
+      const response = await authFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/tracker`,
+        { method: "GET" }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch tracker");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Get tracker error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const getOutOfCreditPreview = async () => {
     try {
       const response = await authFetch(
@@ -1299,5 +1316,6 @@ export const createApiClient = () => {
     getAllJobs,
     matchJobOnDemand,
     getOutOfCreditPreview,
+    getTracker,
   };
 };
