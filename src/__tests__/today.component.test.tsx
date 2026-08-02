@@ -276,6 +276,7 @@ jest.mock('@/lib/apiClient', () => ({
     triggerMatchForMe: jest.fn().mockResolvedValue({ message: 'ok' }),
     checkWalletBalance: jest.fn().mockResolvedValue({ balance: 10, hasSufficientBalance: true }),
     getWalletBalance: jest.fn().mockResolvedValue(10),
+    getOutOfCreditPreview: jest.fn().mockResolvedValue({ shouldShow: false, reason: 'sufficient_balance', walletBalance: 10, dailyMatchCost: 0.3, onDemandMatchCost: 0.05, count: 0, candidates: [] }),
     getQuestion: jest.fn().mockResolvedValue(null),
     postAnswer: jest.fn().mockResolvedValue({}),
     getAnsweredQuestions: jest.fn().mockResolvedValue([]),

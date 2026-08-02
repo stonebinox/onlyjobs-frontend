@@ -11,10 +11,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { BriefEntry } from "@/components/Today/BriefEntry";
+import { OutOfCreditPreview } from "@/components/Dashboard/OutOfCreditPreview";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
-import { createApiClient } from "@/lib/apiClient";
+import { createApiClient, OutOfCreditPreviewResponse } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
 import { User } from "@/types/User";
 import { resolveMinScore, filterMatches } from "@/utils/today-selection";
@@ -41,10 +42,11 @@ const TodayPage = () => {
   const [loading, setLoading] = useState(true);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [outOfCreditPreview, setOutOfCreditPreview] = useState<OutOfCreditPreviewResponse | null>(null);
 
   const auth = useAuth();
   const router = useRouter();
-  const { getMatches, checkWalletBalance, getUserProfile } = createApiClient();
+  const { getMatches, checkWalletBalance, getUserProfile, getOutOfCreditPreview } = createApiClient();
 
   useEffect(() => {
     if (!auth?.isReady) return;
@@ -59,9 +61,10 @@ const TodayPage = () => {
     const init = async () => {
       setLoading(true);
       try {
-        const [userData, walletResult] = await Promise.all([
+        const [userData, walletResult, previewResult] = await Promise.all([
           getUserProfile(),
           checkWalletBalance(),
+          getOutOfCreditPreview(),
         ]);
 
         let resolvedUser: User | null = null;
@@ -72,6 +75,10 @@ const TodayPage = () => {
 
         if (walletResult && !("error" in walletResult)) {
           setWalletBalance(walletResult.balance);
+        }
+
+        if (previewResult && !("error" in previewResult)) {
+          setOutOfCreditPreview(previewResult as OutOfCreditPreviewResponse);
         }
 
         const minScore = resolveMinScore(resolvedUser?.preferences?.minScore);
@@ -129,6 +136,8 @@ const TodayPage = () => {
             </Center>
           ) : (
             <VStack align="start" spacing={{ base: 6, md: 8 }}>
+              <OutOfCreditPreview preview={outOfCreditPreview} />
+
               {/* Header */}
               <Box>
                 <Text fontSize="sm" color="text.tertiary" mb={1}>

@@ -1,3 +1,21 @@
+export interface OutOfCreditPreviewCandidate {
+  title: string;
+  company: string;
+  location: string[];
+  salary: { min?: number; max?: number; currency?: string; estimated?: boolean };
+  postedDate: string;
+}
+
+export interface OutOfCreditPreviewResponse {
+  shouldShow: boolean;
+  reason: string;
+  walletBalance: number;
+  dailyMatchCost: number;
+  onDemandMatchCost: number;
+  count: number;
+  candidates: OutOfCreditPreviewCandidate[];
+}
+
 const getHeaders = () => {
   const token = localStorage.getItem("onlyjobs_token");
   const headers: HeadersInit = {
@@ -1180,6 +1198,23 @@ export const createApiClient = () => {
     }
   };
 
+  const getOutOfCreditPreview = async () => {
+    try {
+      const response = await authFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/out-of-credit-preview`,
+        { method: "GET" }
+      );
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch preview");
+      }
+      return (await response.json()) as OutOfCreditPreviewResponse;
+    } catch (error) {
+      console.error("Get out-of-credit preview error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const touchSession = async () => {
     try {
       await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/session/touch`, {
@@ -1263,5 +1298,6 @@ export const createApiClient = () => {
     getPublicStats,
     getAllJobs,
     matchJobOnDemand,
+    getOutOfCreditPreview,
   };
 };

@@ -29,6 +29,8 @@ import {
   useToast,
   Spinner,
 } from "@chakra-ui/react";
+import { OutOfCreditPreview } from "@/components/Dashboard/OutOfCreditPreview";
+import { OutOfCreditPreviewResponse } from "@/lib/apiClient";
 import { EmailVerificationBanner } from "@/components/Dashboard/EmailVerificationBanner";
 import { ResumeRequiredBanner } from "@/components/Dashboard/ResumeRequiredBanner";
 import { QnARecommendationBanner } from "@/components/Dashboard/QnARecommendationBanner";
@@ -78,7 +80,7 @@ const Dashboard = () => {
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
-  const [showLowBalanceWarning, setShowLowBalanceWarning] = useState(false);
+  const [outOfCreditPreview, setOutOfCreditPreview] = useState<OutOfCreditPreviewResponse | null>(null);
   const [pendingJobForDrawer, setPendingJobForDrawer] =
     useState<JobResult | null>(null);
   const [currentMinScore, setCurrentMinScore] = useState<number>(30);
@@ -99,6 +101,7 @@ const Dashboard = () => {
     getUserProfile,
     triggerMatchForMe,
     touchSession,
+    getOutOfCreditPreview,
   } = createApiClient();
 
   const fetchMatches = async (minScore: number = 30) => {
@@ -177,11 +180,19 @@ const Dashboard = () => {
         const result = await checkWalletBalance();
         if (result && !("error" in result)) {
           setWalletBalance(result.balance);
-          setShowLowBalanceWarning(!result.hasSufficientBalance);
         }
       } catch (error) {
         console.error("Error fetching wallet balance:", error);
       }
+    };
+
+    const fetchPreview = async () => {
+      try {
+        const result = await getOutOfCreditPreview();
+        if (result && !("error" in result)) {
+          setOutOfCreditPreview(result as OutOfCreditPreviewResponse);
+        }
+      } catch {}
     };
 
     const fetchUserProfile = async () => {
@@ -202,6 +213,7 @@ const Dashboard = () => {
     fetchAvailableJobsCount();
     fetchWalletBalance();
     fetchUserProfile();
+    fetchPreview();
     touchSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.isReady, auth?.isLoggedIn]);
@@ -354,28 +366,7 @@ const Dashboard = () => {
               />
             </>
           )}
-          {showLowBalanceWarning && (
-            <Alert status="warning" mb={user && !user.isVerified ? 4 : 5} borderRadius="xl">
-              <AlertIcon />
-              <Box flex="1">
-                <AlertTitle>Low Wallet Balance</AlertTitle>
-                <AlertDescription>
-                  Your wallet balance is low. Please add funds to continue
-                  receiving job matches.{" "}
-                  <Text
-                    as="span"
-                    color="primary.600"
-                    fontWeight="bold"
-                    textDecoration="underline"
-                    cursor="pointer"
-                    onClick={() => router.push("/wallet")}
-                  >
-                    Go to Wallet
-                  </Text>
-                </AlertDescription>
-              </Box>
-            </Alert>
-          )}
+          <OutOfCreditPreview preview={outOfCreditPreview} />
           <Heading mb={6} fontFamily="heading" fontSize={{ base: "2xl", md: "3xl" }}>
             Dashboard
           </Heading>
