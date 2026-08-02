@@ -2,37 +2,28 @@ import { ChakraProvider } from "@chakra-ui/react";
 import { AppProps } from "next/app";
 import Head from "next/head";
 import Script from "next/script";
-import { Plus_Jakarta_Sans, Inter, JetBrains_Mono } from "next/font/google";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
+
+// Self-hosted fonts via @fontsource — no build-time network fetch
+import "@fontsource/plus-jakarta-sans/latin-400.css";
+import "@fontsource/plus-jakarta-sans/latin-500.css";
+import "@fontsource/plus-jakarta-sans/latin-600.css";
+import "@fontsource/plus-jakarta-sans/latin-700.css";
+import "@fontsource/plus-jakarta-sans/latin-800.css";
+import "@fontsource/inter/latin-400.css";
+import "@fontsource/inter/latin-500.css";
+import "@fontsource/inter/latin-600.css";
+import "@fontsource/inter/latin-700.css";
+import "@fontsource/jetbrains-mono/latin-400.css";
+import "@fontsource/jetbrains-mono/latin-500.css";
+import "@fontsource/jetbrains-mono/latin-700.css";
 
 import theme from "../theme/theme";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GuideProvider } from "@/contexts/GuideContext";
 import { initAnalytics, trackPageView } from "@/utils/analytics";
 import { CookieConsent } from "@/components/CookieConsent";
-
-// Load fonts with next/font for optimal performance
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-plus-jakarta",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-jetbrains",
-  display: "swap",
-});
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -55,9 +46,9 @@ function MyApp({ Component, pageProps }: AppProps) {
       </Head>
       <style jsx global>{`
         :root {
-          --font-plus-jakarta: ${plusJakartaSans.style.fontFamily};
-          --font-inter: ${inter.style.fontFamily};
-          --font-jetbrains: ${jetbrainsMono.style.fontFamily};
+          --font-plus-jakarta: 'Plus Jakarta Sans', sans-serif;
+          --font-inter: 'Inter', sans-serif;
+          --font-jetbrains: 'JetBrains Mono', monospace;
         }
       `}</style>
       <Script
