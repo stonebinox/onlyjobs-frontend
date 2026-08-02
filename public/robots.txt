@@ -7,5 +7,6 @@ Disallow: /settings
 Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /verify-email
+Disallow: /today
 
 Sitemap: https://onlyjobs.app/sitemap.xml
