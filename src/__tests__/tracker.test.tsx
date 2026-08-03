@@ -814,16 +814,16 @@ describe('8 — empty state', () => {
     expect(screen.queryByText('Closed')).not.toBeInTheDocument();
   });
 
-  it('shows navigation links to /today and /dashboard in empty state', async () => {
+  it('shows navigation links to /today and /browse in empty state', async () => {
     mockGetTracker.mockResolvedValue([]);
     await renderAndWait();
 
     // Contract: empty state provides actionable next steps.
     const links = Array.from(document.querySelectorAll('a'));
     const todayLink = links.find((a) => a.getAttribute('href') === '/today');
-    const dashboardLink = links.find((a) => a.getAttribute('href') === '/dashboard');
+    const browseLink = links.find((a) => a.getAttribute('href') === '/browse');
     expect(todayLink).toBeDefined();
-    expect(dashboardLink).toBeDefined();
+    expect(browseLink).toBeDefined();
   });
 });
 

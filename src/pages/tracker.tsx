@@ -287,7 +287,7 @@ const TrackerPage = () => {
                         Go to today →
                       </Text>
                     </NextLink>
-                    <NextLink href="/dashboard">
+                    <NextLink href="/browse">
                       <Text
                         as="span"
                         color="primary.600"
@@ -296,7 +296,7 @@ const TrackerPage = () => {
                         cursor="pointer"
                         _hover={{ textDecoration: "underline" }}
                       >
-                        Go to dashboard →
+                        Browse all jobs →
                       </Text>
                     </NextLink>
                   </Flex>

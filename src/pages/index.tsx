@@ -27,6 +27,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import { isSafeReturnTo } from "@/utils/safe-return-to";
 
 const float = keyframes`
   0%, 100% { transform: translateY(0px); }
@@ -78,18 +79,19 @@ export default function Home() {
   };
 
   useEffect(() => {
+    if (!auth?.isReady) return;
     if (!auth?.isLoggedIn) return;
 
     const urlReturnTo = new URLSearchParams(window.location.search).get("returnTo");
     const storageReturnTo = sessionStorage.getItem('onlyjobs_returnTo');
     sessionStorage.removeItem('onlyjobs_returnTo');
     const returnTo = urlReturnTo ?? storageReturnTo;
-    if (returnTo && returnTo.startsWith("/") && !returnTo.startsWith("//")) {
-      router.push(returnTo);
+    if (isSafeReturnTo(returnTo, window.location.origin)) {
+      router.push(returnTo as string);
     } else {
-      router.push("/dashboard");
+      router.push("/today");
     }
-  }, [auth?.isLoggedIn, router]);
+  }, [auth?.isReady, auth?.isLoggedIn, router]);
 
   return (
     <>
@@ -602,7 +604,7 @@ export default function Home() {
                 <Box w={3} h={3} borderRadius="full" bg="yellow.400" />
                 <Box w={3} h={3} borderRadius="full" bg="green.400" />
                 <Box flex={1} bg="gray.700" borderRadius="md" px={3} py={1} ml={2}>
-                  <Text fontSize="xs" color="gray.400">onlyjobs.app/dashboard</Text>
+                  <Text fontSize="xs" color="gray.400">onlyjobs.app/today</Text>
                 </Box>
               </Box>
               <Image

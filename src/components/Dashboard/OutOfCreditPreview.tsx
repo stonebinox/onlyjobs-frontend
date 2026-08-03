@@ -57,7 +57,7 @@ export const OutOfCreditPreview = ({ preview }: Props) => {
       {showOnDemandNote && (
         <Text fontSize="sm" color="orange.700" mb={3}>
           On-demand analysis is still available at ${onDemandMatchCost.toFixed(2)}/job — open any
-          job listing in the dashboard to score it individually.
+          job listing in Browse to score it individually.
         </Text>
       )}
 

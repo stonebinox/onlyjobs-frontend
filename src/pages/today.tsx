@@ -180,19 +180,8 @@ const TodayPage = () => {
                         <>
                           {" "}
                           {moreCount === 1
-                            ? "One more scored lower — "
-                            : `${moreCount} more scored lower — `}
-                          <NextLink href="/dashboard">
-                            <Text
-                              as="span"
-                              color="primary.600"
-                              fontWeight="medium"
-                              cursor="pointer"
-                              _hover={{ textDecoration: "underline" }}
-                            >
-                              open them if you want.
-                            </Text>
-                          </NextLink>
+                            ? "One more scored lower."
+                            : `${moreCount} more scored lower.`}
                         </>
                       )}
                     </Text>
@@ -213,7 +202,7 @@ const TodayPage = () => {
                     up to date — the better your profile, the more the system
                     has to work with.
                   </Text>
-                  <NextLink href="/dashboard">
+                  <NextLink href="/browse">
                     <Text
                       as="span"
                       color="primary.600"
@@ -222,7 +211,7 @@ const TodayPage = () => {
                       cursor="pointer"
                       _hover={{ textDecoration: "underline" }}
                     >
-                      Go to dashboard →
+                      Browse all jobs →
                     </Text>
                   </NextLink>
                 </Box>

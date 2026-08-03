@@ -1147,22 +1147,22 @@ describe("footer — contract 6", () => {
     });
   });
 
-  it('shows a link to the dashboard when more matches exist than are shown', async () => {
-    // 12 eligible matches → only 5 shown → dashboard link should appear
+  it('shows "more scored lower" count text when more matches exist than are shown (no link)', async () => {
+    // 12 eligible matches → only 5 shown → informational count text should appear, no dashboard link.
     mockGetMatches.mockResolvedValue(
       Array.from({ length: 12 }, (_, i) => makeMatch(90 - i))
     );
     await renderAndWait();
 
     await waitFor(() => {
-      // Check both text content AND href attribute to find the dashboard link.
-      // The link may read "open them if you want." with href="/dashboard".
-      const dashLinks = Array.from(document.querySelectorAll('a')).filter((a) => {
-        const href = a.getAttribute('href') ?? '';
-        const text = a.textContent ?? '';
-        return /dashboard/i.test(href) || /dashboard|more matches/i.test(text);
-      });
-      expect(dashLinks.length).toBeGreaterThan(0);
+      expect(screen.getByText(/more scored lower/i)).toBeInTheDocument();
     });
+
+    // The "more scored lower" text must NOT be wrapped in a link to /dashboard or anywhere.
+    const dashLinks = Array.from(document.querySelectorAll('a')).filter((a) => {
+      const href = a.getAttribute('href') ?? '';
+      return /dashboard/i.test(href);
+    });
+    expect(dashLinks.length).toBe(0);
   });
 });

@@ -303,7 +303,6 @@ jest.mock('@/lib/apiClient', () => ({
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 
-import DashboardPage from '@/pages/dashboard/index';
 import TodayPage from '@/pages/today';
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
@@ -347,65 +346,7 @@ afterEach(() => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
-// /dashboard page
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe('/dashboard — OutOfCreditPreview wiring', () => {
-  it('renders preview content when API returns shouldShow:true', async () => {
-    mockGetOutOfCreditPreview.mockResolvedValue(PREVIEW_SHOW);
-
-    render(<DashboardPage />);
-
-    await waitFor(
-      () => {
-        expect(
-          screen.getByText(/3 unscored jobs in your 15-day queue/i)
-        ).toBeInTheDocument();
-      },
-      { timeout: 3000 }
-    );
-
-    expect(screen.getByText('Backend Engineer')).toBeInTheDocument();
-    expect(screen.getByText(/add funds/i)).toBeInTheDocument();
-  });
-
-  it('does not render the old generic low-balance Alert when preview is shown', async () => {
-    mockGetOutOfCreditPreview.mockResolvedValue(PREVIEW_SHOW);
-
-    render(<DashboardPage />);
-
-    await waitFor(
-      () =>
-        expect(
-          screen.getByText(/unscored jobs in your 15-day queue/i)
-        ).toBeInTheDocument(),
-      { timeout: 3000 }
-    );
-
-    expect(screen.queryByText(/low wallet balance/i)).not.toBeInTheDocument();
-  });
-
-  it('preview is absent when API returns shouldShow:false', async () => {
-    mockGetOutOfCreditPreview.mockResolvedValue(PREVIEW_HIDE);
-
-    render(<DashboardPage />);
-
-    // Wait until the API has been called and state settled
-    await waitFor(
-      () => expect(mockGetOutOfCreditPreview).toHaveBeenCalledTimes(1),
-      { timeout: 3000 }
-    );
-    // Allow React to flush any pending state updates
-    await new Promise((r) => setTimeout(r, 150));
-
-    expect(
-      screen.queryByText(/unscored jobs in your 15-day queue/i)
-    ).not.toBeInTheDocument();
-  });
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-// /today page
+// /today page  (/dashboard is now a thin redirect adapter — no preview there)
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe('/today — OutOfCreditPreview wiring', () => {
