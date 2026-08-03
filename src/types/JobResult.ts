@@ -16,5 +16,6 @@ export type JobResult = {
   followUpSentAt?: string;
   applicationOutcome?: string;
   outcomeRecordedAt?: string;
+  skipReason?: { category: string; details?: string; analyzedAt?: string };
   job: Job | null;
 };

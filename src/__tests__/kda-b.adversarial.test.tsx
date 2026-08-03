@@ -470,8 +470,8 @@ describe('A — resolveDashboardRedirect: maps URL search string to redirect tar
     expect(resolveDashboardRedirect('?tab=viewed')).toBe('/today');
   });
 
-  it('A-6c: "?tab=skipped" → /today', () => {
-    expect(resolveDashboardRedirect('?tab=skipped')).toBe('/today');
+  it('A-6c: "?tab=skipped" → /today?view=skipped', () => {
+    expect(resolveDashboardRedirect('?tab=skipped')).toBe('/today?view=skipped');
   });
 
   it('A-6d: "?tab=alljobs" → /browse', () => {

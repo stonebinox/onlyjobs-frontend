@@ -9,6 +9,7 @@ export const resolveDashboardRedirect = (search: string): string => {
   if (tab === "applied" && followup === "true") return "/tracker?followup=true";
   if (tab === "applied") return "/tracker";
   if (tab === "alljobs") return "/browse";
+  if (tab === "skipped") return "/today?view=skipped";
   return "/today";
 };
 

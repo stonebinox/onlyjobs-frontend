@@ -1243,6 +1243,47 @@ export const createApiClient = () => {
     }
   };
 
+  const unskipMatch = async (matchId: string) => {
+    try {
+      const response = await authFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/unskip`,
+        {
+          method: "POST",
+          body: JSON.stringify({ matchId }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to unskip match");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Unskip match error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const getSkipped = async () => {
+    try {
+      const response = await authFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/skipped`,
+        { method: "GET" }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch skipped matches");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Get skipped error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const triggerMatchForMe = async (): Promise<{ message?: string; retryAfterMinutes?: number; error?: string }> => {
     try {
       const response = await authFetch(
@@ -1317,5 +1358,7 @@ export const createApiClient = () => {
     matchJobOnDemand,
     getOutOfCreditPreview,
     getTracker,
+    unskipMatch,
+    getSkipped,
   };
 };
