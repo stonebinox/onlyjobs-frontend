@@ -22,6 +22,7 @@ import { User } from "@/types/User";
 import { JobResult } from "@/types/JobResult";
 import { MatchScoreRing } from "@/components/Dashboard/MatchScoreRing";
 import JobListing from "@/components/Dashboard/JobListing";
+import { isSafeUrl } from "@/utils/brief-utils";
 
 interface RawJob {
   _id: string;
@@ -321,6 +322,7 @@ const JobCard = ({
   onMatch,
 }: JobCardProps) => {
   const hasMatch = job.match !== null;
+  const safeViewHref = isSafeUrl(job.url) ? job.url : undefined;
 
   return (
     <Box
@@ -401,9 +403,10 @@ const JobCard = ({
         <VStack spacing={2} align={{ base: "flex-start", sm: "flex-end" }} flexShrink={0} width={{ base: "full", sm: "auto" }}>
           <Button
             as="a"
-            href={job.url}
-            target="_blank"
-            rel="noopener noreferrer"
+            href={safeViewHref}
+            target={safeViewHref ? "_blank" : undefined}
+            rel={safeViewHref ? "noopener noreferrer" : undefined}
+            isDisabled={!safeViewHref}
             size="sm"
             variant="outline"
             rightIcon={<FiExternalLink />}

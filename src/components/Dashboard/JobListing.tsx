@@ -35,6 +35,7 @@ import { JobResult } from "@/types/JobResult";
 import { Salary } from "@/types/Salary";
 import { formatDate } from "@/utils/date-formatter";
 import { numberFormatter } from "@/utils/text-formatter";
+import { isSafeUrl } from "@/utils/brief-utils";
 import { MatchScoreRing } from "./MatchScoreRing";
 import { AIReasoningBox } from "./AIReasoningBox";
 import { trackEvent } from "@/utils/analytics";
@@ -180,7 +181,9 @@ const JobListing = ({
   };
 
   const handleApplyClick = async () => {
-    window.open(url, "_blank");
+    if (isSafeUrl(url)) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
     setViewed(true);
     await markMatchClick(matchId);
     trackEvent("match_applied");

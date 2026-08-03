@@ -11,7 +11,7 @@ import {
   HStack,
   Badge,
 } from "@chakra-ui/react";
-import { FiHome, FiSettings } from "react-icons/fi";
+import { FiList, FiSearch, FiSettings, FiSun } from "react-icons/fi";
 import { SidebarItem } from "./SidebarItem";
 import { FaUser } from "react-icons/fa";
 
@@ -51,21 +51,26 @@ export const SidebarContent = ({ onClose, ...rest }: SidebarProps) => {
       </Flex>
       <VStack spacing={2} align="stretch">
         <SidebarItem
-          icon={FiHome}
-          href="/dashboard"
-          selected={currentPath === "/dashboard"}
+          icon={FiSun}
+          href="/today"
+          selected={currentPath === "/today"}
         >
-          Dashboard
+          Today
         </SidebarItem>
-        {/* <SidebarItem icon={FiBriefcase} href="/dashboard/jobs">
-          Job Listings
-        </SidebarItem> 
-        <SidebarItem icon={FiUsers} href="/dashboard/candidates">
-          Candidates
+        <SidebarItem
+          icon={FiList}
+          href="/tracker"
+          selected={currentPath === "/tracker"}
+        >
+          Tracker
         </SidebarItem>
-        <SidebarItem icon={FiBarChart} href="/dashboard/analytics">
-          Analytics
-        </SidebarItem>*/}
+        <SidebarItem
+          icon={FiSearch}
+          href="/browse"
+          selected={currentPath === "/browse"}
+        >
+          Browse
+        </SidebarItem>
         <SidebarItem
           icon={FiSettings}
           href="/settings"
