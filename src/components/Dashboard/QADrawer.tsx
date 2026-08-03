@@ -337,9 +337,9 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
       <DrawerContent borderLeftRadius="2xl">
         <DrawerCloseButton />
 
-        {/* Header with gradient background */}
+        {/* Header */}
         <DrawerHeader
-          bgGradient="linear(135deg, #F5F3FF 0%, #FDF2F8 50%, #FFF7ED 100%)"
+          bg="primary.50"
           borderBottom="1px solid"
           borderColor="primary.100"
           py={6}
@@ -348,7 +348,7 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
             <Box
               p={2}
               borderRadius="lg"
-              bgGradient="linear(135deg, primary.500, secondary.500)"
+              bg="primary.500"
               color="white"
             >
               <TbSparkles size={20} />
@@ -417,11 +417,11 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
                 mb={6}
                 onClick={startConversationClick}
                 leftIcon={<FiMessageCircle />}
-                bgGradient="linear(135deg, primary.500, secondary.500)"
+                bg="primary.500"
                 color="white"
                 borderRadius="xl"
                 _hover={{
-                  bgGradient: "linear(135deg, primary.600, secondary.600)",
+                  bg: "primary.600",
                   transform: "translateY(-1px)",
                   boxShadow: "button",
                 }}
@@ -535,11 +535,11 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
                       size="lg"
                       onClick={submitTypedAnswer}
                       leftIcon={<FiSend />}
-                      bgGradient="linear(135deg, primary.500, secondary.500)"
+                      bg="primary.500"
                       color="white"
                       borderRadius="xl"
                       _hover={{
-                        bgGradient: "linear(135deg, primary.600, secondary.600)",
+                        bg: "primary.600",
                       }}
                     >
                       Submit answer
@@ -613,11 +613,11 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
                       onClick={submitAudioAnswer}
                       leftIcon={<FiSend />}
                       isDisabled={audioError !== null || !audioBlob || isRecording}
-                      bgGradient="linear(135deg, primary.500, secondary.500)"
+                      bg="primary.500"
                       color="white"
                       borderRadius="xl"
                       _hover={{
-                        bgGradient: "linear(135deg, primary.600, secondary.600)",
+                        bg: "primary.600",
                       }}
                       _disabled={{
                         opacity: 0.5,
@@ -665,13 +665,13 @@ export const QADrawer = ({ isOpen, onClose, onboardingMode, onComplete }: QADraw
               width="100%"
               size="lg"
               rightIcon={<FiArrowRight />}
-              bgGradient="linear(135deg, primary.500, secondary.500)"
+              bg="primary.500"
               color="white"
               fontWeight="bold"
               borderRadius="xl"
               onClick={() => { fireOnComplete(); onClose(); }}
               _hover={{
-                bgGradient: "linear(135deg, primary.600, secondary.600)",
+                bg: "primary.600",
                 transform: "translateY(-1px)",
                 boxShadow: "button",
               }}

@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { isSafeReturnTo } from "@/utils/safe-return-to";
+import { PENCIL } from "@/theme/palette";
 
 const float = keyframes`
   0%, 100% { transform: translateY(0px); }
@@ -115,7 +116,7 @@ export default function Home() {
             <HStack spacing={2}>
               <Heading size="md" fontFamily="heading">OnlyJobs</Heading>
               <Badge
-                bgGradient="linear(135deg, secondary.400, secondary.600)"
+                bg="primary.600"
                 color="white"
                 fontSize="0.65em"
                 px={2}
@@ -134,7 +135,7 @@ export default function Home() {
       <Box
         position="relative"
         overflow="hidden"
-        bgGradient="linear(180deg, surface.bg 0%, #F5F3FF 100%)"
+        bg="surface.bg"
       >
         {/* Decorative shapes */}
         <Box
@@ -144,7 +145,7 @@ export default function Home() {
           width="300px"
           height="300px"
           borderRadius="full"
-          bgGradient="linear(135deg, rgba(139,92,246,0.1) 0%, rgba(236,72,153,0.1) 100%)"
+          bg="rgba(29,78,137,0.05)"
           filter="blur(60px)"
           animation={`${float} 6s ease-in-out infinite`}
         />
@@ -155,7 +156,7 @@ export default function Home() {
           width="200px"
           height="200px"
           borderRadius="full"
-          bgGradient="linear(135deg, rgba(59,130,246,0.1) 0%, rgba(139,92,246,0.1) 100%)"
+          bg="rgba(29,78,137,0.05)"
           filter="blur(40px)"
           animation={`${float} 8s ease-in-out infinite 2s`}
         />
@@ -181,8 +182,7 @@ export default function Home() {
                 <Text
                   as="span"
                   fontSize={{ base: "2xl", sm: "3xl", md: "4xl", lg: "5xl" }}
-                  bgGradient="linear(to-r, primary.500, secondary.500)"
-                  bgClip="text"
+                  color="primary.500"
                 >
                   Start applying smarter.
                 </Text>
@@ -280,7 +280,7 @@ export default function Home() {
                     type="submit"
                     width="100%"
                     size="lg"
-                    bgGradient="linear(135deg, primary.500, secondary.500)"
+                    bg="primary.500"
                     color="white"
                     fontWeight="bold"
                     borderRadius="xl"
@@ -288,7 +288,7 @@ export default function Home() {
                     isLoading={loading}
                     loadingText="Processing..."
                     _hover={{
-                      bgGradient: "linear(135deg, primary.600, secondary.600)",
+                      bg: "primary.600",
                       transform: "translateY(-1px)",
                       boxShadow: "button",
                     }}
@@ -445,7 +445,7 @@ export default function Home() {
                 bg="primary.50"
                 display="inline-flex"
               >
-                <FiUpload size={32} color="#8B5CF6" />
+                <FiUpload size={32} color="#1D4E89" />
               </Box>
               <Heading size="md" mb={3} fontFamily="heading">
                 Upload Once, Done
@@ -482,7 +482,7 @@ export default function Home() {
                 bg="secondary.50"
                 display="inline-flex"
               >
-                <FiZap size={32} color="#F97316" />
+                <FiZap size={32} color="#1D4E89" />
               </Box>
               <Heading size="md" mb={3} fontFamily="heading">
                 Fresh Listings, Zero Noise
@@ -519,7 +519,7 @@ export default function Home() {
                 bg="accent.50"
                 display="inline-flex"
               >
-                <FiTarget size={32} color="#3B82F6" />
+                <FiTarget size={32} color={PENCIL[500]} />
               </Box>
               <Heading size="md" mb={3} fontFamily="heading">
                 Match Scores You Trust
@@ -555,7 +555,7 @@ export default function Home() {
                 bg="primary.50"
                 display="inline-flex"
               >
-                <FiMessageCircle size={32} color="#8B5CF6" />
+                <FiMessageCircle size={32} color="#1D4E89" />
               </Box>
               <Heading size="md" mb={3} fontFamily="heading">
                 AI-Drafted Answers
@@ -715,12 +715,12 @@ export default function Home() {
                   href="#signup"
                   w="100%"
                   size="lg"
-                  bgGradient="linear(135deg, primary.500, secondary.500)"
+                  bg="primary.500"
                   color="white"
                   fontWeight="bold"
                   borderRadius="xl"
                   _hover={{
-                    bgGradient: "linear(135deg, primary.600, secondary.600)",
+                    bg: "primary.600",
                     transform: "translateY(-1px)",
                     boxShadow: "button",
                   }}

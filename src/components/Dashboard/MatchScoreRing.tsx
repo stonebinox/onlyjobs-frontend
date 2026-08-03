@@ -1,6 +1,6 @@
 import { Box, Text, Badge, VStack } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
-import { VERDICT_COLORS, getVerdictColor, getVerdictRing } from "@/utils/verdict-colors";
+import { VERDICT_COLORS, getVerdictRing } from "@/utils/verdict-colors";
 
 interface MatchScoreRingProps {
   score: number;
@@ -44,7 +44,6 @@ export const MatchScoreRing = ({
   size = "md",
 }: MatchScoreRingProps) => {
   const ring = getVerdictRing(verdict);
-  const { colorScheme: badge } = getVerdictColor(verdict);
   const gradientId = GRADIENT_IDS[verdict] ?? FALLBACK_GRADIENT_ID;
   const sizeConfig = getSizeConfig(size);
 
@@ -146,7 +145,8 @@ export const MatchScoreRing = ({
 
       {/* Verdict badge */}
       <Badge
-        colorScheme={badge}
+        bg={ring.badgeBg}
+        color={ring.badgeText}
         fontSize={sizeConfig.badgeSize}
         px={2}
         py={0.5}

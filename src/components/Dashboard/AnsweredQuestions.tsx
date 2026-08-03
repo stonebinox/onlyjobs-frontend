@@ -77,7 +77,7 @@ export const AnsweredQuestions = ({
                 </Box>
                 <HStack spacing={2} mr={2}>
                   <Badge
-                    colorScheme={item.mode === "text" ? "blue" : "purple"}
+                    colorScheme={item.mode === "text" ? "blue" : "blue"}
                     variant="subtle"
                   >
                     {item.mode === "text" ? (

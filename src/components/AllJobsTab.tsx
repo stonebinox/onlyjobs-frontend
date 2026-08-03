@@ -201,7 +201,7 @@ export const AllJobsTab = ({ user, walletBalance, openJobQuestionsDrawer, onAppl
           <Button
             size="sm"
             variant={selectedSource === undefined ? "solid" : "outline"}
-            colorScheme="purple"
+            colorScheme="blue"
             borderRadius="full"
             onClick={() => handleSourceChange(undefined)}
           >
@@ -213,7 +213,7 @@ export const AllJobsTab = ({ user, walletBalance, openJobQuestionsDrawer, onAppl
             <Button
               size="sm"
               variant={selectedSource === src ? "solid" : "outline"}
-              colorScheme="purple"
+              colorScheme="blue"
               borderRadius="full"
               onClick={() => handleSourceChange(src)}
               textTransform="capitalize"
@@ -356,7 +356,7 @@ const JobCard = ({
               {job.source}
             </Badge>
             {hasMatch && (
-              <Badge colorScheme="purple" fontSize="xs">
+              <Badge colorScheme="blue" fontSize="xs">
                 Analyzed
               </Badge>
             )}
@@ -423,7 +423,7 @@ const JobCard = ({
             >
               <Button
                 size="sm"
-                colorScheme="purple"
+                colorScheme="blue"
                 isDisabled={isMatchCTADisabled}
                 isLoading={isMatchingThisJob}
                 loadingText="Analyzing"

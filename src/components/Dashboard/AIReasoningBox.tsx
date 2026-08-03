@@ -25,7 +25,7 @@ export const AIReasoningBox = ({ reasoning }: AIReasoningBoxProps) => {
       p={4}
       pt={5}
       borderRadius="xl"
-      bgGradient="linear(135deg, #F5F3FF 0%, #FDF2F8 50%, #FFF7ED 100%)"
+      bg="primary.50"
       border="1px solid"
       borderColor="primary.200"
       overflow="visible"
@@ -39,12 +39,12 @@ export const AIReasoningBox = ({ reasoning }: AIReasoningBoxProps) => {
         px={3}
         py={1}
         borderRadius="full"
-        bgGradient="linear(135deg, #8B5CF6 0%, #EC4899 50%, #F97316 100%)"
+        bg="primary.500"
         color="white"
         fontSize="xs"
         fontWeight="bold"
         spacing={1.5}
-        boxShadow="0 0 20px rgba(139, 92, 246, 0.3)"
+        boxShadow="button"
       >
         <Box
           as={TbSparkles}

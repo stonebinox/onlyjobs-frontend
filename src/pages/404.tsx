@@ -20,8 +20,7 @@ export default function NotFound() {
           <Heading
             fontSize="8xl"
             fontWeight="bold"
-            bgGradient="linear(135deg, primary.500, secondary.500)"
-            bgClip="text"
+            color="primary.500"
             lineHeight="1"
           >
             404
@@ -35,13 +34,13 @@ export default function NotFound() {
           <Button
             as={Link}
             href="/"
-            bgGradient="linear(135deg, primary.500, secondary.500)"
+            bg="primary.500"
             color="white"
             fontWeight="bold"
             borderRadius="xl"
             size="lg"
             _hover={{
-              bgGradient: "linear(135deg, primary.600, secondary.600)",
+              bg: "primary.600",
               transform: "translateY(-1px)",
             }}
           >

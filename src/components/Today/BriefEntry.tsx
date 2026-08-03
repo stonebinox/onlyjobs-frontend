@@ -33,8 +33,8 @@ import { JobResult } from "@/types/JobResult";
 import { Salary } from "@/types/Salary";
 import { numberFormatter } from "@/utils/text-formatter";
 import { trackEvent } from "@/utils/analytics";
-import { getOddsLine, isSafeUrl } from "@/utils/brief-utils";
-import { getVerdictColor } from "@/utils/verdict-colors";
+import { getOddsLine, getOddsColor, isSafeUrl } from "@/utils/brief-utils";
+import { getVerdictRing } from "@/utils/verdict-colors";
 
 const REASON_CATEGORIES = {
   salary: "Salary too low",
@@ -52,8 +52,6 @@ export interface BriefEntryProps {
   entry: JobResult;
   onSkipped: (matchId: string) => void;
 }
-
-const getVerdictColorScheme = (verdict: string) => getVerdictColor(verdict).colorScheme;
 
 const getSalaryString = (salary: Salary): string => {
   if (!salary) return "";
@@ -86,7 +84,9 @@ export const BriefEntry = ({ entry, onSkipped }: BriefEntryProps) => {
   const { _id: jobId, title, company, location, salary, source, description, postedDate, scrapedDate, url } = job;
 
   const oddsLine = getOddsLine(postedDate);
+  const oddsColor = getOddsColor(postedDate);
   const salaryStr = getSalaryString(salary);
+  const vc = getVerdictRing(verdict);
 
   const metaParts = [
     title,
@@ -168,7 +168,8 @@ export const BriefEntry = ({ entry, onSkipped }: BriefEntryProps) => {
         <VStack align="start" spacing={3}>
           {/* 1. Verdict chip with score inline */}
           <Badge
-            colorScheme={getVerdictColorScheme(verdict)}
+            bg={vc.badgeBg}
+            color={vc.badgeText}
             fontSize="sm"
             px={3}
             py={1}
@@ -194,7 +195,7 @@ export const BriefEntry = ({ entry, onSkipped }: BriefEntryProps) => {
           </Text>
 
           {/* 4. Odds line — always shown; neutral copy when date is missing or unparseable */}
-          <Text fontSize="sm" color="text.tertiary">
+          <Text fontSize="sm" color={oddsColor}>
             {oddsLine}
           </Text>
 

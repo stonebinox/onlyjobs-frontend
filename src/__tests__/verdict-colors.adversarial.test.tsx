@@ -10,9 +10,9 @@
  *   src/utils/__tests__/verdict-colors.test.ts
  *
  * CONTRACT (oracle — all expected values derive from the spec, never from running the code):
- *   getVerdictColor("Strong match") → { hex: "#22C55E", colorScheme: "green" }
- *   getVerdictColor("Mild match")   → { hex: "#3B82F6", colorScheme: "blue"  }
- *   getVerdictColor("Weak match")   → { hex: "#F59E0B", colorScheme: "yellow" }
+ *   getVerdictColor("Strong match") → { hex: "#1B7A4B", colorScheme: "green"  }
+ *   getVerdictColor("Mild match")   → { hex: "#8A6D1F", colorScheme: "yellow" }
+ *   getVerdictColor("Weak match")   → { hex: "#6B7280", colorScheme: "gray"   }
  *   getVerdictColor("No match")     → { hex: "#6B7280", colorScheme: "gray"  }
  *   getVerdictColor(<unknown>)      → { hex: "#6B7280", colorScheme: "gray"  }
  *
@@ -61,6 +61,7 @@ jest.mock('@/utils/analytics', () => ({
 
 jest.mock('@/utils/brief-utils', () => ({
   getOddsLine: () => 'Apply while fresh — posted recently',
+  getOddsColor: () => '#6B7280',
   isSafeUrl: () => true,
 }));
 
@@ -99,8 +100,13 @@ jest.mock('@chakra-ui/react', () => {
   );
   Box.displayName = 'Box';
 
-  const Badge = ({ colorScheme, children }: any) =>
-    React.createElement('span', { 'data-colorscheme': colorScheme ?? 'none', 'data-testid': 'chakra-badge' }, children);
+  const Badge = ({ colorScheme, bg, color, children }: any) =>
+    React.createElement('span', {
+      'data-colorscheme': colorScheme ?? 'none',
+      'data-bg': bg ?? '',
+      'data-color': color ?? '',
+      'data-testid': 'chakra-badge',
+    }, children);
   Badge.displayName = 'Badge';
 
   const el = (tag: string) => {
@@ -201,28 +207,28 @@ describe('A — getVerdictColor: canonical verdicts return correct shapes', () =
     expect(typeof result.colorScheme).toBe('string');
   });
 
-  it('A-2: "Strong match" → hex #22C55E', () => {
-    expect(getVerdictColor('Strong match').hex).toBe('#22C55E');
+  it('A-2: "Strong match" → hex #1B7A4B', () => {
+    expect(getVerdictColor('Strong match').hex).toBe('#1B7A4B');
   });
 
   it('A-3: "Strong match" → colorScheme "green"', () => {
     expect(getVerdictColor('Strong match').colorScheme).toBe('green');
   });
 
-  it('A-4: "Mild match" → hex #3B82F6', () => {
-    expect(getVerdictColor('Mild match').hex).toBe('#3B82F6');
+  it('A-4: "Mild match" → hex #8A6D1F', () => {
+    expect(getVerdictColor('Mild match').hex).toBe('#8A6D1F');
   });
 
-  it('A-5: "Mild match" → colorScheme "blue"', () => {
-    expect(getVerdictColor('Mild match').colorScheme).toBe('blue');
+  it('A-5: "Mild match" → colorScheme "yellow"', () => {
+    expect(getVerdictColor('Mild match').colorScheme).toBe('yellow');
   });
 
-  it('A-6: "Weak match" → hex #F59E0B', () => {
-    expect(getVerdictColor('Weak match').hex).toBe('#F59E0B');
+  it('A-6: "Weak match" → hex #6B7280', () => {
+    expect(getVerdictColor('Weak match').hex).toBe('#6B7280');
   });
 
-  it('A-7: "Weak match" → colorScheme "yellow"', () => {
-    expect(getVerdictColor('Weak match').colorScheme).toBe('yellow');
+  it('A-7: "Weak match" → colorScheme "gray"', () => {
+    expect(getVerdictColor('Weak match').colorScheme).toBe('gray');
   });
 
   it('A-8: "No match" → hex #6B7280 [THE TARGET CASE — was red before this task]', () => {
@@ -245,7 +251,7 @@ describe('A — getVerdictColor: canonical verdicts return correct shapes', () =
     expect(hex).toMatch(/^#[0-9A-Fa-f]{6}$/);
   });
 
-  it('A-11: all four verdicts return distinct hex values (no accidental aliasing)', () => {
+  it('A-11: Strong/Mild/No-match return 3 distinct hex families (Weak and No match share Quiet grey)', () => {
     const hexes = [
       getVerdictColor('Strong match').hex,
       getVerdictColor('Mild match').hex,
@@ -253,7 +259,8 @@ describe('A — getVerdictColor: canonical verdicts return correct shapes', () =
       getVerdictColor('No match').hex,
     ];
     const unique = new Set(hexes);
-    expect(unique.size).toBe(4);
+    // Weak match and No match both map to Quiet grey (#6B7280) by design
+    expect(unique.size).toBe(3);
   });
 });
 
@@ -342,14 +349,14 @@ describe('C — INVARIANT: zero verdicts may return red hex or red colorScheme',
     }
   });
 
-  it('C-4: "Mild match" hex is not red (blue only)', () => {
+  it('C-4: "Mild match" hex is not red (amber/gold only)', () => {
     const { hex } = getVerdictColor('Mild match');
     for (const red of RED_HEX_VALUES) {
       expect(hex.toLowerCase()).not.toBe(red.toLowerCase());
     }
   });
 
-  it('C-5: "Weak match" hex is not red (yellow/amber only)', () => {
+  it('C-5: "Weak match" hex is not red (grey only)', () => {
     const { hex } = getVerdictColor('Weak match');
     for (const red of RED_HEX_VALUES) {
       expect(hex.toLowerCase()).not.toBe(red.toLowerCase());
@@ -422,33 +429,33 @@ describe('D — BriefEntry: "No match" renders grey verdict badge, never red', (
   });
 
   it('D-2: renders at least one Badge (the verdict chip)', () => {
-    const badges = container.querySelectorAll('[data-colorscheme]');
+    const badges = container.querySelectorAll('[data-testid="chakra-badge"]');
     expect(badges.length).toBeGreaterThan(0);
   });
 
-  it('D-3: the verdict badge has colorScheme "gray" [CORE ASSERTION]', () => {
-    // FINDING if "red": getVerdictColor("No match") still returns colorScheme="red"
-    //   and BriefEntry passes it straight to Badge — which was the pre-task bug.
-    // FINDING if "none": colorScheme prop was dropped or Badge not found
-    const grayBadge = container.querySelector('[data-colorscheme="gray"]');
-    expect(grayBadge).not.toBeNull();
+  it('D-3: the verdict badge uses exact editor bg/text for "No match" [CORE ASSERTION — not Chakra default]', () => {
+    // FINDING if data-bg="" or data-bg="#38A169": still using colorScheme="gray" (Chakra default, not exact hex)
+    // "No match" → badgeBg #F3F4F6, badgeText #4B5563
+    const badge = container.querySelector('[data-bg="#F3F4F6"]');
+    expect(badge).not.toBeNull();
+    expect(badge!.getAttribute('data-color')).toBe('#4B5563');
   });
 
   it('D-4: verdict badge text contains "No match"', () => {
-    const grayBadge = container.querySelector('[data-colorscheme="gray"]');
-    expect(grayBadge).not.toBeNull();
-    expect(grayBadge!.textContent).toContain('No match');
+    const badge = container.querySelector('[data-bg="#F3F4F6"]');
+    expect(badge).not.toBeNull();
+    expect(badge!.textContent).toContain('No match');
   });
 
-  it('D-5: no Badge on the page has colorScheme "red" [INVARIANT at component level]', () => {
-    // FINDING if any badge has colorScheme="red": a verdict-related red badge is on screen
-    const redBadges = container.querySelectorAll('[data-colorscheme="red"]');
+  it('D-5: no Badge on the page uses a red background [INVARIANT at component level]', () => {
+    // FINDING if any badge has data-bg="#EF4444": a verdict-related red badge is on screen
+    const redBadges = container.querySelectorAll('[data-bg="#EF4444"]');
     expect(redBadges.length).toBe(0);
   });
 
   it('D-6: verdict badge text contains the match score (12)', () => {
-    const grayBadge = container.querySelector('[data-colorscheme="gray"]');
-    expect(grayBadge!.textContent).toContain('12');
+    const badge = container.querySelector('[data-bg="#F3F4F6"]');
+    expect(badge!.textContent).toContain('12');
   });
 });
 
@@ -474,14 +481,16 @@ describe('E — MatchScoreRing: "No match" uses grey local ring config, never re
     expect(container).toBeTruthy();
   });
 
-  it('E-2: the verdict Badge has colorScheme "gray" [shared helper path]', () => {
-    // FINDING if "red": getVerdictColor("No match").colorScheme still returns "red"
-    const badge = container.querySelector('[data-colorscheme="gray"]');
+  it('E-2: the verdict Badge uses exact editor bg/text for "No match" [not Chakra default]', () => {
+    // FINDING if data-bg="" or Chakra grey: colorScheme path still used
+    // "No match" → badgeBg #F3F4F6, badgeText #4B5563
+    const badge = container.querySelector('[data-bg="#F3F4F6"]');
     expect(badge).not.toBeNull();
+    expect(badge!.getAttribute('data-color')).toBe('#4B5563');
   });
 
-  it('E-3: no Badge has colorScheme "red" [invariant at component level]', () => {
-    const redBadges = container.querySelectorAll('[data-colorscheme="red"]');
+  it('E-3: no Badge uses a red background [invariant at component level]', () => {
+    const redBadges = container.querySelectorAll('[data-bg="#EF4444"]');
     expect(redBadges.length).toBe(0);
   });
 
@@ -547,7 +556,7 @@ describe('E — MatchScoreRing: "No match" uses grey local ring config, never re
   });
 
   it('E-10: badge text shows the verdict "No match"', () => {
-    const badge = container.querySelector('[data-colorscheme="gray"]');
+    const badge = container.querySelector('[data-bg="#F3F4F6"]');
     expect(badge!.textContent).toContain('No match');
   });
 
@@ -597,6 +606,141 @@ describe('F — Theme regression: semantic.error preserved, match.none is grey',
       expect(hex).not.toBe('#EF4444');
       expect(hex).not.toBe('#DC2626');
     }
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SECTION G — Exact editor-colour rendered-DOM assertions for all four verdicts
+//
+// These are RENDERED assertions, not helper-output checks (Codex finding).
+// Each verdict's badge bg/text must match the design-spec hex, NOT a Chakra
+// default (e.g. Chakra "green" badge would be ~#38A169, not Strong #1B7A4B).
+//
+// Design spec (from VERDICT_COLORS):
+//   Strong match: badgeBg #D1FAE5, badgeText #145C37
+//   Mild match:   badgeBg #FEF3C7, badgeText #6B4E15
+//   Weak match:   badgeBg #F3F4F6, badgeText #4B5563
+//   No match:     badgeBg #F3F4F6, badgeText #4B5563
+// ══════════════════════════════════════════════════════════════════════════════
+
+const makeEntry = (verdict: string, score: number) => ({
+  _id: `match-g-${verdict}`,
+  userId: 'user-test',
+  jobId: `job-g-${verdict}`,
+  matchScore: score,
+  verdict,
+  reasoning: `Test reasoning for ${verdict}.`,
+  clicked: false,
+  skipped: false,
+  applied: false,
+  createdAt: '2026-01-15T10:00:00.000Z',
+  updatedAt: '2026-01-15T10:00:00.000Z',
+  job: {
+    _id: `job-g-${verdict}`,
+    title: 'Test Role',
+    company: 'Test Co',
+    location: ['Remote'],
+    salary: { min: 100000, max: 150000, currency: 'USD', estimated: false },
+    tags: [],
+    source: 'linkedin',
+    description: 'Test description.',
+    postedDate: '2026-01-10T00:00:00.000Z',
+    scrapedDate: '2026-01-11T00:00:00.000Z',
+    url: 'https://example.com/job/test',
+    createdAt: '2026-01-10T00:00:00.000Z',
+    updatedAt: '2026-01-10T00:00:00.000Z',
+  },
+});
+
+describe('G — BriefEntry: rendered verdict badge uses EXACT editor hex, not Chakra default', () => {
+  it('G-1: "Strong match" badge bg is #D1FAE5 (design spec tint), NOT Chakra green (~#38A169)', () => {
+    const { container } = render(
+      <BriefEntry entry={makeEntry('Strong match', 88) as any} onSkipped={jest.fn()} />
+    );
+    const badge = container.querySelector('[data-bg="#D1FAE5"]');
+    expect(badge).not.toBeNull();
+  });
+
+  it('G-2: "Strong match" badge text colour is #145C37 (deep Strong green)', () => {
+    const { container } = render(
+      <BriefEntry entry={makeEntry('Strong match', 88) as any} onSkipped={jest.fn()} />
+    );
+    const badge = container.querySelector('[data-bg="#D1FAE5"]');
+    expect(badge!.getAttribute('data-color')).toBe('#145C37');
+  });
+
+  it('G-3: "Strong match" badge text colour is NOT Chakra default green (~#38A169)', () => {
+    const { container } = render(
+      <BriefEntry entry={makeEntry('Strong match', 88) as any} onSkipped={jest.fn()} />
+    );
+    const chakraGreenBadge = container.querySelector('[data-color="#38A169"]');
+    expect(chakraGreenBadge).toBeNull();
+  });
+
+  it('G-4: "Mild match" badge bg is #FEF3C7 (design spec tint), NOT Chakra yellow (~#D69E2E)', () => {
+    const { container } = render(
+      <BriefEntry entry={makeEntry('Mild match', 55) as any} onSkipped={jest.fn()} />
+    );
+    const badge = container.querySelector('[data-bg="#FEF3C7"]');
+    expect(badge).not.toBeNull();
+  });
+
+  it('G-5: "Mild match" badge text colour is #6B4E15 (deep Look gold)', () => {
+    const { container } = render(
+      <BriefEntry entry={makeEntry('Mild match', 55) as any} onSkipped={jest.fn()} />
+    );
+    const badge = container.querySelector('[data-bg="#FEF3C7"]');
+    expect(badge!.getAttribute('data-color')).toBe('#6B4E15');
+  });
+
+  it('G-6: "Weak match" badge bg is #F3F4F6 (Quiet grey tint)', () => {
+    const { container } = render(
+      <BriefEntry entry={makeEntry('Weak match', 25) as any} onSkipped={jest.fn()} />
+    );
+    const badge = container.querySelector('[data-bg="#F3F4F6"]');
+    expect(badge).not.toBeNull();
+    expect(badge!.getAttribute('data-color')).toBe('#4B5563');
+  });
+
+  it('G-7: "No match" badge bg is #F3F4F6, text is #4B5563 (same Quiet grey family)', () => {
+    const { container } = render(
+      <BriefEntry entry={makeEntry('No match', 12) as any} onSkipped={jest.fn()} />
+    );
+    const badge = container.querySelector('[data-bg="#F3F4F6"]');
+    expect(badge).not.toBeNull();
+    expect(badge!.getAttribute('data-color')).toBe('#4B5563');
+  });
+
+  it('G-8: no BriefEntry verdict badge uses a red background for any verdict', () => {
+    const verdicts = ['Strong match', 'Mild match', 'Weak match', 'No match'];
+    for (const verdict of verdicts) {
+      const { container } = render(
+        <BriefEntry entry={makeEntry(verdict, 50) as any} onSkipped={jest.fn()} />
+      );
+      expect(container.querySelector('[data-bg="#EF4444"]')).toBeNull();
+      expect(container.querySelector('[data-bg="#DC2626"]')).toBeNull();
+    }
+  });
+
+  it('G-9: MatchScoreRing "Strong match" badge uses exact design hex, not Chakra green', () => {
+    const { container } = render(<MatchScoreRing score={88} verdict="Strong match" size="md" />);
+    const badge = container.querySelector('[data-bg="#D1FAE5"]');
+    expect(badge).not.toBeNull();
+    expect(badge!.getAttribute('data-color')).toBe('#145C37');
+  });
+
+  it('G-10: MatchScoreRing "Mild match" badge uses exact design hex, not Chakra yellow', () => {
+    const { container } = render(<MatchScoreRing score={55} verdict="Mild match" size="md" />);
+    const badge = container.querySelector('[data-bg="#FEF3C7"]');
+    expect(badge).not.toBeNull();
+    expect(badge!.getAttribute('data-color')).toBe('#6B4E15');
+  });
+
+  it('G-11: MatchScoreRing "No match" badge uses exact grey hex, not Chakra grey scheme', () => {
+    const { container } = render(<MatchScoreRing score={12} verdict="No match" size="md" />);
+    const badge = container.querySelector('[data-bg="#F3F4F6"]');
+    expect(badge).not.toBeNull();
+    expect(badge!.getAttribute('data-color')).toBe('#4B5563');
   });
 });
 

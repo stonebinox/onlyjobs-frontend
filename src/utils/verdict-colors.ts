@@ -1,3 +1,5 @@
+import { STRONG, LOOK, QUIET } from "@/theme/palette";
+
 export type Verdict = "Strong match" | "Mild match" | "Weak match" | "No match";
 
 type VerdictEntry = {
@@ -9,10 +11,10 @@ type VerdictEntry = {
 };
 
 export const VERDICT_COLORS: Record<string, VerdictEntry> = {
-  "Strong match": { hex: "#22C55E", colorScheme: "green",  badgeBg: "#DCFCE7", badgeText: "#15803D", gradient: ["#22C55E", "#16A34A"] },
-  "Mild match":   { hex: "#3B82F6", colorScheme: "blue",   badgeBg: "#DBEAFE", badgeText: "#1D4ED8", gradient: ["#3B82F6", "#2563EB"] },
-  "Weak match":   { hex: "#F59E0B", colorScheme: "yellow", badgeBg: "#FEF3C7", badgeText: "#B45309", gradient: ["#F59E0B", "#D97706"] },
-  "No match":     { hex: "#6B7280", colorScheme: "gray",   badgeBg: "#F3F4F6", badgeText: "#4B5563", gradient: ["#6B7280", "#4B5563"] },
+  "Strong match": { hex: STRONG,  colorScheme: "green",  badgeBg: "#D1FAE5", badgeText: "#145C37", gradient: [STRONG, "#145C37"] },
+  "Mild match":   { hex: LOOK,    colorScheme: "yellow", badgeBg: "#FEF3C7", badgeText: "#6B4E15", gradient: [LOOK,   "#6B4E15"] },
+  "Weak match":   { hex: QUIET,   colorScheme: "gray",   badgeBg: "#F3F4F6", badgeText: "#4B5563", gradient: [QUIET,  "#4B5563"] },
+  "No match":     { hex: QUIET,   colorScheme: "gray",   badgeBg: "#F3F4F6", badgeText: "#4B5563", gradient: [QUIET,  "#4B5563"] },
 };
 
 const FALLBACK: VerdictEntry = VERDICT_COLORS["No match"];

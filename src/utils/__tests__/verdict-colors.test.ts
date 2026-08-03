@@ -3,22 +3,22 @@ import { getVerdictColor, getVerdictRing, VERDICT_COLORS, MATCH_HEX } from "../v
 // ── getVerdictColor ───────────────────────────────────────────────────────────
 
 describe("getVerdictColor", () => {
-  it("Strong match → green / #22C55E", () => {
+  it("Strong match → green / #1B7A4B", () => {
     const result = getVerdictColor("Strong match");
     expect(result.colorScheme).toBe("green");
-    expect(result.hex).toBe("#22C55E");
+    expect(result.hex).toBe("#1B7A4B");
   });
 
-  it("Mild match → blue / #3B82F6", () => {
+  it("Mild match → yellow / #8A6D1F", () => {
     const result = getVerdictColor("Mild match");
-    expect(result.colorScheme).toBe("blue");
-    expect(result.hex).toBe("#3B82F6");
+    expect(result.colorScheme).toBe("yellow");
+    expect(result.hex).toBe("#8A6D1F");
   });
 
-  it("Weak match → yellow / #F59E0B", () => {
+  it("Weak match → gray / #6B7280", () => {
     const result = getVerdictColor("Weak match");
-    expect(result.colorScheme).toBe("yellow");
-    expect(result.hex).toBe("#F59E0B");
+    expect(result.colorScheme).toBe("gray");
+    expect(result.hex).toBe("#6B7280");
   });
 
   it("No match → gray / #6B7280", () => {
@@ -55,19 +55,19 @@ describe("getVerdictColor", () => {
 // ── VERDICT_COLORS — ring gradient stops ─────────────────────────────────────
 
 describe("VERDICT_COLORS — ring gradient stops (shared source)", () => {
-  it("Strong match gradient: #22C55E → #16A34A", () => {
-    expect(VERDICT_COLORS["Strong match"].gradient[0]).toBe("#22C55E");
-    expect(VERDICT_COLORS["Strong match"].gradient[1]).toBe("#16A34A");
+  it("Strong match gradient: #1B7A4B → #145C37", () => {
+    expect(VERDICT_COLORS["Strong match"].gradient[0]).toBe("#1B7A4B");
+    expect(VERDICT_COLORS["Strong match"].gradient[1]).toBe("#145C37");
   });
 
-  it("Mild match gradient: #3B82F6 → #2563EB", () => {
-    expect(VERDICT_COLORS["Mild match"].gradient[0]).toBe("#3B82F6");
-    expect(VERDICT_COLORS["Mild match"].gradient[1]).toBe("#2563EB");
+  it("Mild match gradient: #8A6D1F → #6B4E15", () => {
+    expect(VERDICT_COLORS["Mild match"].gradient[0]).toBe("#8A6D1F");
+    expect(VERDICT_COLORS["Mild match"].gradient[1]).toBe("#6B4E15");
   });
 
-  it("Weak match gradient: #F59E0B → #D97706", () => {
-    expect(VERDICT_COLORS["Weak match"].gradient[0]).toBe("#F59E0B");
-    expect(VERDICT_COLORS["Weak match"].gradient[1]).toBe("#D97706");
+  it("Weak match gradient: #6B7280 → #4B5563 (grey, not red)", () => {
+    expect(VERDICT_COLORS["Weak match"].gradient[0]).toBe("#6B7280");
+    expect(VERDICT_COLORS["Weak match"].gradient[1]).toBe("#4B5563");
   });
 
   it("No match gradient: #6B7280 → #4B5563 (grey, not red)", () => {
@@ -85,19 +85,19 @@ describe("VERDICT_COLORS — ring gradient stops (shared source)", () => {
 // ── VERDICT_COLORS — badge tints ─────────────────────────────────────────────
 
 describe("VERDICT_COLORS — badge tints (shared source)", () => {
-  it("Strong match: badgeBg #DCFCE7, badgeText #15803D", () => {
-    expect(VERDICT_COLORS["Strong match"].badgeBg).toBe("#DCFCE7");
-    expect(VERDICT_COLORS["Strong match"].badgeText).toBe("#15803D");
+  it("Strong match: badgeBg #D1FAE5, badgeText #145C37", () => {
+    expect(VERDICT_COLORS["Strong match"].badgeBg).toBe("#D1FAE5");
+    expect(VERDICT_COLORS["Strong match"].badgeText).toBe("#145C37");
   });
 
-  it("Mild match: badgeBg #DBEAFE, badgeText #1D4ED8", () => {
-    expect(VERDICT_COLORS["Mild match"].badgeBg).toBe("#DBEAFE");
-    expect(VERDICT_COLORS["Mild match"].badgeText).toBe("#1D4ED8");
+  it("Mild match: badgeBg #FEF3C7, badgeText #6B4E15", () => {
+    expect(VERDICT_COLORS["Mild match"].badgeBg).toBe("#FEF3C7");
+    expect(VERDICT_COLORS["Mild match"].badgeText).toBe("#6B4E15");
   });
 
-  it("Weak match: badgeBg #FEF3C7, badgeText #B45309", () => {
-    expect(VERDICT_COLORS["Weak match"].badgeBg).toBe("#FEF3C7");
-    expect(VERDICT_COLORS["Weak match"].badgeText).toBe("#B45309");
+  it("Weak match: badgeBg #F3F4F6, badgeText #4B5563 (grey, not red)", () => {
+    expect(VERDICT_COLORS["Weak match"].badgeBg).toBe("#F3F4F6");
+    expect(VERDICT_COLORS["Weak match"].badgeText).toBe("#4B5563");
   });
 
   it("No match: badgeBg #F3F4F6, badgeText #4B5563 (grey, not red)", () => {

@@ -29,6 +29,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
 import { isSafeUrl } from "@/utils/brief-utils";
+import { LOOK } from "@/theme/palette";
 import {
   getQuietDays,
   getTrackerColumn,
@@ -141,7 +142,7 @@ const TrackerCard = ({ job, onSetOutcome }: TrackerCardProps) => {
 
         {/* Follow-up nudge */}
         {showFollowUp && quietDays !== null && (
-          <Text fontSize="xs" color="orange.500">
+          <Text fontSize="xs" color={LOOK}>
             {quietDays} days quiet — follow up?
           </Text>
         )}

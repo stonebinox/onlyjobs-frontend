@@ -4,7 +4,6 @@ import {
   Drawer,
   DrawerContent,
   useDisclosure,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import dynamic from "next/dynamic";
 
@@ -22,7 +21,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Box minH="100vh" bg={useColorModeValue("gray.50", "gray.900")}>
+    <Box minH="100vh" bg="surface.bg">
       <SidebarContent
         onClose={onClose}
         display={{ base: "none", md: "block" }}

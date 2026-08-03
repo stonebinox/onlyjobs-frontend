@@ -45,7 +45,7 @@ export const CookieConsent = () => {
         </Text>
         <Button
           size="sm"
-          colorScheme="purple"
+          colorScheme="blue"
           borderRadius="xl"
           onClick={dismiss}
           flexShrink={0}

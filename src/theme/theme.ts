@@ -1,53 +1,23 @@
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 import { MATCH_HEX } from "@/utils/verdict-colors";
+import { PAPER, INK, PENCIL } from "@/theme/palette";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
-  useSystemColorMode: false, // Can enable later for dark mode
+  useSystemColorMode: false,
 };
 
 const colors = {
-  // Primary - Electric Purple (AI/Intelligence signifier)
-  primary: {
-    50: "#F5F3FF",
-    100: "#EDE9FE",
-    200: "#DDD6FE",
-    300: "#C4B5FD",
-    400: "#A78BFA",
-    500: "#8B5CF6", // Main brand color
-    600: "#7C3AED",
-    700: "#6D28D9",
-    800: "#5B21B6",
-    900: "#4C1D95",
-  },
+  // Pencil — THE only accent (links, primary buttons, interactive)
+  primary: PENCIL,
+  brand: PENCIL,
+  blue: PENCIL,
 
-  // Secondary - Vibrant Coral (Energy/Action)
-  secondary: {
-    50: "#FFF7ED",
-    100: "#FFEDD5",
-    200: "#FED7AA",
-    300: "#FDBA74",
-    400: "#FB923C",
-    500: "#F97316", // CTAs, energy
-    600: "#EA580C",
-    700: "#C2410C",
-    800: "#9A3412",
-    900: "#7C2D12",
-  },
+  // Secondary — retired coral; keep key so stale references don't break
+  secondary: PENCIL,
 
-  // Accent - Electric Blue (Links/Interactive)
-  accent: {
-    50: "#EFF6FF",
-    100: "#DBEAFE",
-    200: "#BFDBFE",
-    300: "#93C5FD",
-    400: "#60A5FA",
-    500: "#3B82F6",
-    600: "#2563EB",
-    700: "#1D4ED8",
-    800: "#1E40AF",
-    900: "#1E3A8A",
-  },
+  // Accent — retired electric-blue; keep key so stale references don't break
+  accent: PENCIL,
 
   // Match Score Colors (Semantic) — derived from the single source of truth in verdict-colors.ts
   match: {
@@ -64,46 +34,32 @@ const colors = {
     stale: "#9CA3AF",
   },
 
-  // Surface Colors (Dark mode ready - semantic names)
+  // Surface Colors
   surface: {
-    bg: "#FAFAFA",
+    bg: PAPER,
     card: "#FFFFFF",
     elevated: "#FFFFFF",
     border: "#E5E7EB",
     borderSubtle: "#F3F4F6",
   },
 
-  // Text Colors (Dark mode ready - semantic names)
+  // Text Colors
   text: {
-    primary: "#111827",
+    primary: INK,
     secondary: "#4B5563",
     tertiary: "#9CA3AF",
     inverse: "#FFFFFF",
   },
 
-  // Legacy brand colors (keeping for backwards compatibility during transition)
-  brand: {
-    50: "#F5F3FF",
-    100: "#EDE9FE",
-    200: "#DDD6FE",
-    300: "#C4B5FD",
-    400: "#A78BFA",
-    500: "#8B5CF6",
-    600: "#7C3AED",
-    700: "#6D28D9",
-    800: "#5B21B6",
-    900: "#4C1D95",
-  },
-
   // Semantic colors for components
   semantic: {
-    link: "#3B82F6",
-    linkHover: "#2563EB",
+    link: PENCIL[500],
+    linkHover: PENCIL[700],
     success: "#22C55E",
     warning: "#F59E0B",
     error: "#EF4444",
-    info: "#3B82F6",
-    primary: "#8B5CF6",
+    info: PENCIL[500],
+    primary: PENCIL[500],
   },
 };
 
@@ -115,8 +71,8 @@ const fonts = {
 
 const shadows = {
   card: "0 4px 20px rgba(0, 0, 0, 0.08)",
-  cardHover: "0 8px 30px rgba(139, 92, 246, 0.12)",
-  button: "0 4px 15px rgba(139, 92, 246, 0.25)",
+  cardHover: "0 8px 30px rgba(29, 78, 137, 0.12)",
+  button: "0 4px 15px rgba(29, 78, 137, 0.25)",
   elevated: "0 20px 50px rgba(0, 0, 0, 0.1)",
 };
 
@@ -185,10 +141,10 @@ const theme = extendTheme({
           },
         },
         gradient: {
-          bgGradient: "linear(135deg, primary.500, secondary.500)",
+          bg: "primary.500",
           color: "white",
           _hover: {
-            bgGradient: "linear(135deg, primary.600, secondary.600)",
+            bg: "primary.600",
             transform: "translateY(-1px)",
             boxShadow: "button",
           },
@@ -233,7 +189,7 @@ const theme = extendTheme({
     Badge: {
       variants: {
         ai: {
-          bgGradient: "linear(135deg, primary.500, pink.500)",
+          bg: "primary.500",
           color: "white",
           fontWeight: "bold",
           px: 2,
@@ -322,7 +278,7 @@ const theme = extendTheme({
         },
         info: {
           container: {
-            bg: "#DBEAFE",
+            bg: PENCIL[50],
             borderColor: "semantic.info",
             borderRadius: "xl",
           },
@@ -338,7 +294,7 @@ const theme = extendTheme({
             borderColor: "surface.border",
             _focus: {
               borderColor: "primary.500",
-              boxShadow: "0 0 0 3px rgba(139, 92, 246, 0.1)",
+              boxShadow: "0 0 0 3px rgba(29, 78, 137, 0.1)",
             },
           },
         },
@@ -351,7 +307,7 @@ const theme = extendTheme({
           borderColor: "surface.border",
           _focus: {
             borderColor: "primary.500",
-            boxShadow: "0 0 0 3px rgba(139, 92, 246, 0.1)",
+            boxShadow: "0 0 0 3px rgba(29, 78, 137, 0.1)",
           },
         },
       },

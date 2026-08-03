@@ -182,11 +182,11 @@ export default function ChatWidget() {
               icon={<FiMessageSquare size={22} />}
               size="lg"
               borderRadius="full"
-              bgGradient="linear(135deg, primary.500, secondary.500)"
+              bg="primary.500"
               color="white"
               boxShadow="lg"
               _hover={{
-                bgGradient: "linear(135deg, primary.600, secondary.600)",
+                bg: "primary.600",
                 transform: "scale(1.05)",
               }}
               onClick={handleOpen}
@@ -204,7 +204,7 @@ export default function ChatWidget() {
         <DrawerOverlay bg="blackAlpha.400" />
         <DrawerContent borderLeftRadius={{ md: "2xl" }} h="100dvh">
           <DrawerHeader
-            bgGradient="linear(135deg, #F5F3FF 0%, #FDF2F8 50%, #FFF7ED 100%)"
+            bg="primary.50"
             borderBottom="1px solid"
             borderColor="primary.100"
             py={4}
@@ -401,11 +401,11 @@ export default function ChatWidget() {
                   icon={<FiSend />}
                   onClick={() => handleSend()}
                   isDisabled={!input.trim() || isLoading}
-                  bgGradient="linear(135deg, primary.500, secondary.500)"
+                  bg="primary.500"
                   color="white"
                   borderRadius="xl"
                   _hover={{
-                    bgGradient: "linear(135deg, primary.600, secondary.600)",
+                    bg: "primary.600",
                   }}
                   _disabled={{ opacity: 0.5, cursor: "not-allowed" }}
                 />

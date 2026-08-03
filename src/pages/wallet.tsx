@@ -49,6 +49,7 @@ import { useRouter } from "next/navigation";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
 import { createApiClient } from "@/lib/apiClient";
+import { PENCIL } from "@/theme/palette";
 import { trackEvent } from "@/utils/analytics";
 import Guide from "@/components/Guide/Guide";
 import { walletGuideConfig } from "@/config/guides/walletGuide";
@@ -271,7 +272,7 @@ const WalletPage = () => {
           email: "",
         },
         theme: {
-          color: "#3182CE",
+          color: PENCIL[500],
         },
         modal: {
           ondismiss: function () {

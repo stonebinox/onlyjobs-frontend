@@ -102,7 +102,7 @@ export const GettingStartedChecklist = ({
               <Button
                 size="xs"
                 variant="outline"
-                colorScheme="purple"
+                colorScheme="blue"
                 borderRadius="lg"
                 onClick={item.onAction}
                 flexShrink={0}
