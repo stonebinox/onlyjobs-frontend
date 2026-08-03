@@ -1,4 +1,5 @@
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
+import { MATCH_HEX } from "@/utils/verdict-colors";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -48,12 +49,12 @@ const colors = {
     900: "#1E3A8A",
   },
 
-  // Match Score Colors (Semantic)
+  // Match Score Colors (Semantic) — derived from the single source of truth in verdict-colors.ts
   match: {
-    strong: "#22C55E",
-    mild: "#3B82F6",
-    weak: "#F59E0B",
-    none: "#EF4444",
+    strong: MATCH_HEX.strong,
+    mild:   MATCH_HEX.mild,
+    weak:   MATCH_HEX.weak,
+    none:   MATCH_HEX.none,
   },
 
   // Freshness Indicators

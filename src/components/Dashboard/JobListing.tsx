@@ -39,6 +39,7 @@ import { isSafeUrl } from "@/utils/brief-utils";
 import { MatchScoreRing } from "./MatchScoreRing";
 import { AIReasoningBox } from "./AIReasoningBox";
 import { trackEvent } from "@/utils/analytics";
+import { getVerdictColor } from "@/utils/verdict-colors";
 
 // Reason categories matching the backend
 const REASON_CATEGORIES = {
@@ -52,8 +53,6 @@ const REASON_CATEGORIES = {
 } as const;
 
 type ReasonCategory = keyof typeof REASON_CATEGORIES;
-type Verdict = "Strong match" | "Mild match" | "Weak match" | "No match";
-
 export interface JobListingProps {
   job: JobResult;
   bypassSkippedFiltering?: boolean;
@@ -61,19 +60,7 @@ export interface JobListingProps {
   onApplyClick?: (jobResult: JobResult) => void;
 }
 
-const getVerdictBorderColor = (verdict: Verdict) => {
-  switch (verdict) {
-    case "Strong match":
-      return "#22C55E";
-    case "Mild match":
-      return "#3B82F6";
-    case "Weak match":
-      return "#F59E0B";
-    case "No match":
-    default:
-      return "#EF4444";
-  }
-};
+const getVerdictBorderColor = (verdict: string) => getVerdictColor(verdict).hex;
 
 const JobListing = ({
   job,
@@ -207,7 +194,7 @@ const JobListing = ({
   };
 
   const freshness = getListingFreshness(new Date(postedDate));
-  const borderColor = getVerdictBorderColor(verdict as Verdict);
+  const borderColor = getVerdictBorderColor(verdict);
 
   return (
     <>
@@ -334,7 +321,7 @@ const JobListing = ({
           >
             <MatchScoreRing
               score={matchScore}
-              verdict={verdict as Verdict}
+              verdict={verdict}
               size="md"
             />
           </Box>

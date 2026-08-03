@@ -1,11 +1,10 @@
 import { Box, Text, Badge, VStack } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
-
-type Verdict = "Strong match" | "Mild match" | "Weak match" | "No match";
+import { VERDICT_COLORS, getVerdictColor, getVerdictRing } from "@/utils/verdict-colors";
 
 interface MatchScoreRingProps {
   score: number;
-  verdict: Verdict;
+  verdict: string;
   size?: "sm" | "md" | "lg";
 }
 
@@ -18,43 +17,14 @@ const drawIn = keyframes`
   }
 `;
 
-const getVerdictColors = (verdict: Verdict) => {
-  switch (verdict) {
-    case "Strong match":
-      return {
-        stroke: "#22C55E",
-        strokeGradient: "url(#strongGradient)",
-        bg: "#DCFCE7",
-        text: "#15803D",
-        badge: "green",
-      };
-    case "Mild match":
-      return {
-        stroke: "#3B82F6",
-        strokeGradient: "url(#mildGradient)",
-        bg: "#DBEAFE",
-        text: "#1D4ED8",
-        badge: "blue",
-      };
-    case "Weak match":
-      return {
-        stroke: "#F59E0B",
-        strokeGradient: "url(#weakGradient)",
-        bg: "#FEF3C7",
-        text: "#B45309",
-        badge: "orange",
-      };
-    case "No match":
-    default:
-      return {
-        stroke: "#EF4444",
-        strokeGradient: "url(#noneGradient)",
-        bg: "#FEE2E2",
-        text: "#DC2626",
-        badge: "red",
-      };
-  }
+// SVG gradient IDs — implementation detail; no colour values
+const GRADIENT_IDS: Record<string, string> = {
+  "Strong match": "strongGradient",
+  "Mild match":   "mildGradient",
+  "Weak match":   "weakGradient",
+  "No match":     "noneGradient",
 };
+const FALLBACK_GRADIENT_ID = "noneGradient";
 
 const getSizeConfig = (size: "sm" | "md" | "lg") => {
   switch (size) {
@@ -73,7 +43,9 @@ export const MatchScoreRing = ({
   verdict,
   size = "md",
 }: MatchScoreRingProps) => {
-  const colors = getVerdictColors(verdict);
+  const ring = getVerdictRing(verdict);
+  const { colorScheme: badge } = getVerdictColor(verdict);
+  const gradientId = GRADIENT_IDS[verdict] ?? FALLBACK_GRADIENT_ID;
   const sizeConfig = getSizeConfig(size);
 
   // Calculate the stroke dash offset based on score (0-100)
@@ -95,24 +67,17 @@ export const MatchScoreRing = ({
           height="100%"
           transform="rotate(-90deg)"
         >
-          {/* Gradient definitions */}
+          {/* Gradient definitions — sourced from VERDICT_COLORS, no hex literals here */}
           <defs>
-            <linearGradient id="strongGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#22C55E" />
-              <stop offset="100%" stopColor="#16A34A" />
-            </linearGradient>
-            <linearGradient id="mildGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#3B82F6" />
-              <stop offset="100%" stopColor="#2563EB" />
-            </linearGradient>
-            <linearGradient id="weakGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F59E0B" />
-              <stop offset="100%" stopColor="#D97706" />
-            </linearGradient>
-            <linearGradient id="noneGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#EF4444" />
-              <stop offset="100%" stopColor="#DC2626" />
-            </linearGradient>
+            {Object.entries(VERDICT_COLORS).map(([v, c]) => {
+              const gId = GRADIENT_IDS[v] ?? FALLBACK_GRADIENT_ID;
+              return (
+                <linearGradient key={gId} id={gId} x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor={c.gradient[0]} />
+                  <stop offset="100%" stopColor={c.gradient[1]} />
+                </linearGradient>
+              );
+            })}
           </defs>
 
           {/* Background circle */}
@@ -132,7 +97,7 @@ export const MatchScoreRing = ({
             cy="50"
             r="40"
             fill="none"
-            stroke={colors.strokeGradient}
+            stroke={`url(#${gradientId})`}
             strokeWidth={sizeConfig.strokeWidth}
             strokeLinecap="round"
             strokeDasharray={circumference}
@@ -163,7 +128,7 @@ export const MatchScoreRing = ({
               fontFamily="mono"
               fontSize={sizeConfig.fontSize}
               fontWeight="bold"
-              color={colors.text}
+              color={ring.badgeText}
               lineHeight="1"
             >
               {score}
@@ -181,7 +146,7 @@ export const MatchScoreRing = ({
 
       {/* Verdict badge */}
       <Badge
-        colorScheme={colors.badge}
+        colorScheme={badge}
         fontSize={sizeConfig.badgeSize}
         px={2}
         py={0.5}

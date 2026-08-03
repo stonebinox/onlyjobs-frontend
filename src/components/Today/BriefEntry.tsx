@@ -34,6 +34,7 @@ import { Salary } from "@/types/Salary";
 import { numberFormatter } from "@/utils/text-formatter";
 import { trackEvent } from "@/utils/analytics";
 import { getOddsLine, isSafeUrl } from "@/utils/brief-utils";
+import { getVerdictColor } from "@/utils/verdict-colors";
 
 const REASON_CATEGORIES = {
   salary: "Salary too low",
@@ -52,15 +53,7 @@ export interface BriefEntryProps {
   onSkipped: (matchId: string) => void;
 }
 
-const getVerdictColorScheme = (verdict: string) => {
-  switch (verdict) {
-    case "Strong match": return "green";
-    case "Mild match": return "blue";
-    case "Weak match": return "yellow";
-    case "No match": return "red";
-    default: return "gray";
-  }
-};
+const getVerdictColorScheme = (verdict: string) => getVerdictColor(verdict).colorScheme;
 
 const getSalaryString = (salary: Salary): string => {
   if (!salary) return "";
