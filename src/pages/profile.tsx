@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import dynamic from "next/dynamic";
 import {
@@ -42,6 +42,7 @@ import {
   FaPhone,
   FaDownload,
   FaExternalLinkAlt,
+  FaUpload,
 } from "react-icons/fa";
 import styled from "styled-components";
 import { CVDocument } from "../components/Profile/CVDocument";
@@ -107,9 +108,11 @@ type ArrayFieldType =
   | "languages";
 
 const ProfilePage = () => {
-  const { getUserProfile, updateUserProfile } = createApiClient();
+  const { getUserProfile, updateUserProfile, uploadCV } = createApiClient();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [cvUploading, setCvUploading] = useState(false);
+  const cvFileInputRef = useRef<HTMLInputElement>(null);
   const cardBg = useColorModeValue("white", "gray.700");
   const textColor = useColorModeValue("gray.600", "gray.300");
   const toast = useToast();
@@ -167,6 +170,64 @@ const ProfilePage = () => {
       throw new Error(response.error);
     }
     await fetchUserProfile();
+  };
+
+  const ALLOWED_CV_TYPES = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+  const ALLOWED_CV_EXTENSIONS = [".pdf", ".docx"];
+
+  const handleCVFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    // Reset so the same file can be re-selected after an error
+    e.target.value = "";
+
+    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+    if (!ALLOWED_CV_TYPES.includes(file.type) && !ALLOWED_CV_EXTENSIONS.includes(ext)) {
+      toast({
+        title: "Unsupported file type",
+        description: "Please upload a PDF or DOCX file.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setCvUploading(true);
+    try {
+      const result = await uploadCV(file);
+      if (result && "error" in result) {
+        toast({
+          title: "Upload failed",
+          description: String(result.error),
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        return;
+      }
+      await fetchUserProfile();
+      toast({
+        title: "CV uploaded",
+        description: "Your CV has been updated.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (err) {
+      toast({
+        title: "Upload failed",
+        description: "Something went wrong. Please try again.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+    } finally {
+      setCvUploading(false);
+    }
   };
 
   // Summary handlers
@@ -524,6 +585,23 @@ const ProfilePage = () => {
                       )}
                     </PDFDownloadLink>
                   )}
+                  <input
+                    ref={cvFileInputRef}
+                    type="file"
+                    accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    style={{ display: "none" }}
+                    onChange={handleCVFileSelect}
+                  />
+                  <Button
+                    leftIcon={<FaUpload />}
+                    size="sm"
+                    variant="outline"
+                    isLoading={cvUploading}
+                    loadingText="Uploading..."
+                    onClick={() => cvFileInputRef.current?.click()}
+                  >
+                    {user?.resume ? "Replace CV" : "Upload CV"}
+                  </Button>
                   <Button
                     leftIcon={<FaEdit />}
                     size="sm"

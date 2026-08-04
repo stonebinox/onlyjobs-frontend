@@ -23,6 +23,13 @@ import { User } from "@/types/User";
 import { isSafeUrl } from "@/utils/brief-utils";
 import { resolveMinScore, filterMatches } from "@/utils/today-selection";
 
+const hasNoMeaningfulResume = (u: User | null): boolean => {
+  if (!u?.resume) return true;
+  const summaryBlank = !u.resume.summary || !u.resume.summary.trim();
+  const skillsEmpty = !u.resume.skills || u.resume.skills.length === 0;
+  return summaryBlank && skillsEmpty;
+};
+
 const COUNT_WORDS: Record<number, string> = {
   1: "One",
   2: "Two",
@@ -467,6 +474,22 @@ const TodayPage = () => {
                       up to date — the better your profile, the more the system
                       has to work with.
                     </Text>
+                    {hasNoMeaningfulResume(user) && (
+                      <NextLink href="/profile">
+                        <Text
+                          as="span"
+                          color="primary.600"
+                          fontWeight="medium"
+                          fontSize="sm"
+                          cursor="pointer"
+                          _hover={{ textDecoration: "underline" }}
+                          display="block"
+                          mb={2}
+                        >
+                          Add your CV →
+                        </Text>
+                      </NextLink>
+                    )}
                     <NextLink href="/browse">
                       <Text
                         as="span"
