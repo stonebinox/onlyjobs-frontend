@@ -22,13 +22,10 @@ import { JobResult } from "@/types/JobResult";
 import { User } from "@/types/User";
 import { isSafeUrl } from "@/utils/brief-utils";
 import { resolveMinScore, filterMatches } from "@/utils/today-selection";
+import { hasMeaningfulResume } from "@/utils/resumePredicate";
 
-const hasNoMeaningfulResume = (u: User | null): boolean => {
-  if (!u?.resume) return true;
-  const summaryBlank = !u.resume.summary || !u.resume.summary.trim();
-  const skillsEmpty = !u.resume.skills || u.resume.skills.length === 0;
-  return summaryBlank && skillsEmpty;
-};
+const hasNoMeaningfulResume = (u: User | null): boolean =>
+  !hasMeaningfulResume(u?.resume);
 
 const COUNT_WORDS: Record<number, string> = {
   1: "One",

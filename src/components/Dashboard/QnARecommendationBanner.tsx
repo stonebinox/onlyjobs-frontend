@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { FiMessageSquare } from "react-icons/fi";
 import { Resume } from "@/types/Resume";
+import { hasMeaningfulResume } from "@/utils/resumePredicate";
 
 interface QnARecommendationBannerProps {
   answeredQuestionsCount: number;
@@ -17,27 +18,12 @@ interface QnARecommendationBannerProps {
   onStartQnA: () => void;
 }
 
-/**
- * Check if resume has meaningful data
- */
-const hasValidResume = (resume: Resume | null): boolean => {
-  if (!resume) return false;
-  return !!(
-    resume.summary ||
-    (resume.skills && resume.skills.length > 0) ||
-    (resume.experience && resume.experience.length > 0) ||
-    (resume.education && resume.education.length > 0)
-  );
-};
-
 export const QnARecommendationBanner = ({
   answeredQuestionsCount,
   resume,
   onStartQnA,
 }: QnARecommendationBannerProps) => {
-  // Don't show banner if user has answered questions OR has no resume
-  // (Resume banner takes priority if they don't have one)
-  if (answeredQuestionsCount > 0 || !hasValidResume(resume)) {
+  if (answeredQuestionsCount > 0 || !hasMeaningfulResume(resume)) {
     return null;
   }
 

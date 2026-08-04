@@ -682,6 +682,36 @@ describe('A — /today: no-resume CTA predicate (onlyjobs-798 §1)', () => {
     // If this throws, the match fixture is malformed.
     expect(true).toBe(true);
   });
+
+  it('A-8: experience-only resume → CTA ABSENT [experience alone = meaningful]', async () => {
+    // Contract: experience is one of the four meaningful fields. A user who has
+    // uploaded experience entries but no summary/skills must NOT see the CTA.
+    mockGetUserProfile = jest.fn().mockResolvedValue(
+      makeUser({ ...BASE_RESUME, experience: ['Senior dev at Acme'] })
+    );
+    await renderTodayAndWait();
+    await new Promise(r => setTimeout(r, 300));
+
+    const cta = findCvCta();
+    // FINDING if present: impl does not check experience — treats experience-only
+    //   resume as empty and wrongly nags a user who already provided work history.
+    expect(cta).toBeNull();
+  });
+
+  it('A-9: education-only resume → CTA ABSENT [education alone = meaningful]', async () => {
+    // Contract: education is one of the four meaningful fields. A user who has
+    // uploaded education entries but no summary/skills/experience must NOT see the CTA.
+    mockGetUserProfile = jest.fn().mockResolvedValue(
+      makeUser({ ...BASE_RESUME, education: ['BS Computer Science'] })
+    );
+    await renderTodayAndWait();
+    await new Promise(r => setTimeout(r, 300));
+
+    const cta = findCvCta();
+    // FINDING if present: impl does not check education — treats education-only
+    //   resume as empty and wrongly nags a user who already provided education history.
+    expect(cta).toBeNull();
+  });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════

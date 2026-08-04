@@ -10,31 +10,18 @@ import {
 } from "@chakra-ui/react";
 import { FiUpload } from "react-icons/fi";
 import { Resume } from "@/types/Resume";
+import { hasMeaningfulResume } from "@/utils/resumePredicate";
 
 interface ResumeRequiredBannerProps {
   resume: Resume | null;
   onUploadClick: () => void;
 }
 
-/**
- * Check if resume has meaningful data
- */
-const hasValidResume = (resume: Resume | null): boolean => {
-  if (!resume) return false;
-  return !!(
-    resume.summary ||
-    (resume.skills && resume.skills.length > 0) ||
-    (resume.experience && resume.experience.length > 0) ||
-    (resume.education && resume.education.length > 0)
-  );
-};
-
 export const ResumeRequiredBanner = ({
   resume,
   onUploadClick,
 }: ResumeRequiredBannerProps) => {
-  // Don't show banner if user has a valid resume
-  if (hasValidResume(resume)) {
+  if (hasMeaningfulResume(resume)) {
     return null;
   }
 

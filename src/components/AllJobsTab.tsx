@@ -23,6 +23,7 @@ import { JobResult } from "@/types/JobResult";
 import { MatchScoreRing } from "@/components/Dashboard/MatchScoreRing";
 import JobListing from "@/components/Dashboard/JobListing";
 import { isSafeUrl } from "@/utils/brief-utils";
+import { hasMeaningfulResume } from "@/utils/resumePredicate";
 
 interface RawJob {
   _id: string;
@@ -90,12 +91,7 @@ function toJobResult(job: RawJob): JobResult {
 }
 
 function hasValidResume(user: User | null): boolean {
-  if (!user?.resume) return false;
-  return (
-    (user.resume.summary?.trim().length > 0) ||
-    (Array.isArray(user.resume.skills) && user.resume.skills.length > 0) ||
-    (Array.isArray(user.resume.experience) && user.resume.experience.length > 0)
-  );
+  return hasMeaningfulResume(user?.resume);
 }
 
 function formatPostedDate(dateStr: string): string {
