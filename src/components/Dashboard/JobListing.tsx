@@ -19,6 +19,7 @@ import {
   Wrap,
   WrapItem,
   useDisclosure,
+  useToast,
 } from "@chakra-ui/react";
 import { Fragment, useState } from "react";
 import {
@@ -77,6 +78,7 @@ const JobListing = ({
   );
   const [reasonDetails, setReasonDetails] = useState("");
   const { markMatchClick, markMatchAsSkipped } = createApiClient();
+  const toast = useToast();
   const {
     isOpen: isReasonModalOpen,
     onOpen: openReasonModal,
@@ -168,15 +170,14 @@ const JobListing = ({
   };
 
   const handleApplyClick = async () => {
-    if (isSafeUrl(url)) {
-      window.open(url, "_blank", "noopener,noreferrer");
+    if (!isSafeUrl(url)) {
+      toast({ title: "Cannot open listing — invalid URL", status: "error", duration: 3000, isClosable: true });
+      return;
     }
+    window.open(url, "_blank", "noopener,noreferrer");
     setViewed(true);
+    onApplyClick?.(job);          // register pending FIRST — synchronous, race-free
     await markMatchClick(matchId);
-    trackEvent("match_applied");
-    if (onApplyClick) {
-      onApplyClick(job);
-    }
   };
 
   const getListingFreshness = (date: Date) => {

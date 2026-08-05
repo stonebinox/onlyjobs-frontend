@@ -13,11 +13,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { BriefEntry } from "@/components/Today/BriefEntry";
+import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
 import { OutOfCreditPreview } from "@/components/Dashboard/OutOfCreditPreview";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient, OutOfCreditPreviewResponse } from "@/lib/apiClient";
+import { useApplyReturnPrompt } from "@/hooks/useApplyReturnPrompt";
 import { JobResult } from "@/types/JobResult";
 import { User } from "@/types/User";
 import { isSafeUrl } from "@/utils/brief-utils";
@@ -66,6 +68,13 @@ const TodayPage = () => {
 
   // Always tracks the latest allFiltered for use inside toast callbacks
   const allFilteredRef = useRef<JobResult[]>([]);
+
+  const {
+    selectedJobResult: applyDrawerJob,
+    isDrawerOpen: isApplyDrawerOpen,
+    registerPending,
+    closeDrawer: closeApplyDrawer,
+  } = useApplyReturnPrompt();
 
   const auth = useAuth();
   const router = useRouter();
@@ -424,6 +433,7 @@ const TodayPage = () => {
                       key={entry._id}
                       entry={entry}
                       onSkipped={handleSkipped}
+                      onOpenListing={registerPending}
                     />
                   ))}
 
@@ -519,6 +529,11 @@ const TodayPage = () => {
           )}
         </Box>
       </DashboardLayout>
+      <JobQuestionsDrawer
+        isOpen={isApplyDrawerOpen}
+        onClose={closeApplyDrawer}
+        jobResult={applyDrawerJob}
+      />
     </>
   );
 };

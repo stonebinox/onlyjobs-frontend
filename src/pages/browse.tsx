@@ -16,16 +16,21 @@ import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient } from "@/lib/apiClient";
-import { JobResult } from "@/types/JobResult";
+import { useApplyReturnPrompt } from "@/hooks/useApplyReturnPrompt";
 import { User } from "@/types/User";
 
 const BrowsePage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isJobDrawerOpen, setIsJobDrawerOpen] = useState(false);
-  const [selectedJobResult, setSelectedJobResult] = useState<JobResult | null>(null);
-  const [pendingJobForDrawer, setPendingJobForDrawer] = useState<JobResult | null>(null);
+
+  const {
+    selectedJobResult,
+    isDrawerOpen: isJobDrawerOpen,
+    registerPending: handleApplyClick,
+    openDrawer: openJobQuestionsDrawer,
+    closeDrawer,
+  } = useApplyReturnPrompt();
 
   const auth = useAuth();
   const router = useRouter();
@@ -66,35 +71,6 @@ const BrowsePage = () => {
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.isReady, auth?.isLoggedIn]);
-
-  const openJobQuestionsDrawer = (jobResult: JobResult) => {
-    setSelectedJobResult(jobResult);
-    setIsJobDrawerOpen(true);
-    if (pendingJobForDrawer?._id === jobResult._id) {
-      setPendingJobForDrawer(null);
-    }
-  };
-
-  const handleApplyClick = (jobResult: JobResult) => {
-    setPendingJobForDrawer(jobResult);
-  };
-
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible" && pendingJobForDrawer) {
-        if (!isJobDrawerOpen) {
-          setSelectedJobResult(pendingJobForDrawer);
-          setIsJobDrawerOpen(true);
-          setPendingJobForDrawer(null);
-        }
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [pendingJobForDrawer, isJobDrawerOpen]);
 
   return (
     <>
@@ -161,7 +137,7 @@ const BrowsePage = () => {
       </DashboardLayout>
       <JobQuestionsDrawer
         isOpen={isJobDrawerOpen}
-        onClose={() => setIsJobDrawerOpen(false)}
+        onClose={closeDrawer}
         jobResult={selectedJobResult}
       />
     </>

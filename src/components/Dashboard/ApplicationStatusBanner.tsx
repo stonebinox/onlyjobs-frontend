@@ -17,10 +17,11 @@ import {
   Wrap,
   WrapItem,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
+import { trackEvent } from "@/utils/analytics";
 
 // Reason categories matching the backend
 const REASON_CATEGORIES = {
@@ -61,6 +62,14 @@ export const ApplicationStatusBanner = ({
     onClose: closeReasonModal,
   } = useDisclosure();
 
+  useEffect(() => {
+    setHasAnswered(false);
+    setSelectedReason(null);
+    setReasonDetails("");
+    closeReasonModal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobResult?._id]);
+
   // Don't show banner if no job result, if already answered, or if user just answered
   if (!jobResult || jobResult.applied !== null || hasAnswered) {
     return null;
@@ -71,6 +80,7 @@ export const ApplicationStatusBanner = ({
     try {
       const response = await markMatchApplied(jobResult._id, true);
       if (!response.error) {
+        trackEvent("match_applied");
         setHasAnswered(true);
         if (jobResult) {
           jobResult.applied = true;

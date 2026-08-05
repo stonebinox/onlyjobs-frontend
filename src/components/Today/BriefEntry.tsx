@@ -51,6 +51,7 @@ type ReasonCategory = keyof typeof REASON_CATEGORIES;
 export interface BriefEntryProps {
   entry: JobResult;
   onSkipped: (matchId: string) => void;
+  onOpenListing?: (jobResult: JobResult) => void;
 }
 
 const getSalaryString = (salary: Salary): string => {
@@ -66,7 +67,7 @@ const getSalaryString = (salary: Salary): string => {
 };
 
 
-export const BriefEntry = ({ entry, onSkipped }: BriefEntryProps) => {
+export const BriefEntry = ({ entry, onSkipped, onOpenListing }: BriefEntryProps) => {
   const [isSkipping, setIsSkipping] = useState(false);
   const [skipError, setSkipError] = useState<string | null>(null);
   const [selectedReason, setSelectedReason] = useState<ReasonCategory | null>(null);
@@ -101,12 +102,11 @@ export const BriefEntry = ({ entry, onSkipped }: BriefEntryProps) => {
       return;
     }
     window.open(url, "_blank", "noopener,noreferrer");
+    onOpenListing?.(entry);
     try {
       const result = await markMatchClick(matchId);
       if (result && "error" in result) {
         toast({ title: "Could not record visit", status: "warning", duration: 3000, isClosable: true });
-      } else {
-        trackEvent("match_applied");
       }
     } catch {
       toast({ title: "Could not record visit", status: "warning", duration: 3000, isClosable: true });
