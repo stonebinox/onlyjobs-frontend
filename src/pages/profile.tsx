@@ -3,6 +3,7 @@ import Head from "next/head";
 import dynamic from "next/dynamic";
 import {
   Box,
+  Flex,
   Heading,
   Text,
   VStack,
@@ -536,37 +537,37 @@ const ProfilePage = () => {
         <VStack spacing={6} align="stretch">
           <Card bg={cardBg} shadow="md">
             <CardBody>
-              <HStack justify="space-between" align="flex-start">
-                <HStack spacing={6} align="center">
-                  <Avatar size="xl" name={user?.name || "User"} />
-                  <VStack align="flex-start" spacing={2}>
-                    <Heading as="h1" size="lg">
+              <Flex direction={{ base: "column", md: "row" }} justify={{ md: "space-between" }} align="flex-start" gap={4}>
+                <HStack spacing={6} align="center" minW={0} flex={{ md: 1 }} w={{ base: "100%", md: "auto" }}>
+                  <Avatar size="xl" name={user?.name || "User"} flexShrink={0} />
+                  <VStack align="stretch" spacing={2} minW={0} flex={1} w="100%">
+                    <Heading as="h1" size="lg" wordBreak="break-word">
                       {user?.name || "User"}
                     </Heading>
-                    <HStack>
-                      <Icon as={FaEnvelope} color={textColor} />
-                      <Text color={textColor}>{user?.email || "-"}</Text>
+                    <HStack minW={0} w="100%">
+                      <Icon as={FaEnvelope} color={textColor} flexShrink={0} />
+                      <Text color={textColor} isTruncated>{user?.email || "-"}</Text>
                     </HStack>
-                    <HStack>
-                      <Icon as={FaPhone} color={textColor} />
-                      <Text color={textColor}>{user?.phone || "-"}</Text>
+                    <HStack minW={0} w="100%">
+                      <Icon as={FaPhone} color={textColor} flexShrink={0} />
+                      <Text color={textColor} noOfLines={1}>{user?.phone || "-"}</Text>
                     </HStack>
-                    <HStack>
-                      <Icon as={FaMapMarkerAlt} color={textColor} />
-                      <Text color={textColor}>
+                    <HStack minW={0} w="100%">
+                      <Icon as={FaMapMarkerAlt} color={textColor} flexShrink={0} />
+                      <Text color={textColor} wordBreak="break-word">
                         {user?.currentLocation || "-"} (
                         {user?.preferences?.remoteOnly ? "Remote" : "On-site"})
                       </Text>
                     </HStack>
-                    <HStack>
-                      <Icon as={FaDollarSign} color={textColor} />
-                      <Text color={textColor}>
+                    <HStack minW={0} w="100%">
+                      <Icon as={FaDollarSign} color={textColor} flexShrink={0} />
+                      <Text color={textColor} noOfLines={1}>
                         {user?.preferences?.minSalary || "-"}
                       </Text>
                     </HStack>
                   </VStack>
                 </HStack>
-                <HStack spacing={2}>
+                <Flex gap={2} flexWrap="wrap">
                   {user && (
                     <PDFDownloadLink
                       document={<CVDocument user={user} />}
@@ -609,8 +610,8 @@ const ProfilePage = () => {
                   >
                     Edit
                   </Button>
-                </HStack>
-              </HStack>
+                </Flex>
+              </Flex>
             </CardBody>
           </Card>
 

@@ -6,6 +6,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 
 import { GenerateAnswer } from "./GenerateAnswer";
@@ -24,12 +25,13 @@ export const JobQuestionsDrawer = ({
   jobResult,
   onStatusUpdate,
 }: JobQuestionsDrawerProps) => {
+  const drawerSize = useBreakpointValue({ base: "full", md: "xl" }) as "full" | "xl";
   return (
-    <Drawer placement="right" size="xl" isOpen={isOpen} onClose={onClose}>
+    <Drawer placement="right" size={drawerSize} isOpen={isOpen} onClose={onClose}>
       <DrawerOverlay />
       <DrawerContent>
         <DrawerCloseButton />
-        <DrawerHeader>
+        <DrawerHeader pr={12}>
           {jobResult?.job?.title} at {jobResult?.job?.company}
         </DrawerHeader>
         <DrawerBody pt={6}>

@@ -506,4 +506,145 @@ test.describe("authenticated pages visual", () => {
       fullPage: true,
     });
   });
+
+  test("/browse — Q&A drawer is full-screen and usable on mobile", async (
+    { page },
+    testInfo
+  ) => {
+    // Override /api/jobs to include one analyzed job (match !== null) so AllJobsTab
+    // renders a JobListing with the "Write Answer with AI" trigger that opens the drawer.
+    // The base JOBS fixture has match: null on both jobs — no trigger would render without this.
+    await page.route(`${API}/jobs*`, (route) =>
+      route.fulfill({
+        json: {
+          jobs: [
+            {
+              _id: "rawjob-analyzed-01",
+              title: "React Developer",
+              company: "Analyzed Corp",
+              location: ["Remote"],
+              salary: { min: 120000, max: 150000, currency: "USD" },
+              source: "linkedin",
+              description: "Build beautiful React UIs for millions of users.",
+              url: "https://example.com/jobs/analyzed-01",
+              postedDate: daysAgo(1),
+              match: {
+                _id: "match-analyzed-01",
+                matchScore: 85,
+                verdict: "Strong match",
+                reasoning: "Strong React and TypeScript fit.",
+                skipped: false,
+                applied: null,
+                updatedAt: daysAgo(0),
+              },
+            },
+          ],
+          total: 1,
+          page: 1,
+          pages: 1,
+          sources: ["linkedin"],
+        },
+      })
+    );
+
+    await page.goto("/browse");
+
+    // Guard: analyzed listing must be visible — proves override fired and JobListing rendered
+    await expect(page.getByText("React Developer")).toBeVisible({ timeout: 15000 });
+
+    // Open the drawer via "Write Answer with AI" (rendered by JobListing for analyzed jobs only)
+    await page.getByRole("button", { name: "Write Answer with AI" }).click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    // Wait for the open animation to settle before measuring
+    await page.waitForTimeout(400);
+
+    // HARD assertion: drawer must fill the viewport width on mobile (not applicable on desktop)
+    if (testInfo.project.name === "mobile") {
+      const box = await page.getByRole("dialog").boundingBox();
+      const vw = page.viewportSize()!.width;
+      expect(box!.width).toBeGreaterThanOrEqual(vw - 2);
+    }
+
+    // No horizontal overflow: full-screen drawer must not push document width at 390px
+    const overflow = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth + 1
+    );
+    expect(overflow).toBe(false);
+
+    // Both drawer sections must render on mobile (apply prompt + Q&A generator)
+    await expect(dialog.getByText(/did you apply/i)).toBeVisible();
+    await expect(dialog.getByRole("heading", { name: /generate answer/i })).toBeVisible();
+
+    // Close control must be present (guards against header/close-button collision)
+    await expect(dialog.getByRole("button", { name: /close/i })).toBeVisible();
+
+    await page.screenshot({
+      path: path.join(SCREENSHOTS, `drawer-mobile-${testInfo.project.name}.png`),
+      fullPage: true,
+    });
+  });
+
+  test("/profile — long name/email/location does not overflow (mobile guard)", async (
+    { page },
+    testInfo
+  ) => {
+    const LONG_NAME = "Alexandria Wilhelmina Featherstonehaugh-Cholmondeley III";
+    const LONG_EMAIL =
+      "alexandria.wilhelmina.featherstonehaugh@a-very-long-corporate-subdomain.example.com";
+    const LONG_LOCATION =
+      "Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch, Wales, United Kingdom";
+
+    // Override the profile route with very long fields — later routes take precedence (LIFO)
+    await page.route(`${API}/users/profile`, (route) =>
+      route.fulfill({
+        json: {
+          user: {
+            ...USER,
+            name: LONG_NAME,
+            email: LONG_EMAIL,
+            currentLocation: LONG_LOCATION,
+          },
+        },
+      })
+    );
+
+    await page.goto("/profile");
+
+    // Guard: long name must appear — proves the override mock fired and page rendered
+    await expect(page.getByText("Alexandria Wilhelmina")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Assert no horizontal overflow at the document level
+    const overflow = await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth + 1
+    );
+    expect(overflow).toBe(false);
+
+    // HARD assertion (mobile only): email must be clipped to its container, not escaping the card.
+    // scrollWidth > clientWidth is true only when the element is bounded and ellipsized (Fix 1 working);
+    // it is false when the element grows to fit the full text (the bug).
+    if (testInfo.project.name === "mobile") {
+      const emailLocator = page.getByText(LONG_EMAIL);
+      const clipped = await emailLocator.evaluate(
+        (el) => el.scrollWidth > el.clientWidth
+      );
+      expect(clipped).toBe(true);
+    }
+
+    await page.screenshot({
+      path: path.join(
+        SCREENSHOTS,
+        `profile-longdata-${testInfo.project.name}.png`
+      ),
+      fullPage: true,
+    });
+  });
 });
