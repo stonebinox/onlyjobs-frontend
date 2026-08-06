@@ -1,5 +1,4 @@
 import {
-  Box,
   Button,
   Divider,
   HStack,
@@ -150,35 +149,33 @@ export const ApplicationStatusBanner = ({
 
   return (
     <>
-      <Box mt={6} pt={6}>
-        <Divider mb={6} />
-        <VStack align="stretch" spacing={4} width="100%">
-          <Text fontWeight="medium" fontSize="sm" color="gray.700">
-            Did you apply to {jobTitle} at {companyName}?
-          </Text>
-          <HStack spacing={3}>
-            <Button
-              colorScheme="green"
-              size="sm"
-              onClick={handleYesClick}
-              isLoading={submittingButton === "yes"}
-              loadingText="Saving..."
-              isDisabled={submittingButton !== null}
-            >
-              Yes
-            </Button>
-            <Button
-              colorScheme="red"
-              variant="outline"
-              size="sm"
-              onClick={handleNoClick}
-              isDisabled={submittingButton !== null}
-            >
-              No
-            </Button>
-          </HStack>
-        </VStack>
-      </Box>
+      <VStack align="stretch" spacing={4} width="100%">
+        <Text fontWeight="medium" fontSize="sm" color="gray.700">
+          Did you apply to {jobTitle} at {companyName}?
+        </Text>
+        <HStack spacing={3}>
+          <Button
+            colorScheme="green"
+            size="sm"
+            onClick={handleYesClick}
+            isLoading={submittingButton === "yes"}
+            loadingText="Saving..."
+            isDisabled={submittingButton !== null}
+          >
+            Yes
+          </Button>
+          <Button
+            colorScheme="red"
+            variant="outline"
+            size="sm"
+            onClick={handleNoClick}
+            isDisabled={submittingButton !== null}
+          >
+            No
+          </Button>
+        </HStack>
+      </VStack>
+      <Divider />
 
       {/* Reason Picker Modal */}
       <Modal

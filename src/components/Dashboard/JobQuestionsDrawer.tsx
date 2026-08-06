@@ -6,6 +6,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerOverlay,
+  VStack,
   useBreakpointValue,
 } from "@chakra-ui/react";
 
@@ -34,13 +35,15 @@ export const JobQuestionsDrawer = ({
         <DrawerHeader pr={12}>
           {jobResult?.job?.title} at {jobResult?.job?.company}
         </DrawerHeader>
-        <DrawerBody pt={6}>
-          <ApplicationStatusBanner
-            jobResult={jobResult}
-            onStatusUpdate={onStatusUpdate}
-            onClose={onClose}
-          />
-          {jobResult?._id && <GenerateAnswer jobResultId={jobResult._id} />}
+        <DrawerBody>
+          <VStack align="stretch" spacing={6} pt={6}>
+            <ApplicationStatusBanner
+              jobResult={jobResult}
+              onStatusUpdate={onStatusUpdate}
+              onClose={onClose}
+            />
+            {jobResult?._id && <GenerateAnswer jobResultId={jobResult._id} />}
+          </VStack>
         </DrawerBody>
       </DrawerContent>
     </Drawer>
