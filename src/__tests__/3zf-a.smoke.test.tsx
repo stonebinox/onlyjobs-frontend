@@ -471,7 +471,7 @@ describe('profile.tsx — CV upload control', () => {
 // ─── Today: no-resume CTA in empty state ──────────────────────────────────────
 
 describe('today.tsx — "Add your CV" CTA in empty state', () => {
-  it('shows "Add your CV" link to /profile when user has no resume and zero matches', async () => {
+  it('shows "Add your CV" link to /onboarding when user has no resume and zero matches', async () => {
     mockGetUserProfile = jest.fn().mockResolvedValue(userWithNoResume);
     render(<TodayPage />);
     await waitFor(() => {
@@ -480,7 +480,7 @@ describe('today.tsx — "Add your CV" CTA in empty state', () => {
       expect(text).toBeTruthy();
       const anchor = text.closest('a');
       expect(anchor).not.toBeNull();
-      expect(anchor!.getAttribute('href')).toBe('/profile');
+      expect(anchor!.getAttribute('href')).toBe('/onboarding');
     });
   });
 

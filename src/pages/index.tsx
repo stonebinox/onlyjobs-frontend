@@ -22,7 +22,7 @@ import Image from "next/image";
 import { FiUpload, FiTarget, FiZap, FiMessageCircle } from "react-icons/fi";
 import { TbSparkles } from "react-icons/tb";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/Footer";
@@ -49,6 +49,7 @@ export default function Home() {
   const [stats, setStats] = useState<{ jobCount: number; userCount: number } | null>(null);
   const auth = useAuth();
   const router = useRouter();
+  const isNewUserRef = useRef<boolean>(false);
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/stats`)
@@ -70,7 +71,10 @@ export default function Home() {
     setLoading(true);
 
     try {
-      await auth?.authenticate(email, password);
+      const result = await auth?.authenticate(email, password);
+      if (result?.isNewUser) {
+        isNewUserRef.current = true;
+      }
     } catch (e) {
       console.error(e);
       setFieldError(true);
@@ -82,6 +86,13 @@ export default function Home() {
   useEffect(() => {
     if (!auth?.isReady) return;
     if (!auth?.isLoggedIn) return;
+
+    if (isNewUserRef.current) {
+      isNewUserRef.current = false;
+      sessionStorage.removeItem('onlyjobs_returnTo');
+      router.push('/onboarding');
+      return;
+    }
 
     const urlReturnTo = new URLSearchParams(window.location.search).get("returnTo");
     const storageReturnTo = sessionStorage.getItem('onlyjobs_returnTo');

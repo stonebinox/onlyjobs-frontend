@@ -5,7 +5,7 @@ import { identifyUser, trackEvent } from "@/utils/analytics";
 interface AuthContextProps {
   userId: string | null;
   token: string | null;
-  authenticate: (email: string, password: string) => Promise<void>;
+  authenticate: (email: string, password: string) => Promise<{ isNewUser?: boolean }>;
   logout: () => void;
   isLoggedIn: boolean;
   isReady: boolean;
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isReady, setIsReady] = useState<boolean>(false);
   const { authenticateUser } = createApiClient();
 
-  const authenticate = async (email: string, password: string) => {
+  const authenticate = async (email: string, password: string): Promise<{ isNewUser?: boolean }> => {
     const response = await authenticateUser(email, password);
 
     if (response.token && response.id) {
@@ -33,6 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (response.isNewUser) {
         trackEvent("signup_complete");
       }
+      return { isNewUser: !!response.isNewUser };
     } else {
       console.error(response.error);
       throw new Error("Authentication failed");

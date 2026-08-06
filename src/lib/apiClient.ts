@@ -1284,24 +1284,40 @@ export const createApiClient = () => {
     }
   };
 
-  const triggerMatchForMe = async (): Promise<{ message?: string; retryAfterMinutes?: number; error?: string }> => {
+  const triggerMatchForMe = async (): Promise<{
+    ok: boolean;
+    status: number;
+    message?: string;
+    reason?: string;
+    retryAfterMinutes?: number;
+    walletBalance?: number;
+    required?: number;
+    error?: string;
+  }> => {
+    let response: Response;
     try {
-      const response = await authFetch(
+      response = await authFetch(
         `${process.env.NEXT_PUBLIC_API_URL}/matches/trigger-for-me`,
         { method: "POST" }
       );
-      const data = await response.json();
-      if (response.status === 429) {
-        return { retryAfterMinutes: data.retryAfterMinutes, error: data.message };
-      }
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to trigger matching");
-      }
-      return { message: data.message };
-    } catch (error) {
-      console.error("Trigger match error:", error);
-      return { error: (error as Error).message };
+    } catch {
+      return { ok: false, status: 0, error: "Service unavailable" };
     }
+    let data: Record<string, unknown>;
+    try {
+      data = await response.json();
+    } catch {
+      return { ok: false, status: 0, error: "Service unavailable" };
+    }
+    const fields = {
+      message: data.message as string | undefined,
+      reason: data.reason as string | undefined,
+      retryAfterMinutes: data.retryAfterMinutes as number | undefined,
+      walletBalance: data.walletBalance as number | undefined,
+      required: data.required as number | undefined,
+    };
+    if (response.status === 202) return { ok: true, status: 202, ...fields };
+    return { ok: false, status: response.status, ...fields };
   };
 
   return {

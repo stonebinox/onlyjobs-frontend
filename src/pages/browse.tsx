@@ -17,6 +17,7 @@ import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient } from "@/lib/apiClient";
 import { useApplyReturnPrompt } from "@/hooks/useApplyReturnPrompt";
+import { hasMeaningfulResume } from "@/utils/resumePredicate";
 import { User } from "@/types/User";
 
 const BrowsePage = () => {
@@ -123,13 +124,41 @@ const BrowsePage = () => {
                   </NextLink>
                 </Box>
               ) : (
-                <AllJobsTab
-                  user={user}
-                  walletBalance={walletBalance}
-                  openJobQuestionsDrawer={openJobQuestionsDrawer}
-                  onApplyClick={handleApplyClick}
-                  onBalanceChange={setWalletBalance}
-                />
+                <>
+                  {!hasMeaningfulResume(user?.resume) && (
+                    <Box
+                      p={6}
+                      borderRadius="2xl"
+                      border="1px dashed"
+                      borderColor="surface.border"
+                      bg="surface.card"
+                      width="100%"
+                    >
+                      <Text color="text.secondary" mb={3}>
+                        Complete your profile to get AI-matched jobs.
+                      </Text>
+                      <NextLink href="/onboarding">
+                        <Text
+                          as="span"
+                          color="primary.600"
+                          fontWeight="medium"
+                          fontSize="sm"
+                          cursor="pointer"
+                          _hover={{ textDecoration: "underline" }}
+                        >
+                          Set up your profile →
+                        </Text>
+                      </NextLink>
+                    </Box>
+                  )}
+                  <AllJobsTab
+                    user={user}
+                    walletBalance={walletBalance}
+                    openJobQuestionsDrawer={openJobQuestionsDrawer}
+                    onApplyClick={handleApplyClick}
+                    onBalanceChange={setWalletBalance}
+                  />
+                </>
               )}
             </VStack>
           )}

@@ -425,6 +425,23 @@ const TodayPage = () => {
                 )}
               </Box>
 
+              {/* No-resume nudge — shown whenever profile has no CV, regardless of match count */}
+              {hasNoMeaningfulResume(user) && (
+                <NextLink href="/onboarding">
+                  <Text
+                    as="span"
+                    color="primary.600"
+                    fontWeight="medium"
+                    fontSize="sm"
+                    cursor="pointer"
+                    _hover={{ textDecoration: "underline" }}
+                    display="block"
+                  >
+                    Add your CV to unlock better matches →
+                  </Text>
+                </NextLink>
+              )}
+
               {/* Entries */}
               {displayJobs.length > 0 ? (
                 <>
@@ -481,22 +498,6 @@ const TodayPage = () => {
                       up to date — the better your profile, the more the system
                       has to work with.
                     </Text>
-                    {hasNoMeaningfulResume(user) && (
-                      <NextLink href="/profile">
-                        <Text
-                          as="span"
-                          color="primary.600"
-                          fontWeight="medium"
-                          fontSize="sm"
-                          cursor="pointer"
-                          _hover={{ textDecoration: "underline" }}
-                          display="block"
-                          mb={2}
-                        >
-                          Add your CV →
-                        </Text>
-                      </NextLink>
-                    )}
                     <NextLink href="/browse">
                       <Text
                         as="span"

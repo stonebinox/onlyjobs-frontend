@@ -519,16 +519,16 @@ afterEach(() => {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Find the "Add your CV" CTA: a link to /profile whose text or aria-label
+ * Find the "Add your CV" CTA: a link to /onboarding whose text or aria-label
  * mentions CV or resume.  The discriminator is the CV mention — a plain
- * "Profile" navigation link must NOT match.
+ * nav link must NOT match.
  */
 const findCvCta = (): HTMLElement | null => {
   const links = Array.from(document.querySelectorAll('a'));
   const match = links.find(a => {
     const href = a.getAttribute('href') ?? '';
     const text = ((a.textContent ?? '') + ' ' + (a.getAttribute('aria-label') ?? '')).toLowerCase();
-    return href === '/profile' && /\bcv\b|\bresume\b/.test(text);
+    return href === '/onboarding' && /\bcv\b|\bresume\b/.test(text);
   });
   return (match as HTMLElement) ?? null;
 };
@@ -649,14 +649,14 @@ describe('A — /today: no-resume CTA predicate (onlyjobs-798 §1)', () => {
     expect(cta).toBeNull();
   });
 
-  it('A-6: CTA link href is exactly "/profile" [link destination contract]', async () => {
+  it('A-6: CTA link href is exactly "/onboarding" [link destination contract]', async () => {
     mockGetUserProfile = jest.fn().mockResolvedValue(makeUser(null));
     await renderTodayAndWait();
 
     const cta = findCvCta();
     expect(cta).not.toBeNull();
-    // FINDING if "/profile/cv" or "/settings" etc.: link takes user to wrong page.
-    expect(cta?.getAttribute('href')).toBe('/profile');
+    // FINDING if "/profile" or "/settings" etc.: link takes user to wrong page.
+    expect(cta?.getAttribute('href')).toBe('/onboarding');
   });
 
   it('A-7: with matches (non-empty state) — CTA not required [sanity: empty-state guard]', async () => {
