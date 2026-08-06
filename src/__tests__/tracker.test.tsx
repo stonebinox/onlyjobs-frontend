@@ -259,15 +259,22 @@ const makeTrackerJob = (overrides: Partial<JobResult> = {}): JobResult => ({
  * Column DOM structure (with Chakra mock):
  *   div (Box = column)
  *     div (Flex = header row)
- *       span (Text = label)   ← getByText finds this
- *       span (Badge = count)
+ *       span (Text = label)   ← the span whose parent has a numeric count sibling
+ *       span (Badge = count)  ← e.g. "1", "0"
  *     div (VStack = cards)
  *
- * Two levels up from the label span = the Box that owns both header and cards.
+ * The label text also appears in menu items (li) and status badges (span siblings of
+ * "Status:") — the numeric-count-sibling test distinguishes the column header from both.
  */
 const getColumnContainer = (label: string): HTMLElement => {
-  const headerSpan = screen.getByText(label);
-  return headerSpan.parentElement!.parentElement!;
+  const allEls = screen.getAllByText(label);
+  const headerEl = allEls.find((el) =>
+    Array.from(el.parentElement?.children ?? []).some(
+      (sib) => sib !== el && /^\d+$/.test((sib.textContent ?? '').trim())
+    )
+  );
+  if (!headerEl) throw new Error(`Column header not found for label: "${label}"`);
+  return headerEl.parentElement!.parentElement!;
 };
 
 /** Render TrackerPage and wait until the loading spinner disappears. */
@@ -473,16 +480,17 @@ describe('4 — null job renders fallback title without crashing', () => {
     expect(screen.getByText('Listing no longer available')).toBeInTheDocument();
   });
 
-  it('null-job card still renders outcome buttons', async () => {
+  it('null-job card still renders the Move to menu with all outcome options', async () => {
     const job = makeTrackerJob({ job: null });
     mockGetTracker.mockResolvedValue([job]);
     await renderAndWait();
 
-    // The card must remain functional — "Heard Back" button must be present.
-    const heardBackBtn = screen
-      .getAllByRole('button')
-      .find((btn) => btn.textContent === 'Heard Back');
-    expect(heardBackBtn).toBeDefined();
+    // The card must remain functional — the Move to menu must be present.
+    const moveToBtn = screen.getAllByRole('button').find((btn) => btn.textContent === 'Move to');
+    expect(moveToBtn).toBeDefined();
+
+    // "Heard back" is one of the five options reachable via the menu.
+    expect(screen.getByRole('menuitem', { name: 'Heard back' })).toBeInTheDocument();
   });
 
   it('null-job card is placed in the Applied column (no outcome)', async () => {
@@ -587,7 +595,7 @@ describe('5 — follow-up nudge', () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe('6 — outcome click: API called and card moves on success', () => {
-  it('clicking "Heard Back" calls recordApplicationOutcome and moves card to Heard back column', async () => {
+  it('clicking "Heard back" menu item calls recordApplicationOutcome and moves card to Heard back column', async () => {
     const job = makeTrackerJob({
       job: makeJob({ title: 'Moving Job' }),
       applicationOutcome: undefined,
@@ -600,13 +608,15 @@ describe('6 — outcome click: API called and card moves on success', () => {
     // Starts in Applied
     expect(within(getColumnContainer('Applied')).getByText('Moving Job')).toBeInTheDocument();
 
-    const heardBackBtn = screen
-      .getAllByRole('button')
-      .find((btn) => btn.textContent === 'Heard Back');
-    expect(heardBackBtn).toBeDefined();
-    fireEvent.click(heardBackBtn!);
+    // Open the Move to menu, then click "Heard back"
+    const moveToBtn = screen.getAllByRole('button').find((btn) => btn.textContent === 'Move to');
+    expect(moveToBtn).toBeDefined();
+    fireEvent.click(moveToBtn!);
 
-    // API must be called with the correct match ID and outcome key
+    const heardBackItem = screen.getByRole('menuitem', { name: 'Heard back' });
+    fireEvent.click(heardBackItem);
+
+    // API must be called with the correct match ID and outcome key (spec table: Heard back → heard_back)
     await waitFor(() => {
       expect(mockRecordApplicationOutcome).toHaveBeenCalledWith(job._id, 'heard_back');
     });
@@ -627,7 +637,7 @@ describe('6 — outcome click: API called and card moves on success', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('clicking "Got Offer" calls API and moves card to Closed with "Got Offer 🎉" badge', async () => {
+  it('clicking "Closed · Got offer" menu item calls API and moves card to Closed with "Got Offer 🎉" badge', async () => {
     const job = makeTrackerJob({
       job: makeJob({ title: 'Offer Pending Job' }),
       applicationOutcome: undefined,
@@ -637,12 +647,15 @@ describe('6 — outcome click: API called and card moves on success', () => {
 
     await renderAndWait();
 
-    const offerBtn = screen
-      .getAllByRole('button')
-      .find((btn) => btn.textContent === 'Got Offer');
-    expect(offerBtn).toBeDefined();
-    fireEvent.click(offerBtn!);
+    // Open the Move to menu, then click "Closed · Got offer"
+    const moveToBtn = screen.getAllByRole('button').find((btn) => btn.textContent === 'Move to');
+    expect(moveToBtn).toBeDefined();
+    fireEvent.click(moveToBtn!);
 
+    const offerItem = screen.getByRole('menuitem', { name: 'Closed · Got offer' });
+    fireEvent.click(offerItem);
+
+    // API called with exact outcome from spec table: Closed · Got offer → offer
     await waitFor(() => {
       expect(mockRecordApplicationOutcome).toHaveBeenCalledWith(job._id, 'offer');
     });
@@ -659,7 +672,7 @@ describe('6 — outcome click: API called and card moves on success', () => {
     );
   });
 
-  it('clicking "Got Interview" moves card to Interviewing column', async () => {
+  it('clicking "Interviewing" menu item moves card to Interviewing column', async () => {
     const job = makeTrackerJob({
       job: makeJob({ title: 'Interview Pending Job' }),
       applicationOutcome: undefined,
@@ -669,12 +682,15 @@ describe('6 — outcome click: API called and card moves on success', () => {
 
     await renderAndWait();
 
-    const interviewBtn = screen
-      .getAllByRole('button')
-      .find((btn) => btn.textContent === 'Got Interview');
-    expect(interviewBtn).toBeDefined();
-    fireEvent.click(interviewBtn!);
+    // Open the Move to menu, then click "Interviewing"
+    const moveToBtn = screen.getAllByRole('button').find((btn) => btn.textContent === 'Move to');
+    expect(moveToBtn).toBeDefined();
+    fireEvent.click(moveToBtn!);
 
+    const interviewItem = screen.getByRole('menuitem', { name: 'Interviewing' });
+    fireEvent.click(interviewItem);
+
+    // API called with exact outcome from spec table: Interviewing → interview (NOT "interviewing")
     await waitFor(() => {
       expect(mockRecordApplicationOutcome).toHaveBeenCalledWith(job._id, 'interview');
     });
@@ -709,11 +725,13 @@ describe('7 — outcome click: card stays put and error shown on API error', () 
 
     expect(within(getColumnContainer('Applied')).getByText('Stuck Job')).toBeInTheDocument();
 
-    const heardBackBtn = screen
-      .getAllByRole('button')
-      .find((btn) => btn.textContent === 'Heard Back');
-    expect(heardBackBtn).toBeDefined();
-    fireEvent.click(heardBackBtn!);
+    // Open the Move to menu, click "Heard back"
+    const moveToBtn = screen.getAllByRole('button').find((btn) => btn.textContent === 'Move to');
+    expect(moveToBtn).toBeDefined();
+    fireEvent.click(moveToBtn!);
+
+    const heardBackItem = screen.getByRole('menuitem', { name: 'Heard back' });
+    fireEvent.click(heardBackItem);
 
     await waitFor(() => {
       expect(mockRecordApplicationOutcome).toHaveBeenCalledTimes(1);
@@ -744,11 +762,13 @@ describe('7 — outcome click: card stays put and error shown on API error', () 
 
     await renderAndWait();
 
-    const rejectedBtn = screen
-      .getAllByRole('button')
-      .find((btn) => btn.textContent === 'Rejected');
-    expect(rejectedBtn).toBeDefined();
-    fireEvent.click(rejectedBtn!);
+    // Open the Move to menu, click "Closed · Rejected"
+    const moveToBtn = screen.getAllByRole('button').find((btn) => btn.textContent === 'Move to');
+    expect(moveToBtn).toBeDefined();
+    fireEvent.click(moveToBtn!);
+
+    const rejectedItem = screen.getByRole('menuitem', { name: 'Closed · Rejected' });
+    fireEvent.click(rejectedItem);
 
     // Wait for the error message to appear in the DOM
     await waitFor(
@@ -773,11 +793,17 @@ describe('7 — outcome click: card stays put and error shown on API error', () 
 
     await renderAndWait();
 
-    // Click outcome on the first card
-    const heardBackBtns = screen
+    // Scope to the first card's content (VStack div) to avoid hitting the sibling's menu
+    const errorJobTitle = screen.getByText('Error Job');
+    const firstCardContent = errorJobTitle.parentElement!;
+
+    const moveToBtn = within(firstCardContent)
       .getAllByRole('button')
-      .filter((btn) => btn.textContent === 'Heard Back');
-    fireEvent.click(heardBackBtns[0]);
+      .find((btn) => btn.textContent === 'Move to')!;
+    fireEvent.click(moveToBtn);
+
+    const heardBackItem = within(firstCardContent).getByRole('menuitem', { name: 'Heard back' });
+    fireEvent.click(heardBackItem);
 
     await waitFor(() => {
       expect(screen.getByText('oops')).toBeInTheDocument();
@@ -879,30 +905,40 @@ describe('A — all four column headers are rendered when there are jobs', () =>
     mockGetTracker.mockResolvedValue([makeTrackerJob()]);
     await renderAndWait();
 
-    expect(screen.getByText('Applied')).toBeInTheDocument();
-    expect(screen.getByText('Heard back')).toBeInTheDocument();
-    expect(screen.getByText('Interviewing')).toBeInTheDocument();
-    expect(screen.getByText('Closed')).toBeInTheDocument();
+    // Column headers share text with status badges and menu items (e.g. "Applied" appears in
+    // the status line; "Heard back"/"Interviewing" appear in the Move to menu). Use
+    // getColumnContainer which isolates the header by its numeric count-badge sibling.
+    expect(getColumnContainer('Applied')).toBeTruthy();
+    expect(getColumnContainer('Heard back')).toBeTruthy();
+    expect(getColumnContainer('Interviewing')).toBeTruthy();
+    expect(getColumnContainer('Closed')).toBeTruthy();
   });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Additional: outcome button labels match OUTCOME_OPTIONS contract
-//    Contract: buttons carry labels "Heard Back", "Got Interview", "Got Offer",
-//    "Rejected", "No Response" (from OUTCOME_OPTIONS in FollowUpWizardModal).
+// Additional: Move to menu items match the spec option table
+//    Contract: menu carries labels from the explicit MOVE_OPTIONS table:
+//    "Heard back" → heard_back, "Interviewing" → interview,
+//    "Closed · Got offer" → offer, "Closed · Rejected" → rejected,
+//    "Closed · No response" → no_response.
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe('B — outcome control button labels', () => {
-  it('each card renders all five outcome buttons by their contract labels', async () => {
+describe('B — Move to menu items', () => {
+  it('each card renders a Move to menu with all five outcome options', async () => {
     const job = makeTrackerJob({ job: makeJob({ title: 'Control Job' }) });
     mockGetTracker.mockResolvedValue([job]);
     await renderAndWait();
 
-    const buttons = screen.getAllByRole('button').map((b) => b.textContent);
-    expect(buttons).toContain('Heard Back');
-    expect(buttons).toContain('Got Interview');
-    expect(buttons).toContain('Got Offer');
-    expect(buttons).toContain('Rejected');
-    expect(buttons).toContain('No Response');
+    // Move to menu button is present
+    const moveToBtn = screen.getAllByRole('button').find((b) => b.textContent === 'Move to');
+    expect(moveToBtn).toBeDefined();
+
+    // All five menu items are present with labels from the spec option table
+    const menuItems = screen.getAllByRole('menuitem').map((item) => item.textContent);
+    expect(menuItems).toContain('Heard back');
+    expect(menuItems).toContain('Interviewing');
+    expect(menuItems).toContain('Closed · Got offer');
+    expect(menuItems).toContain('Closed · Rejected');
+    expect(menuItems).toContain('Closed · No response');
   });
 });

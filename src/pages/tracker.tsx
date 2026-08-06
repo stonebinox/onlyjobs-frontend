@@ -6,15 +6,19 @@ import {
   Button,
   Center,
   Flex,
+  HStack,
   Heading,
   Link,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
   SimpleGrid,
   Spinner,
   Text,
   VStack,
-  Wrap,
-  WrapItem,
 } from "@chakra-ui/react";
+import { FiCheck, FiChevronDown } from "react-icons/fi";
 import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -42,6 +46,14 @@ const COLUMNS: { key: TrackerColumn; label: string }[] = [
   { key: "heard_back", label: "Heard back" },
   { key: "interviewing", label: "Interviewing" },
   { key: "closed", label: "Closed" },
+];
+
+const MOVE_OPTIONS: { label: string; outcome: OutcomeKey }[] = [
+  { label: "Heard back",           outcome: "heard_back"  },
+  { label: "Interviewing",         outcome: "interview"   },
+  { label: "Closed · Got offer",   outcome: "offer"       },
+  { label: "Closed · Rejected",    outcome: "rejected"    },
+  { label: "Closed · No response", outcome: "no_response" },
 ];
 
 const formatAppliedDate = (appliedAt: string | undefined): string | null => {
@@ -80,9 +92,14 @@ const TrackerCard = ({ job, onSetOutcome }: TrackerCardProps) => {
   const handleOutcome = async (outcome: OutcomeKey) => {
     setSubmitting(outcome);
     setCardError(null);
-    const err = await onSetOutcome(job._id, outcome);
-    if (err) setCardError(err);
-    setSubmitting(null);
+    try {
+      const err = await onSetOutcome(job._id, outcome);
+      if (err) setCardError(err);
+    } catch {
+      setCardError("Could not update status. Please try again.");
+    } finally {
+      setSubmitting(null);
+    }
   };
 
   const quietDays = getQuietDays(job.appliedAt);
@@ -135,10 +152,15 @@ const TrackerCard = ({ job, onSetOutcome }: TrackerCardProps) => {
           </Text>
         )}
 
-        {/* Current outcome badge */}
-        {job.applicationOutcome && (
-          <OutcomeBadge outcome={job.applicationOutcome} />
-        )}
+        {/* Current status */}
+        <HStack spacing={1}>
+          <Text fontSize="xs" color="text.secondary">Status:</Text>
+          {job.applicationOutcome ? (
+            <OutcomeBadge outcome={job.applicationOutcome} />
+          ) : (
+            <Badge colorScheme="gray" fontSize="xs" px={2} py={0.5}>Applied</Badge>
+          )}
+        </HStack>
 
         {/* Follow-up nudge */}
         {showFollowUp && quietDays !== null && (
@@ -155,23 +177,32 @@ const TrackerCard = ({ job, onSetOutcome }: TrackerCardProps) => {
           </Alert>
         )}
 
-        {/* Outcome controls */}
-        <Wrap spacing={1} pt={1}>
-          {(Object.keys(OUTCOME_OPTIONS) as OutcomeKey[]).map((key) => (
-            <WrapItem key={key}>
-              <Button
-                size="xs"
-                variant="outline"
-                colorScheme={OUTCOME_OPTIONS[key].color}
-                onClick={() => handleOutcome(key)}
-                isLoading={submitting === key}
-                isDisabled={submitting !== null}
+        {/* Move to menu */}
+        <Menu>
+          <MenuButton
+            as={Button}
+            rightIcon={<FiChevronDown />}
+            size={{ base: "md", sm: "sm" }}
+            w={{ base: "100%", sm: "auto" }}
+            variant="outline"
+            isLoading={submitting !== null}
+            isDisabled={submitting !== null}
+          >
+            Move to
+          </MenuButton>
+          <MenuList>
+            {MOVE_OPTIONS.map(({ label, outcome }) => (
+              <MenuItem
+                key={outcome}
+                onClick={() => handleOutcome(outcome)}
+                isDisabled={job.applicationOutcome === outcome || submitting !== null}
+                icon={job.applicationOutcome === outcome ? <FiCheck /> : undefined}
               >
-                {OUTCOME_OPTIONS[key].label}
-              </Button>
-            </WrapItem>
-          ))}
-        </Wrap>
+                {label}
+              </MenuItem>
+            ))}
+          </MenuList>
+        </Menu>
       </VStack>
     </Box>
   );
