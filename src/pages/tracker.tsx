@@ -17,15 +17,17 @@ import {
   Spinner,
   Text,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 import { FiCheck, FiChevronDown } from "react-icons/fi";
 import NextLink from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { SEO } from "@/components/SEO";
 import {
+  FollowUpWizardModal,
   OUTCOME_OPTIONS,
   OutcomeKey,
 } from "@/components/Dashboard/FollowUpWizardModal";
@@ -66,6 +68,7 @@ const formatAppliedDate = (appliedAt: string | undefined): string | null => {
 interface TrackerCardProps {
   job: JobResult;
   onSetOutcome: (matchId: string, outcome: OutcomeKey) => Promise<string | null>;
+  onUpdateStatus?: () => void;
 }
 
 const OutcomeBadge = ({ outcome }: { outcome: string }) => {
@@ -85,7 +88,7 @@ const OutcomeBadge = ({ outcome }: { outcome: string }) => {
   );
 };
 
-const TrackerCard = ({ job, onSetOutcome }: TrackerCardProps) => {
+const TrackerCard = ({ job, onSetOutcome, onUpdateStatus }: TrackerCardProps) => {
   const [submitting, setSubmitting] = useState<OutcomeKey | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
 
@@ -162,11 +165,23 @@ const TrackerCard = ({ job, onSetOutcome }: TrackerCardProps) => {
           )}
         </HStack>
 
-        {/* Follow-up nudge */}
+        {/* Follow-up nudge + Update status action */}
         {showFollowUp && quietDays !== null && (
-          <Text fontSize="xs" color={LOOK}>
-            {quietDays} days quiet — follow up?
-          </Text>
+          <>
+            <Text fontSize="xs" color={LOOK}>
+              {quietDays} days quiet — follow up?
+            </Text>
+            {onUpdateStatus && (
+              <Button
+                size={{ base: "md", sm: "sm" }}
+                variant="outline"
+                colorScheme="orange"
+                onClick={onUpdateStatus}
+              >
+                Update status
+              </Button>
+            )}
+          </>
         )}
 
         {/* Card error */}
@@ -213,9 +228,92 @@ const TrackerPage = () => {
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
 
+  // Wizard state
+  const [wizardJobs, setWizardJobs] = useState<JobResult[]>([]);
+  const [wizardIndex, setWizardIndex] = useState(0);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+  const [wizardSubmitting, setWizardSubmitting] = useState(false);
+  const [wizardError, setWizardError] = useState<string | null>(null);
+  // Guards against the effect re-opening the wizard after param is stripped
+  const followupTriggered = useRef(false);
+
   const auth = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const toast = useToast();
   const { getTracker, recordApplicationOutcome } = createApiClient();
+
+  const handleSetOutcome = async (matchId: string, outcome: OutcomeKey): Promise<string | null> => {
+    const result = await recordApplicationOutcome(matchId, outcome);
+    if (result && "error" in result) {
+      return result.error as string;
+    }
+    // Optimistic local update only after confirmed API success
+    setJobs((prev) =>
+      prev.map((j) =>
+        j._id === matchId ? { ...j, applicationOutcome: outcome } : j
+      )
+    );
+    return null;
+  };
+
+  const openWizardForJobs = (eligible: JobResult[]) => {
+    setWizardJobs(eligible);
+    setWizardIndex(0);
+    setWizardError(null);
+    setIsWizardOpen(true);
+  };
+
+  const refreshTracker = async () => {
+    setLoading(true);
+    try {
+      const result = await getTracker();
+      if (result && "error" in result) {
+        setPageError(result.error as string);
+      } else {
+        setJobs(Array.isArray(result) ? result : []);
+      }
+    } catch {
+      setPageError("Failed to load your tracker. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const advanceWizard = (currentIndex: number, total: number) => {
+    setWizardError(null);
+    if (currentIndex + 1 >= total) {
+      setIsWizardOpen(false);
+      refreshTracker();
+    } else {
+      setWizardIndex(currentIndex + 1);
+    }
+  };
+
+  const handleWizardSelectOutcome = async (outcome: OutcomeKey) => {
+    const currentTrackerJob = wizardJobs[wizardIndex];
+    if (!currentTrackerJob) return;
+    setWizardSubmitting(true);
+    setWizardError(null);
+    try {
+      const err = await handleSetOutcome(currentTrackerJob._id, outcome);
+      if (err) {
+        setWizardError(err);
+      } else {
+        advanceWizard(wizardIndex, wizardJobs.length);
+      }
+    } finally {
+      setWizardSubmitting(false);
+    }
+  };
+
+  const handleWizardSkip = () => {
+    advanceWizard(wizardIndex, wizardJobs.length);
+  };
+
+  const handleWizardClose = () => {
+    setIsWizardOpen(false);
+  };
 
   useEffect(() => {
     if (!auth?.isReady) return;
@@ -248,19 +346,30 @@ const TrackerPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.isReady, auth?.isLoggedIn]);
 
-  const handleSetOutcome = async (matchId: string, outcome: OutcomeKey): Promise<string | null> => {
-    const result = await recordApplicationOutcome(matchId, outcome);
-    if (result && "error" in result) {
-      return result.error as string;
+  // Open wizard when ?followup=true is present, after jobs are loaded successfully.
+  // followupTriggered ref prevents re-opening if jobs state changes afterward.
+  // Guard on pageError: do not consume the param when the load failed — preserve it
+  // so a later successful load or manual reload can still honor it.
+  useEffect(() => {
+    if (loading || pageError || !auth?.isLoggedIn) return;
+    if (followupTriggered.current) return;
+    if (searchParams?.get("followup") !== "true") return;
+
+    followupTriggered.current = true;
+    router.replace("/tracker");
+
+    let eligible = jobs.filter(shouldShowFollowUp);
+    if (eligible.length === 0) {
+      // Fallback: any applied job without an outcome
+      eligible = jobs.filter((j) => !j.applicationOutcome);
     }
-    // Move card: update applicationOutcome in local state only after confirmed success
-    setJobs((prev) =>
-      prev.map((j) =>
-        j._id === matchId ? { ...j, applicationOutcome: outcome } : j
-      )
-    );
-    return null;
-  };
+    if (eligible.length === 0) {
+      toast({ title: "You're all caught up!", status: "info", duration: 4000, isClosable: true });
+      return;
+    }
+    openWizardForJobs(eligible);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, pageError, auth?.isLoggedIn, jobs]);
 
   const grouped: Record<TrackerColumn, JobResult[]> = {
     applied: [],
@@ -271,6 +380,8 @@ const TrackerPage = () => {
   for (const job of jobs) {
     grouped[getTrackerColumn(job)].push(job);
   }
+
+  const currentWizardJob = wizardJobs[wizardIndex] ?? null;
 
   return (
     <>
@@ -378,6 +489,17 @@ const TrackerPage = () => {
                               key={job._id}
                               job={job}
                               onSetOutcome={handleSetOutcome}
+                              onUpdateStatus={
+                                shouldShowFollowUp(job)
+                                  ? () =>
+                                      openWizardForJobs([
+                                        job,
+                                        ...jobs.filter(
+                                          (j) => j._id !== job._id && shouldShowFollowUp(j)
+                                        ),
+                                      ])
+                                  : undefined
+                              }
                             />
                           ))
                         )}
@@ -389,6 +511,28 @@ const TrackerPage = () => {
             </VStack>
           )}
         </Box>
+
+        {/* Follow-up wizard — rendered outside the loading conditional so it can
+            open while the board is visible. Modal portal renders at document body. */}
+        <FollowUpWizardModal
+          isOpen={isWizardOpen}
+          currentJob={
+            currentWizardJob
+              ? {
+                  matchId: currentWizardJob._id,
+                  title: currentWizardJob.job?.title ?? "This listing",
+                  company: currentWizardJob.job?.company ?? "this company",
+                }
+              : null
+          }
+          step={wizardIndex + 1}
+          total={wizardJobs.length}
+          isSubmitting={wizardSubmitting}
+          error={wizardError}
+          onSelectOutcome={handleWizardSelectOutcome}
+          onSkip={handleWizardSkip}
+          onClose={handleWizardClose}
+        />
       </DashboardLayout>
     </>
   );
