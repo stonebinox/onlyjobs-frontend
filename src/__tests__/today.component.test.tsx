@@ -389,7 +389,7 @@ const makeUser = (minScore: number): User => ({
   name: 'Test User',
   email: 'test@example.com',
   phone: null,
-  currentLocation: null,
+  currentLocation: 'United Kingdom',
   createdAt: new Date('2024-01-01'),
   resume: null,
   isVerified: true,

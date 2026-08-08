@@ -41,6 +41,7 @@ import { FaRedo, FaSave, FaSkull } from "react-icons/fa";
 import { FaEnvelope } from "react-icons/fa6";
 
 import DashboardLayout from "../components/Layout/DashboardLayout";
+import { CountrySelect } from "@/components/common/CountrySelect";
 import { createApiClient } from "@/lib/apiClient";
 import { User } from "@/types/User";
 import { useAuth } from "@/contexts/AuthContext";
@@ -537,11 +538,11 @@ const SettingsPage = () => {
                   <Text color={textColor} fontSize="sm" mb={2}>
                     Where you are currently based. Used for remote eligibility assessment.
                   </Text>
-                  <Input
+                  <CountrySelect
                     value={currentLocation}
-                    onChange={(e) => setCurrentLocation(e.target.value)}
-                    placeholder="e.g. London, UK"
-                    disabled={locationSaving}
+                    onChange={(val) => setCurrentLocation(val)}
+                    placeholder="Select your country"
+                    isDisabled={locationSaving}
                   />
                 </FormControl>
                 <Button

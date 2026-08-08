@@ -14,6 +14,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { BriefEntry } from "@/components/Today/BriefEntry";
 import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
+import { LocationPromptBanner } from "@/components/Dashboard/LocationPromptBanner";
 import { OutOfCreditPreview } from "@/components/Dashboard/OutOfCreditPreview";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { SEO } from "@/components/SEO";
@@ -89,6 +90,7 @@ const TodayPage = () => {
     getOutOfCreditPreview,
     unskipMatch,
     getSkipped,
+    updateUserProfile,
   } = createApiClient();
 
   // Keep ref in sync with allFiltered so toast undo callbacks always see current state
@@ -173,6 +175,18 @@ const TodayPage = () => {
       .finally(() => setSkippedLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.isReady, auth?.isLoggedIn, view]);
+
+  const handleSaveLocation = async (location: string): Promise<boolean> => {
+    const result = await updateUserProfile(undefined, undefined, undefined, undefined, location || null);
+    if (result && "error" in result) {
+      return false;
+    }
+    const updated = await getUserProfile();
+    if (updated && !("error" in updated)) {
+      setUser(updated as User);
+    }
+    return true;
+  };
 
   const handleUnskipFromSkippedView = async (matchId: string) => {
     const result = await unskipMatch(matchId);
@@ -440,6 +454,13 @@ const TodayPage = () => {
                     Add your CV to unlock better matches →
                   </Text>
                 </NextLink>
+              )}
+
+              {/* Location prompt — shown when user has no currentLocation */}
+              {!loading && user && !user.currentLocation && (
+                <LocationPromptBanner
+                  onSave={handleSaveLocation}
+                />
               )}
 
               {/* Entries */}

@@ -16,6 +16,7 @@ import { useEffect, useRef, useState } from "react";
 import { EmailVerificationBanner } from "@/components/Dashboard/EmailVerificationBanner";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { SEO } from "@/components/SEO";
+import { CountrySelect } from "@/components/common/CountrySelect";
 import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient } from "@/lib/apiClient";
 import { User } from "@/types/User";
@@ -47,6 +48,9 @@ const OnboardingPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const [currentLocation, setCurrentLocation] = useState<string>("");
+  const [locationSaving, setLocationSaving] = useState(false);
+
   const [role, setRole] = useState("");
   const [years, setYears] = useState<string>("");
   const [stack, setStack] = useState("");
@@ -70,6 +74,7 @@ const OnboardingPage = () => {
         const userData = await getUserProfile();
         if (userData && !("error" in userData)) {
           setUser(userData as User);
+          setCurrentLocation((userData as User).currentLocation || "");
         }
       } finally {
         setLoading(false);
@@ -80,6 +85,20 @@ const OnboardingPage = () => {
   }, [auth?.isReady, auth?.isLoggedIn]);
 
   const hasResume = hasMeaningfulResume(user?.resume);
+
+  const handleSaveLocation = async (loc: string) => {
+    setLocationSaving(true);
+    try {
+      await updateUserProfile(undefined, undefined, undefined, undefined, loc || null);
+      const updated = await getUserProfile();
+      if (updated && !("error" in updated)) {
+        setUser(updated as User);
+        setCurrentLocation(loc);
+      }
+    } finally {
+      setLocationSaving(false);
+    }
+  };
 
   const handleQuickProfileSave = async () => {
     const roleTrimmed = role.trim();
@@ -424,6 +443,47 @@ const OnboardingPage = () => {
                 </Stack>
               )}
 
+              {/* Where are you based? */}
+              <Box
+                p={6}
+                borderRadius="2xl"
+                border="1px solid"
+                borderColor="surface.border"
+                bg="surface.card"
+              >
+                <VStack spacing={3} align="flex-start">
+                  <Heading size="sm" fontFamily="heading">
+                    Where are you based?
+                  </Heading>
+                  <Text fontSize="sm" color="text.secondary">
+                    Your physical location helps us assess remote eligibility more accurately.
+                  </Text>
+                  <CountrySelect
+                    value={currentLocation}
+                    onChange={(val) => setCurrentLocation(val)}
+                    placeholder="Select your country"
+                  />
+                  <Button
+                    size="sm"
+                    bg="primary.500"
+                    color="white"
+                    borderRadius="xl"
+                    isLoading={locationSaving}
+                    loadingText="Saving…"
+                    isDisabled={!currentLocation || locationSaving}
+                    onClick={() => handleSaveLocation(currentLocation)}
+                    _hover={{ bg: "primary.600" }}
+                  >
+                    Save location
+                  </Button>
+                  {user?.currentLocation && (
+                    <Text fontSize="xs" color="text.tertiary">
+                      Saved: {user.currentLocation}
+                    </Text>
+                  )}
+                </VStack>
+              </Box>
+
               {/* Find my first matches — always shown */}
               <Box
                 p={6}
@@ -440,7 +500,7 @@ const OnboardingPage = () => {
                     bg="primary.500"
                     color="white"
                     borderRadius="xl"
-                    isDisabled={!hasResume}
+                    isDisabled={!hasResume || !user?.currentLocation}
                     isLoading={triggering}
                     loadingText="Finding matches…"
                     onClick={handleTrigger}
@@ -449,6 +509,11 @@ const OnboardingPage = () => {
                   >
                     Find my first matches
                   </Button>
+                  {hasResume && !user?.currentLocation && (
+                    <Text fontSize="xs" color="text.tertiary">
+                      Save your location above to enable matching.
+                    </Text>
+                  )}
                   <Text fontSize="sm" color="text.secondary">
                     $0.30 only if we find matches
                   </Text>

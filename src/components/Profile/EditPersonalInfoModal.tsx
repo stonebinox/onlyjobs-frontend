@@ -14,13 +14,15 @@ import {
   VStack,
   useToast,
 } from "@chakra-ui/react";
+import { CountrySelect } from "@/components/common/CountrySelect";
 
 interface EditPersonalInfoModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentName: string;
   currentPhone: string;
-  onSave: (name: string, phone: string) => Promise<void>;
+  currentLocation: string | null;
+  onSave: (name: string, phone: string, currentLocation: string | null | undefined) => Promise<void>;
 }
 
 const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
@@ -28,22 +30,32 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
   onClose,
   currentName,
   currentPhone,
+  currentLocation,
   onSave,
 }) => {
   const [name, setName] = useState(currentName);
   const [phone, setPhone] = useState(currentPhone);
+  const [location, setLocation] = useState(currentLocation || "");
+  const [initialLocation, setInitialLocation] = useState(currentLocation || "");
   const [isLoading, setIsLoading] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
     setName(currentName);
     setPhone(currentPhone);
-  }, [currentName, currentPhone, isOpen]);
+    const loc = currentLocation || "";
+    setLocation(loc);
+    setInitialLocation(loc);
+  }, [currentName, currentPhone, currentLocation, isOpen]);
 
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      await onSave(name, phone);
+      // Only send currentLocation if it changed; undefined lets the backend skip it.
+      const locationToSend = location !== initialLocation
+        ? (location || null)
+        : undefined;
+      await onSave(name, phone, locationToSend);
       toast({
         title: "Personal info updated",
         description: "Your personal information has been updated successfully",
@@ -88,6 +100,14 @@ const EditPersonalInfoModal: React.FC<EditPersonalInfoModalProps> = ({
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Enter your phone number"
                 type="tel"
+              />
+            </FormControl>
+            <FormControl>
+              <FormLabel>Current Location</FormLabel>
+              <CountrySelect
+                value={location}
+                onChange={setLocation}
+                placeholder="Select your country"
               />
             </FormControl>
           </VStack>

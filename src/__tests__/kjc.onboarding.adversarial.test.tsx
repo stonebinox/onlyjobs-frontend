@@ -416,7 +416,7 @@ const BASE_USER = {
   },
 };
 
-const USER_WITH_RESUME = { ...BASE_USER, resume: MEANINGFUL_RESUME };
+const USER_WITH_RESUME = { ...BASE_USER, resume: MEANINGFUL_RESUME, currentLocation: 'United Kingdom' };
 const USER_WITHOUT_RESUME = { ...BASE_USER, resume: null };
 const USER_WITH_EMPTY_RESUME = { ...BASE_USER, resume: EMPTY_RESUME };
 

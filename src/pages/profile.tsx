@@ -263,8 +263,8 @@ const ProfilePage = () => {
     personalInfoModal.onOpen();
   };
 
-  const handleSavePersonalInfo = async (name: string, phone: string) => {
-    const response = await updateUserProfile(undefined, name, phone);
+  const handleSavePersonalInfo = async (name: string, phone: string, currentLocation: string | null | undefined) => {
+    const response = await updateUserProfile(undefined, name, phone, undefined, currentLocation);
     if (response.error) {
       throw new Error(response.error);
     }
@@ -1006,6 +1006,7 @@ const ProfilePage = () => {
         onClose={personalInfoModal.onClose}
         currentName={user?.name || ""}
         currentPhone={user?.phone || ""}
+        currentLocation={user?.currentLocation ?? null}
         onSave={handleSavePersonalInfo}
       />
 
