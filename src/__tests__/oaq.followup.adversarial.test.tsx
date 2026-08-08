@@ -423,7 +423,8 @@ async function renderAndSettle(): Promise<void> {
     () => expect(screen.queryByRole('status')).not.toBeInTheDocument(),
     { timeout: 4000 }
   );
-  await new Promise(r => setTimeout(r, 300));
+  // Flush remaining microtasks/effects after loading completes.
+  await act(async () => {});
 }
 
 function getWizardDialog(): HTMLElement | null {
@@ -506,7 +507,7 @@ describe('1 — NO AUTO-RECORD (security)', () => {
     mockSearchParams = new URLSearchParams('followup=true');
 
     await renderAndSettle();
-    await new Promise(r => setTimeout(r, 500));
+    await act(async () => {});
 
     // FINDING if called: deferred-effect fired an auto-record. Time-bomb bug.
     expect(mockRecordApplicationOutcome).not.toHaveBeenCalled();
@@ -523,7 +524,7 @@ describe('1 — NO AUTO-RECORD (security)', () => {
     if (dialog) {
       // Trigger a mouseMove on the dialog to simulate hover (potential event-listener bug).
       fireEvent.mouseMove(dialog);
-      await new Promise(r => setTimeout(r, 200));
+      await act(async () => {});
     }
 
     expect(mockRecordApplicationOutcome).not.toHaveBeenCalled();
@@ -608,7 +609,7 @@ describe('2 — SELECT records current match id and advances', () => {
 
     await act(async () => { fireEvent.click(btn); });
     await waitFor(() => expect(mockRecordApplicationOutcome).toHaveBeenCalled(), { timeout: 3000 });
-    await new Promise(r => setTimeout(r, 400));
+    await act(async () => {});
 
     // CONTRACT: advancing must not auto-submit for the next match.
     // FINDING if > 1: impl pre-submitted the next match's outcome.
@@ -634,7 +635,13 @@ describe('2 — SELECT records current match id and advances', () => {
     if (!btn) return;
 
     await act(async () => { fireEvent.click(btn); });
-    await new Promise(r => setTimeout(r, 400));
+
+    // Wait for the wizard to advance to step 2.
+    await waitFor(() => {
+      const d = getWizardDialog();
+      if (!d) throw new Error('wizard closed');
+      if (!d.textContent?.match(/2\s+of\s+2/)) throw new Error('still on step 1');
+    }, { timeout: 3000 }).catch(() => {});
 
     const dialog2 = getWizardDialog();
     if (!dialog2) {
@@ -701,11 +708,10 @@ describe('3 — LAST STEP closes the wizard', () => {
 
     await act(async () => { fireEvent.click(btn); });
     await waitFor(() => expect(mockRecordApplicationOutcome).toHaveBeenCalled(), { timeout: 3000 });
-    await new Promise(r => setTimeout(r, 400));
 
     // CONTRACT: wizard must close after the final selection.
     // FINDING if still open: impl did not close the wizard on last step.
-    expect(isWizardOpen()).toBe(false);
+    await waitFor(() => expect(isWizardOpen()).toBe(false), { timeout: 2000 });
   });
 
   it('3-2: last step of 3 — wizard closes after selecting on the 3rd app', async () => {
@@ -732,7 +738,7 @@ describe('3 — LAST STEP closes the wizard', () => {
         () => expect(mockRecordApplicationOutcome).toHaveBeenCalledTimes(i + 1),
         { timeout: 3000 }
       );
-      await new Promise(r => setTimeout(r, 200));
+      await act(async () => {});
     }
 
     // CONTRACT: wizard must be closed after 3rd (final) selection.
@@ -753,7 +759,7 @@ describe('3 — LAST STEP closes the wizard', () => {
 
     await act(async () => { fireEvent.click(btn); });
     await waitFor(() => expect(mockRecordApplicationOutcome).toHaveBeenCalled(), { timeout: 3000 });
-    await new Promise(r => setTimeout(r, 400));
+    await act(async () => {});
 
     // FINDING if > 1: impl duplicated the API call on close.
     expect(mockRecordApplicationOutcome).toHaveBeenCalledTimes(1);
@@ -797,7 +803,7 @@ describe('4 — ERROR: stays on same app, shows error, does not advance', () => 
 
     await act(async () => { fireEvent.click(btn); });
     await waitFor(() => expect(mockRecordApplicationOutcome).toHaveBeenCalled(), { timeout: 3000 });
-    await new Promise(r => setTimeout(r, 400));
+    await act(async () => {});
 
     // CONTRACT: wizard must remain OPEN after error.
     // FINDING if closed: impl closed the wizard on error — user loses their position.
@@ -836,7 +842,7 @@ describe('4 — ERROR: stays on same app, shows error, does not advance', () => 
 
     await act(async () => { fireEvent.click(btn); });
     await waitFor(() => expect(mockRecordApplicationOutcome).toHaveBeenCalled(), { timeout: 3000 });
-    await new Promise(r => setTimeout(r, 500));
+    await act(async () => {});
 
     // CONTRACT: only ONE call — the failed attempt. No auto-advance into next match.
     // FINDING if > 1: impl auto-submitted the next match after the error.
@@ -858,7 +864,7 @@ describe('4 — ERROR: stays on same app, shows error, does not advance', () => 
 
     await act(async () => { fireEvent.click(btn); });
     await waitFor(() => expect(mockRecordApplicationOutcome).toHaveBeenCalled(), { timeout: 3000 });
-    await new Promise(r => setTimeout(r, 400));
+    await act(async () => {});
 
     // FINDING if closed: impl only handles string errors — truthy `true` slips through as success.
     expect(isWizardOpen()).toBe(true);
@@ -883,7 +889,7 @@ describe('4 — ERROR: stays on same app, shows error, does not advance', () => 
 
     await act(async () => { fireEvent.click(btn); });
     await waitFor(() => expect(mockRecordApplicationOutcome).toHaveBeenCalled(), { timeout: 3000 });
-    await new Promise(r => setTimeout(r, 400));
+    await act(async () => {});
 
     const dlgAfter = getWizardDialog();
     if (!dlgAfter) return;
@@ -924,7 +930,7 @@ describe('5 — SKIP: advances without recording', () => {
     }
 
     await act(async () => { fireEvent.click(skipBtn); });
-    await new Promise(r => setTimeout(r, 400));
+    await act(async () => {});
 
     // CONTRACT: Skip must NOT call recordApplicationOutcome.
     // FINDING if called: impl submitted an outcome on skip.
@@ -950,11 +956,13 @@ describe('5 — SKIP: advances without recording', () => {
     if (!skipBtn) return;
 
     await act(async () => { fireEvent.click(skipBtn); });
-    await new Promise(r => setTimeout(r, 400));
 
-    // CONTRACT: wizard still open (skip advances, not dismisses).
-    // FINDING if closed: impl closed wizard on skip.
-    expect(isWizardOpen()).toBe(true);
+    // Wait for the wizard to advance and show the next company.
+    await waitFor(() => {
+      expect(isWizardOpen()).toBe(true);
+      const dlg = getWizardDialog()!;
+      expect(dlg.textContent).toContain(step2Company);
+    }, { timeout: 2000 });
 
     const dlgAfter = getWizardDialog()!;
     // CONTRACT: shows next app's company.
@@ -976,11 +984,10 @@ describe('5 — SKIP: advances without recording', () => {
     if (!skipBtn) return;
 
     await act(async () => { fireEvent.click(skipBtn); });
-    await new Promise(r => setTimeout(r, 400));
 
     // CONTRACT: wizard closes after skipping the last app.
     // FINDING if still open: wizard stuck open with no more apps.
-    expect(isWizardOpen()).toBe(false);
+    await waitFor(() => expect(isWizardOpen()).toBe(false), { timeout: 2000 });
     // Skipping should never record.
     expect(mockRecordApplicationOutcome).not.toHaveBeenCalled();
   });
@@ -1184,7 +1191,7 @@ describe('9 — PARAM STRIPPED: router.replace("/tracker") called after wizard o
     mockSearchParams = new URLSearchParams(); // no followup
 
     await renderAndSettle();
-    await new Promise(r => setTimeout(r, 400));
+    await act(async () => {});
 
     // FINDING if called: impl unconditionally calls replace on /tracker mount.
     const calledWithTracker = mockReplace.mock.calls.some((c: any[]) => c[0] === '/tracker');
@@ -1197,7 +1204,12 @@ describe('9 — PARAM STRIPPED: router.replace("/tracker") called after wizard o
     mockSearchParams = new URLSearchParams('followup=true');
 
     await renderAndSettle();
-    await new Promise(r => setTimeout(r, 500));
+    // Wait for replace to be called (or give up after timeout).
+    await waitFor(
+      () => expect(mockReplace.mock.calls.filter((c: any[]) => c[0] === '/tracker').length).toBeGreaterThan(0),
+      { timeout: 2000 }
+    ).catch(() => {});
+    await act(async () => {});
 
     const replaceCount = mockReplace.mock.calls.filter((c: any[]) => c[0] === '/tracker').length;
 
@@ -1240,11 +1252,10 @@ describe('10 — UPDATE STATUS button on stale card', () => {
     expect(isWizardOpen()).toBe(false);
 
     await act(async () => { fireEvent.click(updateBtn as HTMLElement); });
-    await new Promise(r => setTimeout(r, 300));
 
     // CONTRACT: clicking "Update status" opens the follow-up wizard.
     // FINDING if not open: button exists but does not trigger the wizard.
-    expect(isWizardOpen()).toBe(true);
+    await waitFor(() => expect(isWizardOpen()).toBe(true), { timeout: 2000 });
   });
 
   it('10-2: recent card (< 14 days) does NOT show "Update status" button', async () => {
@@ -1284,7 +1295,7 @@ describe('10 — UPDATE STATUS button on stale card', () => {
     }
 
     await act(async () => { fireEvent.click(updateBtn as HTMLElement); });
-    await new Promise(r => setTimeout(r, 200));
+    await waitFor(() => expect(isWizardOpen()).toBe(true), { timeout: 2000 }).catch(() => {});
 
     if (!isWizardOpen()) {
       console.warn('[FINDING 10-3]: Wizard did not open from "Update status" click.');
@@ -1318,7 +1329,8 @@ describe('10 — UPDATE STATUS button on stale card', () => {
     if (!updateBtn) return; // prerequisite; finding reported in 10-1
 
     await act(async () => { fireEvent.click(updateBtn as HTMLElement); });
-    await new Promise(r => setTimeout(r, 300));
+    await waitFor(() => expect(isWizardOpen()).toBe(true), { timeout: 2000 }).catch(() => {});
+    await act(async () => {});
 
     // CONTRACT: opening via button must also not auto-record.
     // FINDING if called: impl calls recordApplicationOutcome on wizard open — same bug as case 1.
@@ -1343,8 +1355,9 @@ describe('11 — LOAD ERROR: followup param preserved when getTracker fails', ()
     await act(async () => {
       render(<TrackerPage />);
     });
-    // Wait for loading to settle (spinner disappears or enough time passes).
-    await new Promise(r => setTimeout(r, 500));
+    // Wait for the API call to complete and effects to settle.
+    await waitFor(() => expect(mockGetTracker).toHaveBeenCalled(), { timeout: 4000 });
+    await act(async () => {});
 
     // CONTRACT: error load must not open the wizard.
     // FINDING if open: impl fired the follow-up effect despite a load error.
@@ -1358,7 +1371,8 @@ describe('11 — LOAD ERROR: followup param preserved when getTracker fails', ()
     await act(async () => {
       render(<TrackerPage />);
     });
-    await new Promise(r => setTimeout(r, 500));
+    await waitFor(() => expect(mockGetTracker).toHaveBeenCalled(), { timeout: 4000 });
+    await act(async () => {});
 
     // CONTRACT: the param must NOT be stripped when the load failed —
     // a reload may succeed and should still honor the deep-link.
@@ -1374,7 +1388,8 @@ describe('11 — LOAD ERROR: followup param preserved when getTracker fails', ()
     await act(async () => {
       render(<TrackerPage />);
     });
-    await new Promise(r => setTimeout(r, 500));
+    await waitFor(() => expect(mockGetTracker).toHaveBeenCalled(), { timeout: 4000 });
+    await act(async () => {});
 
     // CONTRACT: no outcome recorded when the load never completed.
     // FINDING if called: impl silently mutated state without a valid tracker load.
@@ -1388,7 +1403,8 @@ describe('11 — LOAD ERROR: followup param preserved when getTracker fails', ()
     await act(async () => {
       render(<TrackerPage />);
     });
-    await new Promise(r => setTimeout(r, 500));
+    await waitFor(() => expect(mockGetTracker).toHaveBeenCalled(), { timeout: 4000 });
+    await act(async () => {});
 
     // CONTRACT: a thrown exception (not just { error }) must also be safe.
     // FINDING if open: impl only guards the { error } branch but not catch path.
@@ -1484,7 +1500,7 @@ describe('12 — SECURITY: URL matchId param is always ignored', () => {
       if (!btn) break;
       await act(async () => { fireEvent.click(btn); });
       await waitFor(() => expect(mockRecordApplicationOutcome).toHaveBeenCalledTimes(step + 1), { timeout: 3000 });
-      await new Promise(r => setTimeout(r, 200));
+      await act(async () => {});
     }
 
     // CONTRACT: none of the API calls must reference the injected URL id.

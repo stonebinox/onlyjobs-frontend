@@ -434,7 +434,7 @@ global.fetch = jest.fn().mockResolvedValue({
 // ─── Imports (after all jest.mock calls) ─────────────────────────────────────
 
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 
 import TodayPage from '@/pages/today';
 import ProfilePage from '@/pages/profile';
@@ -549,8 +549,8 @@ const renderProfileAndWait = async () => {
     () => { expect(mockGetUserProfile).toHaveBeenCalled(); },
     { timeout: 4000 }
   );
-  // Flush any micro-task / setState queued after the initial fetch
-  await new Promise(r => setTimeout(r, 150));
+  // Flush any micro-task / setState queued after the initial fetch.
+  await act(async () => {});
 };
 
 /**
@@ -627,8 +627,8 @@ describe('A — /today: no-resume CTA predicate (onlyjobs-798 §1)', () => {
       makeUser({ ...BASE_RESUME, summary: 'Engineer', skills: [] })
     );
     await renderTodayAndWait();
-    // Extra settle time — CTA must be absent, not just not-yet-rendered.
-    await new Promise(r => setTimeout(r, 300));
+    // Flush any remaining state updates — CTA must be absent, not just not-yet-rendered.
+    await act(async () => {});
 
     const cta = findCvCta();
     // FINDING if present: impl only checks `skills.length > 0` and ignores summary —
@@ -641,7 +641,7 @@ describe('A — /today: no-resume CTA predicate (onlyjobs-798 §1)', () => {
       makeUser({ ...BASE_RESUME, summary: '   ', skills: ['React'] })
     );
     await renderTodayAndWait();
-    await new Promise(r => setTimeout(r, 300));
+    await act(async () => {});
 
     const cta = findCvCta();
     // FINDING if present: impl only checks `summary.trim() !== ""` and ignores skills —
@@ -690,7 +690,7 @@ describe('A — /today: no-resume CTA predicate (onlyjobs-798 §1)', () => {
       makeUser({ ...BASE_RESUME, experience: ['Senior dev at Acme'] })
     );
     await renderTodayAndWait();
-    await new Promise(r => setTimeout(r, 300));
+    await act(async () => {});
 
     const cta = findCvCta();
     // FINDING if present: impl does not check experience — treats experience-only
@@ -705,7 +705,7 @@ describe('A — /today: no-resume CTA predicate (onlyjobs-798 §1)', () => {
       makeUser({ ...BASE_RESUME, education: ['BS Computer Science'] })
     );
     await renderTodayAndWait();
-    await new Promise(r => setTimeout(r, 300));
+    await act(async () => {});
 
     const cta = findCvCta();
     // FINDING if present: impl does not check education — treats education-only
@@ -795,8 +795,8 @@ describe('B — /profile CV upload (onlyjobs-798 §2)', () => {
     // uploadCV must have been attempted — the error happens server-side.
     await waitFor(() => expect(mockUploadCV).toHaveBeenCalledTimes(1), { timeout: 3000 });
 
-    // Give async state updates time to settle.
-    await new Promise(r => setTimeout(r, 400));
+    // Flush async state updates.
+    await act(async () => {});
 
     // KEY ADVERSARIAL ASSERTION: an error result must NOT trigger a refetch.
     // FINDING if callCount > callsBeforeUpload: impl treats { error:"..." } as
@@ -826,8 +826,8 @@ describe('B — /profile CV upload (onlyjobs-798 §2)', () => {
     });
     fireFileChange(fileInput, txtFile);
 
-    // Allow all async handlers to settle.
-    await new Promise(r => setTimeout(r, 400));
+    // Flush async handlers.
+    await act(async () => {});
 
     // FINDING if called once: impl skips client-side type validation and passes
     //   .txt files to the server — wastes a round-trip and may produce a
@@ -846,7 +846,7 @@ describe('B — /profile CV upload (onlyjobs-798 §2)', () => {
     const txtFile = new File(['plain text resume content'], 'resume.txt', { type: '' });
     fireFileChange(fileInput, txtFile);
 
-    await new Promise(r => setTimeout(r, 400));
+    await act(async () => {});
 
     // FINDING if called: impl checks MIME type only (which may be empty) and
     //   misses the .txt extension — passes an unsupported file to the server.

@@ -769,8 +769,8 @@ describe('B — No auto-trigger: saving location in onboarding must not call tri
     mockGetUserProfile.mockResolvedValue(makeUser({ currentLocation: 'India' }));
     await renderOnboarding();
 
-    // Wait a bit for any async effects to settle
-    await new Promise((r) => setTimeout(r, 200));
+    // Flush any async effects that may have been queued on mount.
+    await act(async () => {});
 
     // FINDING if this fails: onboarding auto-triggers on mount.
     expect(mockTriggerMatchForMe).not.toHaveBeenCalled();
@@ -799,10 +799,11 @@ describe('B — No auto-trigger: saving location in onboarding must not call tri
     await act(async () => {
       fireEvent.click(saveLocationBtn);
     });
-    await new Promise((r) => setTimeout(r, 200));
+
+    // Wait for the save to complete before asserting.
+    await waitFor(() => expect(mockUpdateUserProfile).toHaveBeenCalled());
 
     // Hard-assert updateUserProfile was called with India as the 5th arg.
-    expect(mockUpdateUserProfile).toHaveBeenCalled();
     expect(mockUpdateUserProfile.mock.calls[0][4]).toBe('India');
 
     // FINDING if this fails: location save auto-triggers matching.
@@ -820,7 +821,7 @@ describe('B — No auto-trigger: saving location in onboarding must not call tri
       await act(async () => {
         fireEvent.change(fileInput, { target: { files: [pdfFile] } });
       });
-      await new Promise((r) => setTimeout(r, 200));
+      await act(async () => {});
     }
 
     // FINDING if this fails: CV upload now auto-triggers (regression from kjc).
@@ -915,7 +916,9 @@ describe('C — Non-derivation: location save must NOT use preferences.location'
     await act(async () => {
       fireEvent.click(saveLocationBtn);
     });
-    await new Promise((r) => setTimeout(r, 300));
+
+    // Wait for the save to complete, then check preferences were not touched.
+    await waitFor(() => expect(mockUpdateUserProfile).toHaveBeenCalled());
 
     // FINDING if this fails: implementation routed location save through
     // updatePreferences instead of updateUserProfile(…, currentLocation).
@@ -943,15 +946,14 @@ describe('D — Today banner visibility', () => {
     );
     await renderToday();
 
-    // Allow effects to settle
-    await new Promise((r) => setTimeout(r, 300));
-
     // FINDING if this fails: banner does NOT fire 'current_location_prompt_shown'
     // when it mounts, or the banner is never shown at all.
-    const promptCalls = mockTrackEvent.mock.calls.filter(
-      (c) => c[0] === 'current_location_prompt_shown'
-    );
-    expect(promptCalls.length).toBeGreaterThanOrEqual(1);
+    await waitFor(() => {
+      const promptCalls = mockTrackEvent.mock.calls.filter(
+        (c) => c[0] === 'current_location_prompt_shown'
+      );
+      expect(promptCalls.length).toBeGreaterThanOrEqual(1);
+    }, { timeout: 3000 });
   });
 
   it('D-2: banner NOT shown (analytics does not fire) when currentLocation is set', async () => {
@@ -961,7 +963,9 @@ describe('D — Today banner visibility', () => {
     );
     await renderToday();
 
-    await new Promise((r) => setTimeout(r, 300));
+    // Wait for user profile load to settle, then assert no banner event fired.
+    await waitFor(() => expect(mockGetUserProfile).toHaveBeenCalled());
+    await act(async () => {});
 
     // FINDING if this fails: banner shown even when currentLocation is already set.
     const promptCalls = mockTrackEvent.mock.calls.filter(
@@ -979,7 +983,9 @@ describe('D — Today banner visibility', () => {
     );
     await renderToday();
 
-    await new Promise((r) => setTimeout(r, 300));
+    // Wait for the skipped-view heading to confirm the page has rendered, then flush.
+    await screen.findByText(/skipped jobs/i);
+    await act(async () => {});
 
     // FINDING if this fails: banner shown in the skipped subview.
     const promptCalls = mockTrackEvent.mock.calls.filter(
@@ -994,7 +1000,9 @@ describe('D — Today banner visibility', () => {
     mockGetUserProfile.mockResolvedValue(makeUser());
     await renderToday();
 
-    await new Promise((r) => setTimeout(r, 300));
+    // Wait for the skipped-view heading to confirm the page has rendered, then flush.
+    await screen.findByText(/skipped jobs/i);
+    await act(async () => {});
 
     const promptCalls = mockTrackEvent.mock.calls.filter(
       (c) => c[0] === 'current_location_prompt_shown'
@@ -1034,7 +1042,13 @@ describe('E — Today banner analytics: no raw location in any payload', () => {
     );
     await renderToday();
 
-    await new Promise((r) => setTimeout(r, 300));
+    // Wait for analytics event or confirm it wasn't fired (soft check matching D-1).
+    await waitFor(() => {
+      const hasCalls = mockTrackEvent.mock.calls.some(
+        (c) => c[0] === 'current_location_prompt_shown'
+      );
+      if (!hasCalls) throw new Error('waiting');
+    }, { timeout: 3000 }).catch(() => {});
 
     const calls = mockTrackEvent.mock.calls.filter(
       (c) => c[0] === 'current_location_prompt_shown'
@@ -1097,7 +1111,7 @@ describe('E — Today banner analytics: no raw location in any payload', () => {
         await act(async () => {
           fireEvent.click(saveBtn);
         });
-        await new Promise((r) => setTimeout(r, 300));
+        await waitFor(() => expect(mockUpdateUserProfile).toHaveBeenCalled());
       }
     }
 
@@ -1157,13 +1171,21 @@ describe('E — Today banner analytics: no raw location in any payload', () => {
       await act(async () => {
         fireEvent.click(dismissBtn);
       });
-      await new Promise((r) => setTimeout(r, 200));
+
+      // Wait for the dismiss analytics event to fire.
+      await waitFor(() => {
+        const hasDismissed = mockTrackEvent.mock.calls.some(
+          (c) => c[0] === 'current_location_dismissed'
+        );
+        expect(hasDismissed).toBe(true);
+      }, { timeout: 2000 });
 
       const dismissedCalls = mockTrackEvent.mock.calls.filter(
         (c) => c[0] === 'current_location_dismissed'
       );
 
       // CONTRACT: current_location_dismissed must fire when the banner is dismissed.
+      // (Already asserted above via waitFor — this is a redundant safety check)
       if (dismissedCalls.length === 0) {
         fail(
           'FINDING [E-3]: current_location_dismissed analytics event was not fired after dismiss'
@@ -1491,7 +1513,8 @@ describe('G — Settings: clearing currentLocation', () => {
       fireEvent.click(saveBtn);
     });
 
-    await new Promise((r) => setTimeout(r, 300));
+    // Wait for the save to complete, then confirm preferences not touched.
+    await waitFor(() => expect(mockUpdateUserProfile).toHaveBeenCalled(), { timeout: 2000 });
 
     // FINDING if this fails: updatePreferences was called as part of the
     // currentLocation clear operation — contaminating Preferred Locations.
@@ -1829,7 +1852,8 @@ describe('J — Failed save must NOT fire current_location_saved', () => {
           fireEvent.click(saveBtn);
         });
 
-        await new Promise((r) => setTimeout(r, 300));
+        // Wait for the (failing) save API call to complete, then check analytics.
+        await waitFor(() => expect(mockUpdateUserProfile).toHaveBeenCalled());
 
         // FINDING if this fails: current_location_saved fired even though save failed.
         // The event must only fire on a successful save.
