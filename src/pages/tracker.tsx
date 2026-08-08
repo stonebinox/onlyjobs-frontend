@@ -22,7 +22,7 @@ import {
 import { FiCheck, FiChevronDown } from "react-icons/fi";
 import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { SEO } from "@/components/SEO";
@@ -31,6 +31,7 @@ import {
   OUTCOME_OPTIONS,
   OutcomeKey,
 } from "@/components/Dashboard/FollowUpWizardModal";
+import { TrackerDetailDrawer } from "@/components/Dashboard/TrackerDetailDrawer";
 import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
@@ -69,6 +70,7 @@ interface TrackerCardProps {
   job: JobResult;
   onSetOutcome: (matchId: string, outcome: OutcomeKey) => Promise<string | null>;
   onUpdateStatus?: () => void;
+  onOpenDetails: (job: JobResult) => void;
 }
 
 const OutcomeBadge = ({ outcome }: { outcome: string }) => {
@@ -88,7 +90,7 @@ const OutcomeBadge = ({ outcome }: { outcome: string }) => {
   );
 };
 
-const TrackerCard = ({ job, onSetOutcome, onUpdateStatus }: TrackerCardProps) => {
+const TrackerCard = ({ job, onSetOutcome, onUpdateStatus, onOpenDetails }: TrackerCardProps) => {
   const [submitting, setSubmitting] = useState<OutcomeKey | null>(null);
   const [cardError, setCardError] = useState<string | null>(null);
 
@@ -120,6 +122,17 @@ const TrackerCard = ({ job, onSetOutcome, onUpdateStatus }: TrackerCardProps) =>
       borderRadius="xl"
       p={4}
       width="100%"
+      onClick={() => onOpenDetails(job)}
+      cursor="pointer"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          if (e.key === " ") e.preventDefault();
+          onOpenDetails(job);
+        }
+      }}
     >
       <VStack align="start" spacing={2}>
         {/* Title + company */}
@@ -128,6 +141,7 @@ const TrackerCard = ({ job, onSetOutcome, onUpdateStatus }: TrackerCardProps) =>
             href={jobUrl}
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               window.open(jobUrl, "_blank", "noopener,noreferrer");
             }}
             fontWeight="semibold"
@@ -176,7 +190,10 @@ const TrackerCard = ({ job, onSetOutcome, onUpdateStatus }: TrackerCardProps) =>
                 size={{ base: "md", sm: "sm" }}
                 variant="outline"
                 colorScheme="orange"
-                onClick={onUpdateStatus}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onUpdateStatus();
+                }}
               >
                 Update status
               </Button>
@@ -202,6 +219,7 @@ const TrackerCard = ({ job, onSetOutcome, onUpdateStatus }: TrackerCardProps) =>
             variant="outline"
             isLoading={submitting !== null}
             isDisabled={submitting !== null}
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             Move to
           </MenuButton>
@@ -209,7 +227,10 @@ const TrackerCard = ({ job, onSetOutcome, onUpdateStatus }: TrackerCardProps) =>
             {MOVE_OPTIONS.map(({ label, outcome }) => (
               <MenuItem
                 key={outcome}
-                onClick={() => handleOutcome(outcome)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOutcome(outcome);
+                }}
                 isDisabled={job.applicationOutcome === outcome || submitting !== null}
                 icon={job.applicationOutcome === outcome ? <FiCheck /> : undefined}
               >
@@ -227,6 +248,10 @@ const TrackerPage = () => {
   const [jobs, setJobs] = useState<JobResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageError, setPageError] = useState<string | null>(null);
+
+  // Detail drawer state
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // Wizard state
   const [wizardJobs, setWizardJobs] = useState<JobResult[]>([]);
@@ -382,6 +407,7 @@ const TrackerPage = () => {
   }
 
   const currentWizardJob = wizardJobs[wizardIndex] ?? null;
+  const detailJob = selectedJobId ? (jobs.find(j => j._id === selectedJobId) ?? null) : null;
 
   return (
     <>
@@ -500,6 +526,10 @@ const TrackerPage = () => {
                                       ])
                                   : undefined
                               }
+                              onOpenDetails={(j) => {
+                                setSelectedJobId(j._id);
+                                setIsDetailOpen(true);
+                              }}
                             />
                           ))
                         )}
@@ -511,6 +541,15 @@ const TrackerPage = () => {
             </VStack>
           )}
         </Box>
+
+        {/* Detail drawer — rendered once at page level; job is derived live from
+            jobs state so outcome changes from card or drawer both sync. */}
+        <TrackerDetailDrawer
+          isOpen={isDetailOpen}
+          onClose={() => setIsDetailOpen(false)}
+          job={detailJob}
+          onSetOutcome={handleSetOutcome}
+        />
 
         {/* Follow-up wizard — rendered outside the loading conditional so it can
             open while the board is visible. Modal portal renders at document body. */}

@@ -427,6 +427,45 @@ test.describe("authenticated pages visual", () => {
     });
   });
 
+  test("/tracker — card opens detail drawer", async ({ page }, testInfo) => {
+    await page.goto("/tracker");
+
+    // Guard: fixture card must be visible before attempting interaction
+    await expect(page.getByText("Senior React Engineer")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Click the company name — a plain Text node (no stopPropagation), so the click
+    // bubbles up to the card Box (role="button") and fires onOpenDetails.
+    // The title is a Link with stopPropagation so clicking it would open a new tab;
+    // the "Move to" button also stops propagation.
+    await page.getByText("Tracker Corp").click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    // Wait for useBreakpointValue to settle and the slide animation to complete
+    // before measuring or screenshotting — avoids capturing the pre-resolution frame.
+    await page.waitForTimeout(400);
+
+    // Light guard: drawer header and reasoning must reflect the fixture match
+    await expect(dialog.getByText(/Senior React Engineer/i)).toBeVisible();
+    await expect(dialog.getByText(/Strong React fit/i)).toBeVisible();
+
+    // HARD assertion (mobile only): drawer must fill the full viewport width.
+    // useBreakpointValue returns "full" at base (mobile) → Chakra Drawer should be 100vw.
+    if (testInfo.project.name === "mobile") {
+      const box = await page.getByRole("dialog").boundingBox();
+      const vw = page.viewportSize()!.width;
+      expect(box!.width).toBeGreaterThanOrEqual(vw - 2);
+    }
+
+    await page.screenshot({
+      path: path.join(SCREENSHOTS, `tracker-drawer-${testInfo.project.name}.png`),
+      fullPage: true,
+    });
+  });
+
   test("/browse — all jobs tab with two fixture listings", async (
     { page },
     testInfo

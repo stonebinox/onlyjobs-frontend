@@ -179,6 +179,12 @@ jest.mock('@/contexts/AuthContext', () => ({
   useAuth: () => mockAuthState,
 }));
 
+jest.mock('@/components/Dashboard/TrackerDetailDrawer', () => ({
+  __esModule: true,
+  TrackerDetailDrawer: ({ isOpen }: any) =>
+    isOpen ? React.createElement('div', { 'data-testid': 'tracker-detail-drawer' }) : null,
+}));
+
 // API mock — factory captures variables by reference; values assigned in beforeEach.
 jest.mock('@/lib/apiClient', () => ({
   __esModule: true,
