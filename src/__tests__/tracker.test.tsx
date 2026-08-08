@@ -23,6 +23,9 @@ let mockGetTracker: jest.Mock;
 let mockRecordApplicationOutcome: jest.Mock;
 const mockPush = jest.fn();
 
+// Captured by the TrackerDetailDrawer mock on each render — used to assert aiSection wiring.
+let capturedAiSection: any = null;
+
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 // All jest.mock() calls are hoisted by ts-jest before any import statements.
 
@@ -181,8 +184,16 @@ jest.mock('@/contexts/AuthContext', () => ({
 
 jest.mock('@/components/Dashboard/TrackerDetailDrawer', () => ({
   __esModule: true,
-  TrackerDetailDrawer: ({ isOpen }: any) =>
-    isOpen ? React.createElement('div', { 'data-testid': 'tracker-detail-drawer' }) : null,
+  TrackerDetailDrawer: ({ isOpen, aiSection }: any) => {
+    capturedAiSection = aiSection ?? null;
+    return isOpen ? React.createElement('div', { 'data-testid': 'tracker-detail-drawer' }) : null;
+  },
+}));
+
+jest.mock('@/components/Dashboard/JobChatSection', () => ({
+  __esModule: true,
+  JobChatSection: ({ matchId }: any) =>
+    React.createElement('div', { 'data-testid': 'job-chat-section', 'data-match-id': matchId }),
 }));
 
 // API mock — factory captures variables by reference; values assigned in beforeEach.
@@ -297,6 +308,7 @@ const renderAndWait = async () => {
 
 beforeEach(() => {
   _seq = 0;
+  capturedAiSection = null;
   mockAuthState = { isReady: true, isLoggedIn: true };
   mockGetTracker = jest.fn().mockResolvedValue([]);
   mockRecordApplicationOutcome = jest.fn().mockResolvedValue({ message: 'ok' });
@@ -946,5 +958,66 @@ describe('B — Move to menu items', () => {
     expect(menuItems).toContain('Closed · Got offer');
     expect(menuItems).toContain('Closed · Rejected');
     expect(menuItems).toContain('Closed · No response');
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// C. TrackerDetailDrawer aiSection wiring
+//    Contract (onlyjobs-78n): tracker passes
+//      aiSection={detailJob ? <JobChatSection matchId={detailJob._id} /> : null}
+//    to TrackerDetailDrawer.
+//    - When no detail job is open: aiSection is null.
+//    - When a card is opened: aiSection is a truthy React element whose
+//      props.matchId equals the opened job's _id (the match id, not the
+//      underlying job listing id).
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe('C — TrackerDetailDrawer aiSection wiring', () => {
+  it('aiSection is null when no card has been opened', async () => {
+    mockGetTracker.mockResolvedValue([makeTrackerJob()]);
+    await renderAndWait();
+
+    // TrackerDetailDrawer is rendered on every page render; with no card clicked
+    // detailJob is null so aiSection must be null.
+    expect(capturedAiSection).toBeNull();
+  });
+
+  it('aiSection is a truthy element with the correct matchId after a card is opened', async () => {
+    const job = makeTrackerJob({ job: makeJob({ title: 'Detail Target Job' }) });
+    mockGetTracker.mockResolvedValue([job]);
+    await renderAndWait();
+
+    // Click the TrackerCard (renders as a div with role="button")
+    const card = document.querySelector('div[role="button"]');
+    expect(card).not.toBeNull();
+    fireEvent.click(card!);
+
+    // Wait for the re-render to propagate the new aiSection prop
+    await waitFor(() => {
+      expect(capturedAiSection).not.toBeNull();
+    });
+
+    // The element must carry the match id of the opened job (job._id is the matchId)
+    expect((capturedAiSection as React.ReactElement).props.matchId).toBe(job._id);
+  });
+
+  it('aiSection matchId matches the specific card that was opened, not a sibling', async () => {
+    const jobA = makeTrackerJob({ job: makeJob({ title: 'Job Alpha' }) });
+    const jobB = makeTrackerJob({ job: makeJob({ title: 'Job Beta' }) });
+    mockGetTracker.mockResolvedValue([jobA, jobB]);
+    await renderAndWait();
+
+    // Two cards are rendered; click the second one (Job Beta)
+    const cards = document.querySelectorAll('div[role="button"]');
+    expect(cards.length).toBe(2);
+    fireEvent.click(cards[1]!);
+
+    await waitFor(() => {
+      expect(capturedAiSection).not.toBeNull();
+    });
+
+    // matchId must be jobB's id, not jobA's
+    expect((capturedAiSection as React.ReactElement).props.matchId).toBe(jobB._id);
+    expect((capturedAiSection as React.ReactElement).props.matchId).not.toBe(jobA._id);
   });
 });

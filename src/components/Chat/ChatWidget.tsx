@@ -154,6 +154,11 @@ export default function ChatWidget() {
 
     try {
       const data = await sendChatMessage(sentMessage, conversationId ?? undefined);
+      if ('error' in data) {
+        setError(data.error || "Something went wrong.");
+        setFailedMessage(sentMessage);
+        return;
+      }
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
       if (data.conversationId && !conversationId) {
         setConversationId(data.conversationId);

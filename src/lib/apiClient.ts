@@ -1102,7 +1102,9 @@ export const createApiClient = () => {
     }
   };
 
-  const sendChatMessage = async (message: string, conversationId?: string) => {
+  const sendChatMessage = async (message: string, conversationId?: string): Promise<
+    { reply: string; conversationId: string } | { error: string }
+  > => {
     const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
       method: "POST",
       body: JSON.stringify({ message, conversationId }),
@@ -1110,6 +1112,21 @@ export const createApiClient = () => {
     if (!response.ok) {
       const errorData = await response.json();
       throw new Error(errorData.error || errorData.message || "Chat failed");
+    }
+    return response.json();
+  };
+
+  const createOrGetJobConversation = async (matchId: string): Promise<
+    | { conversationId: string; messages: Array<{ role: "user" | "assistant"; content: string }> }
+    | { error: string }
+  > => {
+    const response = await authFetch(`${process.env.NEXT_PUBLIC_API_URL}/chat/conversations`, {
+      method: "POST",
+      body: JSON.stringify({ contextType: "job", contextMatchId: matchId }),
+    });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || errorData.message || "Failed to load job conversation");
     }
     return response.json();
   };
@@ -1363,6 +1380,7 @@ export const createApiClient = () => {
     resetPassword,
     recordApplicationOutcome,
     sendChatMessage,
+    createOrGetJobConversation,
     getChatConversations,
     getChatConversation,
     getChatMemory,

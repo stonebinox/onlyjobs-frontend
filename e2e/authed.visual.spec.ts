@@ -366,6 +366,28 @@ async function setupApiRoutes(page: Page) {
       return route.fulfill({ json: { ok: true } });
     }
 
+    if (method === "POST" && pathname === "/api/chat/conversations") {
+      return route.fulfill({
+        json: {
+          conversationId: "conv-e2e",
+          messages: [
+            { role: "user", content: "What are my chances for this role?" },
+            {
+              role: "assistant",
+              content:
+                "Based on your React and TypeScript background, this is a strong match — your profile covers the core stack. To strengthen it, consider highlighting any distributed-systems experience.",
+            },
+          ],
+        },
+      });
+    }
+
+    if (method === "POST" && pathname === "/api/chat") {
+      return route.fulfill({
+        json: { reply: "Sure — happy to help with that.", conversationId: "conv-e2e" },
+      });
+    }
+
     // Catch-all: return empty success so unrecognised calls don't throw
     return route.fulfill({ status: 200, json: {} });
   });
@@ -451,6 +473,12 @@ test.describe("authenticated pages visual", () => {
     // Light guard: drawer header and reasoning must reflect the fixture match
     await expect(dialog.getByText(/Senior React Engineer/i)).toBeVisible();
     await expect(dialog.getByText(/Strong React fit/i)).toBeVisible();
+
+    // Guard: Ask-AI chat section must render with the seeded conversation
+    await expect(page.getByText("Ask AI about this job")).toBeVisible({ timeout: 5000 });
+    await expect(
+      page.getByText(/Based on your React and TypeScript background/i)
+    ).toBeVisible({ timeout: 5000 });
 
     // HARD assertion (mobile only): drawer must fill the full viewport width.
     // useBreakpointValue returns "full" at base (mobile) → Chakra Drawer should be 100vw.

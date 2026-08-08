@@ -32,6 +32,7 @@ import {
   OutcomeKey,
 } from "@/components/Dashboard/FollowUpWizardModal";
 import { TrackerDetailDrawer } from "@/components/Dashboard/TrackerDetailDrawer";
+import { JobChatSection } from "@/components/Dashboard/JobChatSection";
 import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
@@ -549,6 +550,7 @@ const TrackerPage = () => {
           onClose={() => setIsDetailOpen(false)}
           job={detailJob}
           onSetOutcome={handleSetOutcome}
+          aiSection={detailJob ? <JobChatSection matchId={detailJob._id} /> : null}
         />
 
         {/* Follow-up wizard — rendered outside the loading conditional so it can
