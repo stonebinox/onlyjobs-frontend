@@ -628,6 +628,149 @@ test.describe("authenticated pages visual", () => {
     });
   });
 
+  test("/onboarding — quick-profile + country picker + trigger gate", async (
+    { page },
+    testInfo
+  ) => {
+    const proj = testInfo.project.name;
+
+    // No meaningful resume and no currentLocation → !hasResume branch renders quick-profile +
+    // country picker, and "Find my first matches" button is disabled
+    await page.route(`${API}/users/profile`, (route) =>
+      route.fulfill({
+        json: {
+          user: {
+            ...USER,
+            resume: {},
+            currentLocation: null,
+          },
+        },
+      })
+    );
+
+    await page.goto("/onboarding");
+
+    // Guard: quick-profile section only renders when !hasResume
+    await expect(page.getByText("Quick profile")).toBeVisible({ timeout: 15000 });
+    // Guard: country picker is always shown on the onboarding page
+    await expect(page.getByText("Where are you based?")).toBeVisible({ timeout: 10000 });
+
+    await page.screenshot({
+      path: path.join(SCREENSHOTS, `onboarding-${proj}.png`),
+      fullPage: true,
+    });
+  });
+
+  test("/tracker?followup=true — follow-up outcome wizard opens", async (
+    { page },
+    testInfo
+  ) => {
+    const proj = testInfo.project.name;
+
+    // One applied job, no applicationOutcome, 21 days quiet → satisfies shouldShowFollowUp (≥14 days)
+    await page.route(`${API}/matches/tracker`, (route) =>
+      route.fulfill({
+        json: [
+          {
+            _id: "match-fu1",
+            userId: "user-fixture-001",
+            jobId: "job-fu1",
+            matchScore: 72,
+            verdict: "Strong match",
+            reasoning: "Good React fit.",
+            clicked: true,
+            applied: true,
+            appliedAt: daysAgo(21),
+            skipped: false,
+            createdAt: daysAgo(22),
+            updatedAt: daysAgo(21),
+            job: {
+              _id: "job-fu1",
+              title: "Senior React Developer",
+              company: "FollowUp Corp",
+              location: ["Remote"],
+              salary: { min: 110000, max: 140000, currency: "USD", estimated: false },
+              tags: ["React"],
+              source: "greenhouse",
+              description: "React role needing follow-up.",
+              url: "https://example.com/jobs/fu1",
+              createdAt: daysAgo(22),
+              updatedAt: daysAgo(22),
+              postedDate: daysAgo(22),
+              scrapedDate: daysAgo(22),
+            },
+          },
+        ],
+      })
+    );
+
+    await page.goto("/tracker?followup=true");
+
+    // Guard: wizard dialog must open automatically once jobs load and ?followup=true is present
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 15000 });
+    // Guard: modal header content confirms the right wizard rendered
+    await expect(dialog.getByText(/did you hear back/i)).toBeVisible({ timeout: 5000 });
+
+    await page.screenshot({
+      path: path.join(SCREENSHOTS, `followup-wizard-${proj}.png`),
+      fullPage: true,
+    });
+  });
+
+  test("/today — location prompt for a user with no currentLocation", async (
+    { page },
+    testInfo
+  ) => {
+    const proj = testInfo.project.name;
+
+    // Meaningful resume (isVerified) but no currentLocation → LocationPromptBanner is shown
+    await page.route(`${API}/users/profile`, (route) =>
+      route.fulfill({
+        json: {
+          user: {
+            ...USER,
+            currentLocation: null,
+          },
+        },
+      })
+    );
+
+    await page.goto("/today");
+
+    // Guard: a match card must render — proves /matches mock fired and the brief rendered
+    await expect(page.getByText("Senior TypeScript Developer")).toBeVisible({
+      timeout: 15000,
+    });
+    // Guard: LocationPromptBanner AlertTitle must be visible — proves banner rendered
+    await expect(page.getByText("Where are you based?")).toBeVisible({ timeout: 10000 });
+
+    await page.screenshot({
+      path: path.join(SCREENSHOTS, `today-location-prompt-${proj}.png`),
+      fullPage: true,
+    });
+  });
+
+  test("/settings — country picker (currentLocation)", async (
+    { page },
+    testInfo
+  ) => {
+    const proj = testInfo.project.name;
+    await page.goto("/settings");
+
+    // Guard: account settings must load
+    await expect(
+      page.getByRole("heading", { name: "Account Settings" })
+    ).toBeVisible({ timeout: 15000 });
+    // Guard: CountrySelect for currentLocation must be present (Chakra FormControl id="currentLocation")
+    await expect(page.getByLabel("Current Location")).toBeVisible({ timeout: 10000 });
+
+    await page.screenshot({
+      path: path.join(SCREENSHOTS, `settings-location-${proj}.png`),
+      fullPage: true,
+    });
+  });
+
   test("/profile — long name/email/location does not overflow (mobile guard)", async (
     { page },
     testInfo
