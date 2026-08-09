@@ -34,6 +34,12 @@ import { createApiClient } from "@/lib/apiClient";
 
 const CONVERSATION_ID_KEY = "onlyjobs_chat_conversationId";
 
+const isAuthError = (msg: string): boolean => {
+  const m = (msg || "").toLowerCase();
+  return m.includes("session expired") || m.includes("session has expired") || m.includes("not authorized");
+};
+const SESSION_EXPIRED_MSG = "Your session has expired. Please log in again.";
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -98,8 +104,14 @@ export default function ChatWidget() {
       setConversationId(id);
       localStorage.setItem(CONVERSATION_ID_KEY, id);
       setShowHistory(false);
-    } catch {
-      setError("Failed to load conversation.");
+    } catch (err) {
+      setShowHistory(false);
+      setFailedMessage(null);
+      if (isAuthError((err as Error).message)) {
+        setError(SESSION_EXPIRED_MSG);
+      } else {
+        setError("Failed to load conversation.");
+      }
     }
   };
 
@@ -124,6 +136,7 @@ export default function ChatWidget() {
     setIsOpen(false);
     setShowHistory(false);
     setError(null);
+    setFailedMessage(null);
   };
 
   const handleToggleHistory = async () => {
@@ -139,6 +152,7 @@ export default function ChatWidget() {
     localStorage.removeItem(CONVERSATION_ID_KEY);
     setShowHistory(false);
     setError(null);
+    setFailedMessage(null);
   };
 
   const handleSend = async (text?: string) => {
@@ -155,8 +169,13 @@ export default function ChatWidget() {
     try {
       const data = await sendChatMessage(sentMessage, conversationId ?? undefined);
       if ('error' in data) {
-        setError(data.error || "Something went wrong.");
-        setFailedMessage(sentMessage);
+        if (isAuthError(data.error)) {
+          setError(SESSION_EXPIRED_MSG);
+          setFailedMessage(null);
+        } else {
+          setError(data.error || "Something went wrong.");
+          setFailedMessage(sentMessage);
+        }
         return;
       }
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
@@ -166,12 +185,13 @@ export default function ChatWidget() {
       }
     } catch (err) {
       const errMsg = (err as Error).message || "";
-      if (errMsg.toLowerCase().includes("session has expired") || errMsg.toLowerCase().includes("not authorized")) {
-        setError("Your session has expired. Please log in again.");
+      if (isAuthError(errMsg)) {
+        setError(SESSION_EXPIRED_MSG);
+        setFailedMessage(null);
       } else {
         setError(errMsg || "Something went wrong.");
+        setFailedMessage(sentMessage);
       }
-      setFailedMessage(sentMessage);
     } finally {
       setIsLoading(false);
     }
@@ -339,40 +359,40 @@ export default function ChatWidget() {
                       </Box>
                     )}
 
-                    {error && (
-                      <Alert status="error" borderRadius="lg" fontSize="sm">
-                        <AlertIcon />
-                        <Box flex={1}>
-                          <Text>{error}</Text>
-                        </Box>
-                        {failedMessage && (
-                          <Button
-                            size="xs"
-                            variant="outline"
-                            colorScheme="red"
-                            mr={2}
-                            onClick={() => {
-                              const msg = failedMessage;
-                              setFailedMessage(null);
-                              setMessages((prev) => prev.slice(0, -1));
-                              handleSend(msg);
-                            }}
-                          >
-                            Retry
-                          </Button>
-                        )}
-                        <IconButton
-                          aria-label="Dismiss error"
-                          icon={<FiX />}
-                          size="xs"
-                          variant="ghost"
-                          onClick={() => { setError(null); setFailedMessage(null); }}
-                        />
-                      </Alert>
-                    )}
-
                     <div ref={messagesEndRef} />
                   </VStack>
+                )}
+
+                {error && (
+                  <Alert status="error" borderRadius="lg" fontSize="sm">
+                    <AlertIcon />
+                    <Box flex={1}>
+                      <Text>{error}</Text>
+                    </Box>
+                    {failedMessage && (
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        colorScheme="red"
+                        mr={2}
+                        onClick={() => {
+                          const msg = failedMessage;
+                          setFailedMessage(null);
+                          setMessages((prev) => prev.slice(0, -1));
+                          handleSend(msg);
+                        }}
+                      >
+                        Retry
+                      </Button>
+                    )}
+                    <IconButton
+                      aria-label="Dismiss error"
+                      icon={<FiX />}
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => { setError(null); setFailedMessage(null); }}
+                    />
+                  </Alert>
                 )}
               </Box>
             )}
