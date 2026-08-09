@@ -40,6 +40,12 @@ interface JobChatSectionProps {
   matchId: string;
 }
 
+const isAuthError = (msg: string): boolean => {
+  const m = (msg || "").toLowerCase();
+  return m.includes("session expired") || m.includes("session has expired") || m.includes("not authorized");
+};
+const SESSION_EXPIRED_MSG = "Your session has expired. Please log in again.";
+
 export const JobChatSection = ({ matchId }: JobChatSectionProps) => {
   const { createOrGetJobConversation, sendChatMessage } = createApiClient();
 
@@ -60,13 +66,15 @@ export const JobChatSection = ({ matchId }: JobChatSectionProps) => {
     try {
       const data = await createOrGetJobConversation(matchId);
       if ('error' in data) {
-        setLoadError(typeof data.error === 'string' && data.error ? data.error : "Failed to load conversation.");
+        const errMsg = typeof data.error === 'string' && data.error ? data.error : "Failed to load conversation.";
+        setLoadError(isAuthError(errMsg) ? SESSION_EXPIRED_MSG : errMsg);
         return;
       }
       setConversationId(data.conversationId);
       setMessages(Array.isArray(data.messages) ? data.messages : []);
     } catch (err) {
-      setLoadError((err as Error).message || "Failed to load conversation.");
+      const errMsg = (err as Error).message || "Failed to load conversation.";
+      setLoadError(isAuthError(errMsg) ? SESSION_EXPIRED_MSG : errMsg);
     } finally {
       setIsLoading(false);
     }
@@ -97,15 +105,17 @@ export const JobChatSection = ({ matchId }: JobChatSectionProps) => {
     try {
       const data = await sendChatMessage(sentMessage, conversationId);
       if ('error' in data) {
-        setSendError(typeof data.error === 'string' && data.error ? data.error : "Something went wrong.");
-        setFailedMessage(sentMessage);
+        const errMsg = typeof data.error === 'string' && data.error ? data.error : "Something went wrong.";
+        setSendError(isAuthError(errMsg) ? SESSION_EXPIRED_MSG : errMsg);
+        if (!isAuthError(errMsg)) setFailedMessage(sentMessage);
         setMessages((prev) => prev.slice(0, -1));
         return;
       }
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
     } catch (err) {
-      setSendError((err as Error).message || "Something went wrong.");
-      setFailedMessage(sentMessage);
+      const errMsg = (err as Error).message || "Something went wrong.";
+      setSendError(isAuthError(errMsg) ? SESSION_EXPIRED_MSG : errMsg);
+      if (!isAuthError(errMsg)) setFailedMessage(sentMessage);
       setMessages((prev) => prev.slice(0, -1));
     } finally {
       setIsSending(false);
@@ -133,9 +143,11 @@ export const JobChatSection = ({ matchId }: JobChatSectionProps) => {
             <Box flex={1}>
               <Text fontSize="sm">{loadError}</Text>
             </Box>
-            <Button size="xs" variant="outline" colorScheme="red" onClick={loadConversation}>
-              Retry
-            </Button>
+            {loadError !== SESSION_EXPIRED_MSG && (
+              <Button size="xs" variant="outline" colorScheme="red" onClick={loadConversation}>
+                Retry
+              </Button>
+            )}
           </Alert>
         ) : (
           <VStack align="stretch" spacing={2}>
