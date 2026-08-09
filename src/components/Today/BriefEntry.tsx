@@ -27,7 +27,7 @@ import {
   AlertIcon,
   AlertDescription,
 } from "@chakra-ui/react";
-import { Fragment, useState } from "react";
+import { Fragment, ReactNode, useState } from "react";
 import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
 import { Salary } from "@/types/Salary";
@@ -52,6 +52,7 @@ export interface BriefEntryProps {
   entry: JobResult;
   onSkipped: (matchId: string) => void;
   onOpenListing?: (jobResult: JobResult) => void;
+  aiSection?: ReactNode;
 }
 
 const getSalaryString = (salary: Salary): string => {
@@ -67,7 +68,7 @@ const getSalaryString = (salary: Salary): string => {
 };
 
 
-export const BriefEntry = ({ entry, onSkipped, onOpenListing }: BriefEntryProps) => {
+export const BriefEntry = ({ entry, onSkipped, onOpenListing, aiSection }: BriefEntryProps) => {
   const [isSkipping, setIsSkipping] = useState(false);
   const [skipError, setSkipError] = useState<string | null>(null);
   const [selectedReason, setSelectedReason] = useState<ReasonCategory | null>(null);
@@ -370,6 +371,10 @@ export const BriefEntry = ({ entry, onSkipped, onOpenListing }: BriefEntryProps)
                   ))}
                 </Text>
               </Box>
+
+              {isDetailsOpen && aiSection && (
+                <Box width="100%">{aiSection}</Box>
+              )}
 
               {/* Diagnostic block — trace provenance without a dev environment */}
               <Box

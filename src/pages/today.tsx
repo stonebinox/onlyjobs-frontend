@@ -13,6 +13,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { BriefEntry } from "@/components/Today/BriefEntry";
+import { JobChatSection } from "@/components/Dashboard/JobChatSection";
 import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
 import { LocationPromptBanner } from "@/components/Dashboard/LocationPromptBanner";
 import { OutOfCreditPreview } from "@/components/Dashboard/OutOfCreditPreview";
@@ -472,6 +473,7 @@ const TodayPage = () => {
                       entry={entry}
                       onSkipped={handleSkipped}
                       onOpenListing={registerPending}
+                      aiSection={<JobChatSection matchId={entry._id} />}
                     />
                   ))}
 

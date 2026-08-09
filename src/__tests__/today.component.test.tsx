@@ -39,6 +39,7 @@ let mockGetMatches: jest.Mock;
 let mockGetUserProfile: jest.Mock;
 let mockMarkMatchClick: jest.Mock;
 let mockMarkMatchAsSkipped: jest.Mock;
+let mockCreateOrGetJobConversation: jest.Mock;
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -308,6 +309,7 @@ jest.mock('@/lib/apiClient', () => ({
     requestPasswordReset: jest.fn().mockResolvedValue({}),
     resetPassword: jest.fn().mockResolvedValue({}),
     recordApplicationOutcome: jest.fn().mockResolvedValue({}),
+    createOrGetJobConversation: (...args: any[]) => mockCreateOrGetJobConversation(...args),
     sendChatMessage: jest.fn().mockResolvedValue({}),
     getChatConversations: jest.fn().mockResolvedValue([]),
     getChatConversation: jest.fn().mockResolvedValue({}),
@@ -422,6 +424,7 @@ beforeEach(() => {
   mockGetUserProfile = jest.fn().mockResolvedValue(makeUser(30));
   mockMarkMatchClick = jest.fn().mockResolvedValue({ success: true });
   mockMarkMatchAsSkipped = jest.fn().mockResolvedValue({ success: true });
+  mockCreateOrGetJobConversation = jest.fn().mockResolvedValue({ conversationId: "conv-test", messages: [] });
 
   mockPush.mockReset();
   mockReplace.mockReset();
@@ -1164,5 +1167,106 @@ describe("footer — contract 6", () => {
       return /dashboard/i.test(href);
     });
     expect(dashLinks.length).toBe(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// J. Page-level chat wiring — today.tsx must pass entry._id (the MatchRecord
+//    id) as contextMatchId, NOT entry.jobId or any other field.
+//
+// These tests render the REAL TodayPage and verify its own wiring of
+// `aiSection={<JobChatSection matchId={entry._id} />}`. They do NOT
+// hand-construct aiSection — the whole point is to exercise today.tsx's
+// own `displayJobs.map(entry => <BriefEntry aiSection={<JobChatSection matchId={entry._id} />} />)`.
+//
+// Sibling isolation: opening card B must call with B._id even when both
+// cards are rendered simultaneously. A bug where today.tsx passed
+// `entry.jobId` or captured the first entry's id in a shared closure
+// would be caught by these assertions.
+// ══════════════════════════════════════════════════════════════════════════
+describe("J — today.tsx wiring: entry._id (not entry.jobId) reaches createOrGetJobConversation", () => {
+  // Stable ids — distinct from uid()-generated ids so assertions are unambiguous
+  const MATCH_A_ID = "pagetest-match-AAA";
+  const MATCH_A_JOB_ID = "pagetest-job-for-AAA";
+  const MATCH_B_ID = "pagetest-match-BBB";
+  const MATCH_B_JOB_ID = "pagetest-job-for-BBB";
+
+  beforeEach(() => {
+    // Card A: higher score → first in DOM after sort; Card B: lower score → second
+    const matchA = makeMatch(90, { _id: MATCH_A_ID, jobId: MATCH_A_JOB_ID });
+    const matchB = makeMatch(80, { _id: MATCH_B_ID, jobId: MATCH_B_JOB_ID });
+    mockGetMatches.mockResolvedValue([matchA, matchB]);
+  });
+
+  it("zero createOrGetJobConversation calls on initial render before any Details opened", async () => {
+    await renderAndWait();
+
+    // Both cards are rendered but no Details drawer has been opened.
+    // FINDING: if non-zero, JobChatSection is eagerly mounted at page load —
+    // that would POST for every visible card before the user interacts.
+    expect(mockCreateOrGetJobConversation).toHaveBeenCalledTimes(0);
+  });
+
+  it("opening card A's Details calls createOrGetJobConversation exactly once with A's _id", async () => {
+    await renderAndWait();
+    expect(mockCreateOrGetJobConversation).toHaveBeenCalledTimes(0);
+
+    // Card A (score 90) renders first in DOM order after sort descending.
+    const detailsBtns = screen.queryAllByRole("button").filter((btn) =>
+      /details/i.test(btn.textContent || btn.getAttribute("aria-label") || "")
+    );
+    expect(detailsBtns.length).toBeGreaterThanOrEqual(2);
+
+    fireEvent.click(detailsBtns[0]);
+
+    await waitFor(
+      () => expect(mockCreateOrGetJobConversation).toHaveBeenCalledTimes(1),
+      { timeout: 3000 }
+    );
+
+    const arg = mockCreateOrGetJobConversation.mock.calls[0][0];
+    // FINDING: arg is entry.jobId — today.tsx passes the wrong id field
+    expect(arg).not.toBe(MATCH_A_JOB_ID);
+    // FINDING: arg is card B's id — closure captured wrong entry
+    expect(arg).not.toBe(MATCH_B_ID);
+    // FINDING: arg is not card A's MatchRecord _id
+    expect(arg).toBe(MATCH_A_ID);
+  });
+
+  it("opening card B after card A calls each with its own _id (sibling isolation through TodayPage wiring)", async () => {
+    await renderAndWait();
+    expect(mockCreateOrGetJobConversation).toHaveBeenCalledTimes(0);
+
+    // Both cards have a Details button. Card A (score 90) is first, card B (score 80) is second.
+    const detailsBtns = screen.queryAllByRole("button").filter((btn) =>
+      /details/i.test(btn.textContent || btn.getAttribute("aria-label") || "")
+    );
+    expect(detailsBtns.length).toBeGreaterThanOrEqual(2);
+
+    // Open card A
+    fireEvent.click(detailsBtns[0]);
+    await waitFor(
+      () => expect(mockCreateOrGetJobConversation).toHaveBeenCalledTimes(1),
+      { timeout: 3000 }
+    );
+    // FINDING: card A's Details called with B's id or jobId
+    expect(mockCreateOrGetJobConversation.mock.calls[0][0]).toBe(MATCH_A_ID);
+
+    // Open card B — the Chakra mock renders each Drawer independently so both
+    // can be open simultaneously in jsdom; each BriefEntry manages its own state.
+    fireEvent.click(detailsBtns[1]);
+    await waitFor(
+      () => expect(mockCreateOrGetJobConversation).toHaveBeenCalledTimes(2),
+      { timeout: 3000 }
+    );
+
+    const secondArg = mockCreateOrGetJobConversation.mock.calls[1][0];
+    // FINDING: second call used A's id — today.tsx captured entry._id from the wrong
+    // iteration (shared closure or stale ref bug)
+    expect(secondArg).not.toBe(MATCH_A_ID);
+    // FINDING: second call used B's jobId — today.tsx wired entry.jobId instead of entry._id
+    expect(secondArg).not.toBe(MATCH_B_JOB_ID);
+    // FINDING: second call did not use B's MatchRecord _id
+    expect(secondArg).toBe(MATCH_B_ID);
   });
 });

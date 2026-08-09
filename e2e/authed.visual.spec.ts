@@ -431,6 +431,92 @@ test.describe("authenticated pages visual", () => {
     });
   });
 
+  test("/today — card opens Details drawer with Ask-AI chat", async ({ page }, testInfo) => {
+    // Track POST /api/chat/conversations: count AND the contextMatchId in the body.
+    // page.on("request") fires for all dispatched requests, including intercepted ones,
+    // so the body is accessible even though setupApiRoutes fulfills the route.
+    let chatConvCalls = 0;
+    const capturedMatchIds: string[] = [];
+    page.on("request", (req) => {
+      if (
+        req.method() === "POST" &&
+        new URL(req.url()).pathname === "/api/chat/conversations"
+      ) {
+        chatConvCalls++;
+        try {
+          const body = req.postDataJSON();
+          if (body?.contextMatchId) capturedMatchIds.push(body.contextMatchId);
+        } catch {}
+      }
+    });
+
+    await page.goto("/today");
+
+    // Guard: fixture match card must appear
+    await expect(page.getByText("Senior TypeScript Developer")).toBeVisible({
+      timeout: 15000,
+    });
+
+    // NO-EAGER-MOUNT: chat endpoint must not have fired before the drawer opens
+    expect(chatConvCalls).toBe(0);
+
+    // Click "Details" on the first BriefEntry card
+    await page.getByRole("button", { name: "Details" }).first().click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible({ timeout: 10000 });
+
+    // Wait for the slide animation to settle before asserting or screenshotting
+    await page.waitForTimeout(400);
+
+    // Drawer header must reflect the first fixture match
+    await expect(dialog.getByText(/Senior TypeScript Developer/i)).toBeVisible();
+
+    // Ask-AI section and seeded assistant message must be visible
+    await expect(page.getByText("Ask AI about this job")).toBeVisible({ timeout: 5000 });
+    await expect(
+      page.getByText(/Based on your React and TypeScript background/i)
+    ).toBeVisible({ timeout: 5000 });
+
+    // EXACTLY one conversation POST for this single opened card (not >= 1)
+    await expect.poll(() => chatConvCalls, { timeout: 5000 }).toBe(1);
+
+    // Body must carry the first match's MatchRecord _id, not its jobId or a sibling's id
+    expect(capturedMatchIds[0]).toBe("match-strong-001");
+
+    // HARD assertion (mobile only): drawer must fill the full viewport width
+    if (testInfo.project.name === "mobile") {
+      const box = await dialog.boundingBox();
+      const vw = page.viewportSize()!.width;
+      expect(box!.width).toBeGreaterThanOrEqual(vw - 2);
+    }
+
+    await page.screenshot({
+      path: path.join(SCREENSHOTS, `today-drawer-${testInfo.project.name}.png`),
+      fullPage: true,
+    });
+
+    // SIBLING ISOLATION: close the first drawer and open the second card's drawer;
+    // the POST body must carry the second match's own _id (match-mild-002), not
+    // the first card's id — a stale-closure or shared-ref bug in today.tsx would
+    // cause the second call to carry "match-strong-001" instead.
+    const closeBtn = dialog.getByRole("button", { name: /close/i });
+    if (await closeBtn.isVisible()) {
+      await closeBtn.click();
+      await expect(dialog).not.toBeVisible({ timeout: 5000 });
+
+      // Open second card (Full Stack Node.js Engineer — match-mild-002)
+      await page.getByRole("button", { name: "Details" }).nth(1).click();
+      const dialog2 = page.getByRole("dialog");
+      await expect(dialog2).toBeVisible({ timeout: 10000 });
+      await page.waitForTimeout(400);
+
+      // Second POST must carry the second match's _id, not the first's
+      await expect.poll(() => chatConvCalls, { timeout: 5000 }).toBe(2);
+      expect(capturedMatchIds[1]).toBe("match-mild-002");
+    }
+  });
+
   test("/tracker — applied columns and follow-up nudge", async (
     { page },
     testInfo
