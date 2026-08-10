@@ -32,6 +32,11 @@ function linkOnly(link: string): unknown {
   return { link };
 }
 
+/** Cast a runtime fixture to the public argument type; the suite intentionally feeds partial/malformed data. */
+function asResumeInput(input: unknown): Resume | null | undefined {
+  return input as Resume | null | undefined;
+}
+
 // ---------------------------------------------------------------------------
 // Test table
 // Each row: [label, input, expected, contractClause]
@@ -255,7 +260,7 @@ export const cases: Case[] = [
 
 describe('hasMeaningfulResume — adversarial contract tests', () => {
   test.each(cases)('%s', (label, input, expected, clause) => {
-    const result = hasMeaningfulResume(input as Partial<Resume> | null | undefined);
+    const result = hasMeaningfulResume(asResumeInput(input));
     if (result !== expected) {
       throw new Error(
         `FINDING — ${label}\n` +
