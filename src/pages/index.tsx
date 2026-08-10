@@ -26,6 +26,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/Footer";
+import { Logo } from "@/components/Logo";
 import { SEO } from "@/components/SEO";
 import { isSafeReturnTo } from "@/utils/safe-return-to";
 import { PENCIL } from "@/theme/palette";
@@ -125,7 +126,7 @@ export default function Home() {
         <Container maxW="container.xl">
           <Flex h={16} alignItems="center" justifyContent="space-between">
             <HStack spacing={2}>
-              <Heading size="md" fontFamily="heading">OnlyJobs</Heading>
+              <Logo />
               <Badge
                 bg="primary.600"
                 color="white"
