@@ -742,6 +742,115 @@ test.describe("authenticated pages visual", () => {
     });
   });
 
+  test("/browse — matched card expands to Ask-AI chat", async ({ page }, testInfo) => {
+    const proj = testInfo.project.name;
+
+    // Override /api/jobs with one matched job (browse-match-1 ≠ browse-job-1) and one unmatched
+    await page.route(`${API}/jobs*`, (route) =>
+      route.fulfill({
+        json: {
+          jobs: [
+            {
+              _id: "browse-job-1",
+              title: "Browse Matched Engineer",
+              company: "Chat Corp",
+              location: ["Remote"],
+              salary: { min: 120000, max: 150000, currency: "USD" },
+              source: "linkedin",
+              description: "Build scalable TypeScript applications with React and Node.js.",
+              url: "https://example.com/jobs/browse-job-1",
+              postedDate: daysAgo(1),
+              match: {
+                _id: "browse-match-1",
+                matchScore: 85,
+                verdict: "Strong match",
+                reasoning: "Strong React and TypeScript fit for this role.",
+                skipped: false,
+                applied: null,
+                updatedAt: daysAgo(0),
+              },
+            },
+            {
+              _id: "browse-job-2",
+              title: "Browse Unmatched Engineer",
+              company: "No Match Co",
+              location: ["Remote"],
+              salary: { min: 100000, max: 130000, currency: "USD" },
+              source: "greenhouse",
+              description: "Python microservices for a data pipeline platform.",
+              url: "https://example.com/jobs/browse-job-2",
+              postedDate: daysAgo(3),
+              match: null,
+            },
+          ],
+          total: 2,
+          page: 1,
+          pages: 1,
+          sources: ["linkedin", "greenhouse"],
+        },
+      })
+    );
+
+    // Track POST /api/chat/conversations: count and the contextMatchId in the body
+    let chatConvCalls = 0;
+    const capturedMatchIds: string[] = [];
+    page.on("request", (req) => {
+      if (
+        req.method() === "POST" &&
+        new URL(req.url()).pathname === "/api/chat/conversations"
+      ) {
+        chatConvCalls++;
+        try {
+          const body = req.postDataJSON();
+          if (body?.contextMatchId) capturedMatchIds.push(body.contextMatchId);
+        } catch {}
+      }
+    });
+
+    await page.goto("/browse");
+
+    // Guard: both cards must appear — proves mock fired and AllJobsTab rendered
+    await expect(page.getByText("Browse Matched Engineer")).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText("Browse Unmatched Engineer")).toBeVisible({ timeout: 10000 });
+
+    // NO-EAGER-MOUNT: conversation endpoint must not fire before any card is expanded
+    expect(chatConvCalls).toBe(0);
+
+    // UNMATCHED CARD: shows Analyze CTA, no Ask-AI chat section
+    await expect(page.getByRole("button", { name: /Analyze \(\$0\.05\)/ })).toBeVisible();
+    await expect(page.getByText("Ask AI about this job")).not.toBeVisible();
+
+    // Expand the matched card — only JobListing (matched) renders a "More" button; JobCard (unmatched) does not
+    await page.getByRole("button", { name: "More" }).click();
+
+    // Wait for JobChatSection to mount and the seeded assistant message to appear
+    await expect(page.getByText("Ask AI about this job")).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByText(/Based on your React and TypeScript background/i)
+    ).toBeVisible({ timeout: 10000 });
+
+    // EXACTLY ONE conversation POST; contextMatchId must be the match _id, not the job _id
+    await expect.poll(() => chatConvCalls, { timeout: 5000 }).toBe(1);
+    expect(capturedMatchIds[0]).toBe("browse-match-1");
+
+    // UNMATCHED CARD still shows Analyze, not Ask-AI chat; no extra conv calls
+    await expect(page.getByRole("button", { name: /Analyze \(\$0\.05\)/ })).toBeVisible();
+
+    // Mobile: expanded chat is usable — no horizontal overflow; input is reachable
+    if (proj === "mobile") {
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth + 1
+      );
+      expect(overflow).toBe(false);
+      await expect(page.getByPlaceholder("Type a message…")).toBeVisible();
+    }
+
+    await page.screenshot({
+      path: path.join(SCREENSHOTS, `browse-chat-${proj}.png`),
+      fullPage: true,
+    });
+  });
+
   test("/onboarding — quick-profile + country picker + trigger gate", async (
     { page },
     testInfo

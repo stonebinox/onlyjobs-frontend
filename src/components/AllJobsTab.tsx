@@ -22,6 +22,7 @@ import { User } from "@/types/User";
 import { JobResult } from "@/types/JobResult";
 import { MatchScoreRing } from "@/components/Dashboard/MatchScoreRing";
 import JobListing from "@/components/Dashboard/JobListing";
+import { JobChatSection } from "@/components/Dashboard/JobChatSection";
 import { isSafeUrl } from "@/utils/brief-utils";
 import { hasMeaningfulResume } from "@/utils/resumePredicate";
 
@@ -241,6 +242,7 @@ export const AllJobsTab = ({ user, walletBalance, openJobQuestionsDrawer, onAppl
                   bypassSkippedFiltering
                   openJobQuestionsDrawer={openJobQuestionsDrawer}
                   onApplyClick={onApplyClick}
+                  aiSection={<JobChatSection matchId={job.match._id} />}
                 />
               ) : (
                 <JobCard

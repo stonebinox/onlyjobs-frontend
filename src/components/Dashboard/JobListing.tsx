@@ -21,7 +21,7 @@ import {
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import { Fragment, useState } from "react";
+import { Fragment, ReactNode, useState } from "react";
 import {
   FiMapPin,
   FiClock,
@@ -59,6 +59,7 @@ export interface JobListingProps {
   bypassSkippedFiltering?: boolean;
   openJobQuestionsDrawer: (jobResult: JobResult) => void;
   onApplyClick?: (jobResult: JobResult) => void;
+  aiSection?: ReactNode;
 }
 
 const getVerdictBorderColor = (verdict: string) => getVerdictColor(verdict).hex;
@@ -68,6 +69,7 @@ const JobListing = ({
   bypassSkippedFiltering = false,
   openJobQuestionsDrawer,
   onApplyClick,
+  aiSection,
 }: JobListingProps) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
   const [viewed, setViewed] = useState<boolean>(false);
@@ -350,6 +352,13 @@ const JobListing = ({
             {formatDescription(description)}
           </Text>
         </Box>
+
+        {/* AI Chat Section — only mounts when expanded */}
+        {isExpanded && aiSection && (
+          <Box px={{ base: 4, md: 5 }} pl={{ base: 6, md: 7 }} py={4} width="100%">
+            {aiSection}
+          </Box>
+        )}
 
         {/* Footer Actions */}
         <Flex
