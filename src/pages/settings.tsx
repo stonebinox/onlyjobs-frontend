@@ -45,6 +45,7 @@ import { CountrySelect } from "@/components/common/CountrySelect";
 import { createApiClient } from "@/lib/apiClient";
 import { User } from "@/types/User";
 import { useAuth } from "@/contexts/AuthContext";
+import { setUserPersonProperties } from "@/utils/analytics";
 import { useRouter } from "next/router";
 import Guide from "@/components/Guide/Guide";
 import { settingsGuideConfig } from "@/config/guides/settingsGuide";
@@ -190,6 +191,12 @@ const SettingsPage = () => {
         duration: 3000,
         isClosable: true,
       });
+      setUserPersonProperties({
+        ...user,
+        preferences: user.preferences
+          ? { ...user.preferences, minScore: matchScore }
+          : null,
+      });
     } catch (error) {
       console.error("Error updating preferences:", error);
       toast({
@@ -236,31 +243,29 @@ const SettingsPage = () => {
           ? overrideMatchingEnabled
           : matchingEnabled;
       setMatchingEnabled(nextMatchingEnabled);
+      const currentPrefs = user.preferences || {
+        jobTypes: [],
+        location: [],
+        remoteOnly: false,
+        minSalary: 0,
+        industries: [],
+        minScore: 30,
+        matchingEnabled: true,
+      };
+      const nextPrefs = {
+        jobTypes: payload.jobTypes ?? currentPrefs.jobTypes,
+        location: payload.location ?? currentPrefs.location,
+        remoteOnly: payload.remoteOnly ?? currentPrefs.remoteOnly,
+        minSalary: payload.minSalary ?? currentPrefs.minSalary,
+        industries: payload.industries ?? currentPrefs.industries,
+        minScore: payload.minScore ?? currentPrefs.minScore,
+        matchingEnabled: payload.matchingEnabled ?? currentPrefs.matchingEnabled,
+      };
       setUser((prev) => {
         if (!prev) return prev;
-        const currentPrefs = prev.preferences || {
-          jobTypes: [],
-          location: [],
-          remoteOnly: false,
-          minSalary: 0,
-          industries: [],
-          minScore: 30,
-          matchingEnabled: true,
-        };
-        return {
-          ...prev,
-          preferences: {
-            jobTypes: payload.jobTypes ?? currentPrefs.jobTypes,
-            location: payload.location ?? currentPrefs.location,
-            remoteOnly: payload.remoteOnly ?? currentPrefs.remoteOnly,
-            minSalary: payload.minSalary ?? currentPrefs.minSalary,
-            industries: payload.industries ?? currentPrefs.industries,
-            minScore: payload.minScore ?? currentPrefs.minScore,
-            matchingEnabled:
-              payload.matchingEnabled ?? currentPrefs.matchingEnabled,
-          },
-        };
+        return { ...prev, preferences: nextPrefs };
       });
+      setUserPersonProperties({ ...user, preferences: nextPrefs });
       toast({
         title: "Preferences updated",
         description: "Your job preferences have been saved",
@@ -396,6 +401,9 @@ const SettingsPage = () => {
       setLoading(true);
       const response = await getUserProfile();
       setUser(response);
+      if (response && !("error" in response)) {
+        setUserPersonProperties(response);
+      }
     } catch (error) {
       console.error("Error fetching user profile:", error);
     } finally {

@@ -21,6 +21,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient } from "@/lib/apiClient";
 import { User } from "@/types/User";
 import { hasMeaningfulResume } from "@/utils/resumePredicate";
+import { setUserPersonProperties } from "@/utils/analytics";
 
 const ALLOWED_CV_TYPES = [
   "application/pdf",
@@ -94,6 +95,7 @@ const OnboardingPage = () => {
       if (updated && !("error" in updated)) {
         setUser(updated as User);
         setCurrentLocation(loc);
+        setUserPersonProperties(updated as User);
       }
     } finally {
       setLocationSaving(false);
@@ -148,6 +150,7 @@ const OnboardingPage = () => {
       const updated = await getUserProfile();
       if (updated && !("error" in updated)) {
         setUser(updated as User);
+        setUserPersonProperties(updated as User);
       }
       toast({
         title: "Profile saved",
@@ -202,6 +205,7 @@ const OnboardingPage = () => {
       const updated = await getUserProfile();
       if (updated && !("error" in updated)) {
         setUser(updated as User);
+        setUserPersonProperties(updated as User);
       }
       toast({
         title: "CV uploaded",

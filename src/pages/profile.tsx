@@ -71,6 +71,7 @@ import EditLanguagesModal from "../components/Profile/EditLanguagesModal";
 import EditSocialLinksModal from "../components/Profile/EditSocialLinksModal";
 import EditPersonalInfoModal from "../components/Profile/EditPersonalInfoModal";
 import { parseSkill } from "@/utils/skillUtils";
+import { setUserPersonProperties } from "@/utils/analytics";
 import Guide from "@/components/Guide/Guide";
 import { profileGuideConfig } from "@/config/guides/profileGuide";
 import {
@@ -158,6 +159,9 @@ const ProfilePage = () => {
       setLoading(true);
       const response = await getUserProfile();
       setUser(response);
+      if (response && !("error" in response)) {
+        setUserPersonProperties(response);
+      }
     } catch (error) {
       console.error("Error fetching user profile:", error);
     } finally {

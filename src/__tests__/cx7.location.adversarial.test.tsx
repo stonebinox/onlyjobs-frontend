@@ -349,6 +349,7 @@ jest.mock('@/utils/analytics', () => ({
   trackEvent: (...args: any[]) => mockTrackEvent(...args),
   identifyUser: jest.fn(),
   resetAnalyticsUser: jest.fn(),
+  setUserPersonProperties: jest.fn(),
 }));
 
 jest.mock('@/utils/safe-return-to', () => ({

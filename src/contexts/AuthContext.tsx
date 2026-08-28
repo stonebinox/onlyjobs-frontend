@@ -1,6 +1,18 @@
 import { createApiClient } from "@/lib/apiClient";
+import type { User } from "@/types/User";
 import { createContext, useContext, useEffect, useState } from "react";
-import { identifyUser, trackEvent } from "@/utils/analytics";
+import { identifyUser, resetAnalyticsUser, setUserPersonProperties, trackEvent } from "@/utils/analytics";
+
+async function syncPersonProperties(getUserProfile: () => Promise<unknown>): Promise<void> {
+  try {
+    const profile = await getUserProfile();
+    if (profile && typeof profile === "object" && !("error" in profile)) {
+      setUserPersonProperties(profile as User);
+    }
+  } catch {
+    // best-effort: analytics must never break auth
+  }
+}
 
 interface AuthContextProps {
   userId: string | null;
@@ -18,7 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isReady, setIsReady] = useState<boolean>(false);
-  const { authenticateUser } = createApiClient();
+  const { authenticateUser, getUserProfile } = createApiClient();
 
   const authenticate = async (email: string, password: string): Promise<{ isNewUser?: boolean }> => {
     const response = await authenticateUser(email, password);
@@ -30,6 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserId(response.id);
       setIsLoggedIn(true);
       identifyUser(response.id);
+      void syncPersonProperties(getUserProfile);
       if (response.isNewUser) {
         trackEvent("signup_complete");
       }
@@ -41,6 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = () => {
+    resetAnalyticsUser();
     localStorage.removeItem("onlyjobs_token");
     localStorage.removeItem("onlyjobs_user_id");
     setToken(null);
@@ -56,12 +70,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(storedToken);
       setUserId(storedUserId);
       setIsLoggedIn(true);
+      identifyUser(storedUserId);
+      void syncPersonProperties(getUserProfile);
     }
     setIsReady(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     const handleExpired = () => {
+      resetAnalyticsUser();
       setToken(null);
       setUserId(null);
       setIsLoggedIn(false);

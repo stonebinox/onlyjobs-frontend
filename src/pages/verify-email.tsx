@@ -18,6 +18,7 @@ import {
 import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 import { createApiClient } from "@/lib/apiClient";
+import { setUserPersonProperties } from "@/utils/analytics";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 
@@ -25,7 +26,7 @@ const VERIFY_TIMEOUT_MS = 15_000;
 
 const VerifyEmailPage = () => {
   const router = useRouter();
-  const { verifyEmailChange, verifyInitialEmail } = createApiClient();
+  const { verifyEmailChange, verifyInitialEmail, getUserProfile } = createApiClient();
   const [status, setStatus] = useState<"loading" | "pending" | "success" | "error">(
     "loading"
   );
@@ -74,6 +75,16 @@ const VerifyEmailPage = () => {
           setStatus("success");
           setMessage("Your email has been verified successfully! You can now receive job matches.");
           setIsEmailChange(false);
+          try {
+            if (localStorage.getItem("onlyjobs_token")) {
+              const freshUser = await getUserProfile();
+              if (freshUser && !("error" in freshUser)) {
+                setUserPersonProperties(freshUser);
+              }
+            }
+          } catch {
+            // best-effort — must not break verification success
+          }
           return;
         }
 
