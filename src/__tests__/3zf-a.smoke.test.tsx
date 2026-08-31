@@ -470,29 +470,30 @@ describe('profile.tsx — CV upload control', () => {
 
 // ─── Today: no-resume CTA in empty state ──────────────────────────────────────
 
-describe('today.tsx — "Add your CV" CTA in empty state', () => {
-  it('shows "Add your CV" link to /onboarding when user has no resume and zero matches', async () => {
+describe('today.tsx — no-resume CTA banner in empty state', () => {
+  it('shows the no-resume banner with a CV path to /onboarding when user has no resume and zero matches', async () => {
     mockGetUserProfile = jest.fn().mockResolvedValue(userWithNoResume);
     render(<TodayPage />);
     await waitFor(() => {
-      // The Text is wrapped by a NextLink — find the text, then check the parent anchor
-      const text = screen.getByText(/add your cv/i);
-      expect(text).toBeTruthy();
-      const anchor = text.closest('a');
+      // Primary control is now a button, not a link
+      const button = screen.getByRole('button', { name: /upload cv/i });
+      expect(button).toBeTruthy();
+      // Secondary onboarding anchor must be present and go to /onboarding
+      const anchor = document.querySelector('a[href="/onboarding"]');
       expect(anchor).not.toBeNull();
       expect(anchor!.getAttribute('href')).toBe('/onboarding');
     });
   });
 
-  it('shows "Add your CV" link when user has a blank resume (no summary, no skills)', async () => {
+  it('shows the no-resume banner when user has a blank resume (no summary, no skills)', async () => {
     mockGetUserProfile = jest.fn().mockResolvedValue(userWithBlankResume);
     render(<TodayPage />);
     await waitFor(() => {
-      expect(screen.getByText(/add your cv/i)).toBeTruthy();
+      expect(screen.getByRole('button', { name: /upload cv/i })).toBeTruthy();
     });
   });
 
-  it('does NOT show "Add your CV" link when user has a meaningful resume', async () => {
+  it('does NOT show the no-resume banner when user has a meaningful resume', async () => {
     mockGetUserProfile = jest.fn().mockResolvedValue(userWithResume);
     render(<TodayPage />);
     await waitFor(() => {
@@ -501,6 +502,6 @@ describe('today.tsx — "Add your CV" CTA in empty state', () => {
     });
     // Give React an extra tick to settle
     await new Promise((r) => setTimeout(r, 0));
-    expect(screen.queryByTestId('add-cv-link')).toBeNull();
+    expect(screen.queryByRole('button', { name: /upload cv/i })).toBeNull();
   });
 });

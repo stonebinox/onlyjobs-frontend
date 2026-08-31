@@ -10,9 +10,10 @@ import {
 } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 import { BriefEntry } from "@/components/Today/BriefEntry";
+import { ResumeRequiredBanner } from "@/components/Dashboard/ResumeRequiredBanner";
 import { JobChatSection } from "@/components/Dashboard/JobChatSection";
 import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
 import { LocationPromptBanner } from "@/components/Dashboard/LocationPromptBanner";
@@ -67,9 +68,11 @@ const TodayPage = () => {
   const [skippedJobs, setSkippedJobs] = useState<JobResult[]>([]);
   const [skippedLoading, setSkippedLoading] = useState(false);
   const [skippedError, setSkippedError] = useState<string | null>(null);
+  const [cvUploading, setCvUploading] = useState(false);
 
   // Always tracks the latest allFiltered for use inside toast callbacks
   const allFilteredRef = useRef<JobResult[]>([]);
+  const cvFileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     selectedJobResult: applyDrawerJob,
@@ -92,7 +95,69 @@ const TodayPage = () => {
     unskipMatch,
     getSkipped,
     updateUserProfile,
+    uploadCV,
   } = createApiClient();
+
+  const ALLOWED_CV_TYPES = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+  const ALLOWED_CV_EXTENSIONS = [".pdf", ".docx"];
+
+  const handleCVFileSelect = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (cvUploading) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+
+    const ext = file.name.toLowerCase().slice(file.name.lastIndexOf("."));
+    if (!ALLOWED_CV_TYPES.includes(file.type) && !ALLOWED_CV_EXTENSIONS.includes(ext)) {
+      toast({
+        title: "Unsupported file type",
+        description: "Please upload a PDF or DOCX file.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setCvUploading(true);
+    try {
+      const result = await uploadCV(file);
+      if (result && "error" in result) {
+        toast({
+          title: "Upload failed",
+          description: String((result as { error: unknown }).error),
+          status: "error",
+          duration: 4000,
+          isClosable: true,
+        });
+        return;
+      }
+      const updated = await getUserProfile();
+      if (updated && !("error" in updated)) {
+        setUser(updated as User);
+      }
+      toast({
+        title: "CV uploaded",
+        description: "Your CV has been updated.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch {
+      toast({
+        title: "Upload failed",
+        description: "Something went wrong. Please try again.",
+        status: "error",
+        duration: 4000,
+        isClosable: true,
+      });
+    } finally {
+      setCvUploading(false);
+    }
+  };
 
   // Keep ref in sync with allFiltered so toast undo callbacks always see current state
   useEffect(() => {
@@ -409,6 +474,13 @@ const TodayPage = () => {
       />
       <DashboardLayout>
         <Box maxW="680px" mx="auto" py={{ base: 4, md: 8 }} px={{ base: 2, md: 0 }}>
+          <input
+            ref={cvFileInputRef}
+            type="file"
+            accept=".pdf,.docx"
+            style={{ display: "none" }}
+            onChange={handleCVFileSelect}
+          />
           {loading ? (
             <Center py={20}>
               <Spinner size="lg" color="primary.400" />
@@ -440,21 +512,12 @@ const TodayPage = () => {
                 )}
               </Box>
 
-              {/* No-resume nudge — shown whenever profile has no CV, regardless of match count */}
+              {/* No-resume banner - shown whenever profile has no CV, regardless of match count */}
               {hasNoMeaningfulResume(user) && (
-                <NextLink href="/onboarding">
-                  <Text
-                    as="span"
-                    color="primary.600"
-                    fontWeight="medium"
-                    fontSize="sm"
-                    cursor="pointer"
-                    _hover={{ textDecoration: "underline" }}
-                    display="block"
-                  >
-                    Add your CV to unlock better matches →
-                  </Text>
-                </NextLink>
+                <ResumeRequiredBanner
+                  onUploadClick={() => cvFileInputRef.current?.click()}
+                  isUploading={cvUploading}
+                />
               )}
 
               {/* Location prompt — shown when user has no currentLocation */}

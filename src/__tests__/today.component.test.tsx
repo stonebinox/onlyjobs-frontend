@@ -40,6 +40,7 @@ let mockGetUserProfile: jest.Mock;
 let mockMarkMatchClick: jest.Mock;
 let mockMarkMatchAsSkipped: jest.Mock;
 let mockCreateOrGetJobConversation: jest.Mock;
+let mockUploadCV: jest.Mock;
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
@@ -293,7 +294,7 @@ jest.mock('@/lib/apiClient', () => ({
     getUserName: jest.fn().mockResolvedValue({}),
     getAvailableJobsCount: jest.fn().mockResolvedValue(0),
     getActiveUserCount: jest.fn().mockResolvedValue(0),
-    uploadCV: jest.fn().mockResolvedValue({}),
+    uploadCV: (...args: any[]) => mockUploadCV(...args),
     requestEmailChange: jest.fn().mockResolvedValue({}),
     verifyEmailChange: jest.fn().mockResolvedValue({}),
     resendVerificationEmail: jest.fn().mockResolvedValue({}),
@@ -425,6 +426,7 @@ beforeEach(() => {
   mockMarkMatchClick = jest.fn().mockResolvedValue({ success: true });
   mockMarkMatchAsSkipped = jest.fn().mockResolvedValue({ success: true });
   mockCreateOrGetJobConversation = jest.fn().mockResolvedValue({ conversationId: "conv-test", messages: [] });
+  mockUploadCV = jest.fn().mockResolvedValue({});
 
   mockPush.mockReset();
   mockReplace.mockReset();
@@ -1268,5 +1270,114 @@ describe("J — today.tsx wiring: entry._id (not entry.jobId) reaches createOrGe
     expect(secondArg).not.toBe(MATCH_B_JOB_ID);
     // FINDING: second call did not use B's MatchRecord _id
     expect(secondArg).toBe(MATCH_B_ID);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// K. ResumeRequiredBanner: CV upload on /today (2a smoke tests)
+//
+// Contract: when the user has no meaningful resume, a prominent banner
+// renders instead of the old subtle link. The banner has an inline upload
+// control that calls uploadCV then refetches the profile.
+// ══════════════════════════════════════════════════════════════════════════
+describe('K - ResumeRequiredBanner smoke tests', () => {
+  // User with null resume (no meaningful resume)
+  const makeNoResumeUser = (): User => ({
+    ...makeUser(30),
+    resume: null,
+  });
+
+  // User with a meaningful resume (summary field)
+  const makeResumeUser = (): User => ({
+    ...makeUser(30),
+    resume: {
+      summary: 'Experienced software engineer',
+      skills: [],
+      experience: [],
+      education: [],
+      projects: [],
+      achievements: [],
+      certifications: [],
+      volunteerExperience: [],
+      interests: [],
+      languages: [],
+    } as any,
+  });
+
+  it('shows the prominent banner (heading + button) when user has no meaningful resume', async () => {
+    mockGetUserProfile.mockResolvedValue(makeNoResumeUser());
+    mockGetMatches.mockResolvedValue([]);
+
+    await renderAndWait();
+
+    // Banner heading must be present
+    const heading = screen.queryByText(/you have not added a cv yet/i);
+    expect(heading).toBeInTheDocument();
+
+    // Primary upload button must be present
+    const uploadBtn = screen.queryByRole('button', { name: /upload cv/i });
+    expect(uploadBtn).toBeInTheDocument();
+
+    // Old subtle link must NOT be present
+    expect(screen.queryByText(/add your cv to unlock better matches/i)).not.toBeInTheDocument();
+  });
+
+  it('does NOT show the banner when user has a meaningful resume', async () => {
+    mockGetUserProfile.mockResolvedValue(makeResumeUser());
+    mockGetMatches.mockResolvedValue([]);
+
+    await renderAndWait();
+
+    expect(screen.queryByText(/you have not added a cv yet/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /upload cv \(pdf or docx\)/i })).not.toBeInTheDocument();
+  });
+
+  it('selects a .pdf file: calls uploadCV once with the file then calls getUserProfile again', async () => {
+    // Arrange: first call returns no-resume user; second (refetch) returns resume user
+    mockGetUserProfile
+      .mockResolvedValueOnce(makeNoResumeUser())
+      .mockResolvedValueOnce(makeResumeUser());
+    mockGetMatches.mockResolvedValue([]);
+    const pdfFile = new File(['content'], 'resume.pdf', { type: 'application/pdf' });
+
+    await renderAndWait();
+
+    // Confirm banner is visible
+    expect(screen.queryByText(/you have not added a cv yet/i)).toBeInTheDocument();
+
+    const profileCallsBefore = mockGetUserProfile.mock.calls.length;
+
+    // Find the hidden file input and fire change with a pdf file
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+    fireEvent.change(fileInput, { target: { files: [pdfFile] } });
+
+    // uploadCV must be called once with the file
+    await waitFor(() => {
+      expect(mockUploadCV).toHaveBeenCalledTimes(1);
+    });
+    expect(mockUploadCV).toHaveBeenCalledWith(pdfFile);
+
+    // getUserProfile must be called again (refetch) after upload
+    await waitFor(() => {
+      expect(mockGetUserProfile.mock.calls.length).toBeGreaterThan(profileCallsBefore);
+    });
+  });
+
+  it('selects an unsupported type (.txt): does NOT call uploadCV', async () => {
+    mockGetUserProfile.mockResolvedValue(makeNoResumeUser());
+    mockGetMatches.mockResolvedValue([]);
+    const txtFile = new File(['hello'], 'notes.txt', { type: 'text/plain' });
+
+    await renderAndWait();
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(fileInput).not.toBeNull();
+    fireEvent.change(fileInput, { target: { files: [txtFile] } });
+
+    // Allow any async handlers to settle
+    await new Promise((r) => setTimeout(r, 100));
+
+    expect(mockUploadCV).not.toHaveBeenCalled();
   });
 });

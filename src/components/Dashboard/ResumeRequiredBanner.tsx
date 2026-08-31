@@ -8,23 +8,18 @@ import {
   HStack,
   Text,
 } from "@chakra-ui/react";
+import NextLink from "next/link";
 import { FiUpload } from "react-icons/fi";
-import { Resume } from "@/types/Resume";
-import { hasMeaningfulResume } from "@/utils/resumePredicate";
 
 interface ResumeRequiredBannerProps {
-  resume: Resume | null;
   onUploadClick: () => void;
+  isUploading?: boolean;
 }
 
 export const ResumeRequiredBanner = ({
-  resume,
   onUploadClick,
+  isUploading = false,
 }: ResumeRequiredBannerProps) => {
-  if (hasMeaningfulResume(resume)) {
-    return null;
-  }
-
   return (
     <Alert
       status="warning"
@@ -35,14 +30,19 @@ export const ResumeRequiredBanner = ({
     >
       <AlertIcon />
       <Box flex="1">
-        <AlertTitle>Add Your Resume</AlertTitle>
+        <AlertTitle>You have not added a CV yet</AlertTitle>
         <AlertDescription>
-          <Text>
-            Upload your CV to start receiving personalized job matches.{" "}
-            <Text as="span" fontWeight="medium">
-              Without a resume, we can&apos;t match you with relevant opportunities.
+          <Text>Upload one so we can match you to jobs.</Text>
+          <NextLink href="/onboarding">
+            <Text
+              as="span"
+              fontSize="sm"
+              cursor="pointer"
+              _hover={{ textDecoration: "underline" }}
+            >
+              or complete guided onboarding
             </Text>
-          </Text>
+          </NextLink>
         </AlertDescription>
       </Box>
       <HStack mt={{ base: 3, md: 0 }} ml={{ base: 0, md: 4 }}>
@@ -51,11 +51,12 @@ export const ResumeRequiredBanner = ({
           colorScheme="orange"
           size="sm"
           onClick={onUploadClick}
+          isLoading={isUploading}
+          loadingText="Uploading..."
         >
-          Upload CV
+          Upload CV (PDF or DOCX)
         </Button>
       </HStack>
     </Alert>
   );
 };
-

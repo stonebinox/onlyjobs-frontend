@@ -519,18 +519,16 @@ afterEach(() => {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Find the "Add your CV" CTA: a link to /onboarding whose text or aria-label
- * mentions CV or resume.  The discriminator is the CV mention — a plain
- * nav link must NOT match.
+ * Find the no-resume CTA: present iff the ResumeRequiredBanner is rendered.
+ * The banner has a primary "Upload CV" button (the discriminator — absent when
+ * the banner is hidden) and a secondary <a href="/onboarding"> link.  We gate
+ * on the button and return the anchor so A-6's getAttribute('href') still holds.
  */
 const findCvCta = (): HTMLElement | null => {
+  const button = screen.queryByRole('button', { name: /upload cv/i });
+  if (!button) return null;
   const links = Array.from(document.querySelectorAll('a'));
-  const match = links.find(a => {
-    const href = a.getAttribute('href') ?? '';
-    const text = ((a.textContent ?? '') + ' ' + (a.getAttribute('aria-label') ?? '')).toLowerCase();
-    return href === '/onboarding' && /\bcv\b|\bresume\b/.test(text);
-  });
-  return (match as HTMLElement) ?? null;
+  return (links.find(a => a.getAttribute('href') === '/onboarding') as HTMLElement) ?? null;
 };
 
 /** Render /today and wait until the loading spinner has cleared. */
