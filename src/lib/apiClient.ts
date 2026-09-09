@@ -946,6 +946,32 @@ export const createApiClient = () => {
     }
   };
 
+  const recordFailureAttempt = async (
+    orderId: string,
+    error: { errorCode?: string; errorDescription?: string; errorReason?: string }
+  ) => {
+    try {
+      const response = await authFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/wallet/record-failure-attempt`,
+        {
+          method: "POST",
+          body: JSON.stringify({ orderId, ...error }),
+          keepalive: true,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to record failure attempt");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Record failure attempt error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const getTransactions = async (page: number = 1, limit: number = 20) => {
     try {
       const response = await authFetch(
@@ -1371,6 +1397,7 @@ export const createApiClient = () => {
     getWalletBalance,
     createPaymentOrder,
     verifyPayment,
+    recordFailureAttempt,
     getTransactions,
     checkWalletBalance,
     getGuideProgress,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Head from "next/head";
 import {
   Button,
@@ -75,8 +75,12 @@ const WalletPage = () => {
     getWalletBalance,
     createPaymentOrder,
     verifyPayment,
+    recordFailureAttempt,
     getTransactions,
   } = createApiClient();
+
+  const succeededRef = useRef(false);
+  const lastFailureRef = useRef<{ errorCode: string | undefined; errorDescription: string | undefined; errorReason: string | undefined } | null>(null);
 
   const [balance, setBalance] = useState<number>(0);
   const [customAmount, setCustomAmount] = useState("");
@@ -235,6 +239,7 @@ const WalletPage = () => {
         description: `Wallet top-up - $${topUpAmount}`,
         order_id: orderId,
         handler: async function (response: any) {
+          succeededRef.current = true;
           try {
             // Verify payment
             const verifyResult = await verifyPayment(
@@ -277,16 +282,36 @@ const WalletPage = () => {
         modal: {
           ondismiss: function () {
             setProcessing(false);
+            if (succeededRef.current) {
+              return;
+            } else if (lastFailureRef.current) {
+              return;
+            } else {
+              trackEvent("wallet_topup_abandoned", { amount: topUpAmount, order_id: orderId });
+            }
           },
         },
       };
 
       const razorpay = new window.Razorpay(options);
       razorpay.on("payment.failed", function (response: any) {
-        setModalMessage(`Payment failed: ${response.error.description}`);
+        const err = response?.error;
+        lastFailureRef.current = { errorCode: err?.code, errorDescription: err?.description, errorReason: err?.reason };
+        recordFailureAttempt(orderId, { errorCode: err?.code, errorDescription: err?.description, errorReason: err?.reason }).catch(() => {});
+        setModalMessage(`Payment failed: ${err?.description ?? "Unknown reason"}`);
         onErrorModalOpen();
         setProcessing(false);
+        trackEvent("wallet_topup_failed", {
+          amount: topUpAmount,
+          order_id: orderId,
+          error_code: err?.code,
+          error_reason: err?.reason,
+          error_description: err?.description,
+        });
       });
+      succeededRef.current = false;
+      lastFailureRef.current = null;
+      trackEvent("wallet_topup_started", { amount: topUpAmount, order_id: orderId });
       razorpay.open();
     } catch (error) {
       console.error("Error processing payment:", error);
