@@ -4,6 +4,7 @@ import { PAPER, PENCIL } from "@/theme/palette";
 export function Logo() {
   return (
     <Heading
+      as="span"
       size="md"
       fontFamily="heading"
       fontWeight="bold"

@@ -80,7 +80,7 @@ export const Footer = ({ minimal = false }: FooterProps) => {
       <Container maxW="container.xl" px={{ base: 4, md: 6 }}>
         <VStack spacing={{ base: 2, md: 4 }}>
           <HStack spacing={2}>
-            <Heading size={{ base: "sm", md: "md" }} color="white">
+            <Heading as="span" size={{ base: "sm", md: "md" }} color="white">
               OnlyJobs
             </Heading>
             <Badge

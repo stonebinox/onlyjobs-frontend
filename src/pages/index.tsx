@@ -26,6 +26,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { Footer } from "@/components/Footer";
+import { JsonLd } from "@/components/JsonLd";
 import { Logo } from "@/components/Logo";
 import { SEO } from "@/components/SEO";
 import { isSafeReturnTo } from "@/utils/safe-return-to";
@@ -47,17 +48,9 @@ export default function Home() {
   const [fieldError, setFieldError] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [authMode, setAuthMode] = useState<"signup" | "login">("signup");
-  const [stats, setStats] = useState<{ jobCount: number; userCount: number } | null>(null);
   const auth = useAuth();
   const router = useRouter();
   const isNewUserRef = useRef<boolean>(false);
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/jobs/stats`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => { if (data) setStats(data); })
-      .catch(() => {});
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -113,6 +106,26 @@ export default function Home() {
         description="Stop applying everywhere, start applying smarter. OnlyJobs uses AI to match you with jobs based on your actual experience and preferences, with confidence scores for each match."
         canonical="/"
       />
+      <JsonLd data={{
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://onlyjobs.app/#organization",
+            "name": "OnlyJobs",
+            "url": "https://onlyjobs.app/",
+            "parentOrganization": { "@type": "Organization", "name": "Aurora Designs LLP" },
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://onlyjobs.app/#website",
+            "name": "OnlyJobs",
+            "url": "https://onlyjobs.app/",
+            "inLanguage": "en-US",
+            "publisher": { "@id": "https://onlyjobs.app/#organization" },
+          },
+        ],
+      }} />
       <Box minH="100vh" bg="surface.bg">
       {/* Navigation */}
       <Box
@@ -182,6 +195,7 @@ export default function Home() {
             {/* Left: Hero Text */}
             <Stack flex={1} spacing={{ base: 6, md: 8 }} maxW="600px">
               <Heading
+                as="h1"
                 lineHeight={1.1}
                 fontWeight={800}
                 fontSize={{ base: "3xl", sm: "4xl", md: "5xl", lg: "6xl" }}
@@ -385,28 +399,25 @@ export default function Home() {
         </Container>
       </Box>
 
-      {/* Live Stats Strip */}
-      {stats && (
-        <Box borderY="1px solid" borderColor="surface.border" bg="surface.card" py={5}>
-          <Container maxW="container.xl">
-            <HStack justify="center" spacing={{ base: 8, md: 16 }} flexWrap="wrap">
-              <VStack spacing={0}>
-                <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold" color="primary.600">
-                  {stats.userCount.toLocaleString()}+
-                </Text>
-                <Text fontSize="sm" color="text.secondary">job seekers using OnlyJobs</Text>
-              </VStack>
-              <Box w="1px" h={10} bg="surface.border" display={{ base: "none", md: "block" }} />
-              <VStack spacing={0}>
-                <Text fontSize={{ base: "2xl", md: "3xl" }} fontWeight="bold" color="primary.600">
-                  {stats.jobCount.toLocaleString()}+
-                </Text>
-                <Text fontSize="sm" color="text.secondary">live jobs in database</Text>
-              </VStack>
-            </HStack>
-          </Container>
-        </Box>
-      )}
+      {/* Curation Strip */}
+      <Box borderY="1px solid" borderColor="surface.border" bg="surface.card" py={8}>
+        <Container maxW="container.xl">
+          <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 6, md: 10 }}>
+            <VStack spacing={1} align={{ base: "center", md: "start" }} textAlign={{ base: "center", md: "left" }}>
+              <Text fontWeight="bold" color="primary.600">Curated, not crawled</Text>
+              <Text fontSize="sm" color="text.secondary">A hand-picked set of quality remote job boards, checked daily. Vague and shady listings filtered out.</Text>
+            </VStack>
+            <VStack spacing={1} align={{ base: "center", md: "start" }} textAlign={{ base: "center", md: "left" }}>
+              <Text fontWeight="bold" color="primary.600">Every match explained</Text>
+              <Text fontSize="sm" color="text.secondary">See why each job fits you, and what you might not like about it. Not just a keyword hit.</Text>
+            </VStack>
+            <VStack spacing={1} align={{ base: "center", md: "start" }} textAlign={{ base: "center", md: "left" }}>
+              <Text fontWeight="bold" color="primary.600">Pay only on match days</Text>
+              <Text fontSize="sm" color="text.secondary">No subscription. $2 free to start, then $0.30 only on days we find you a match.</Text>
+            </VStack>
+          </SimpleGrid>
+        </Container>
+      </Box>
 
       {/* How It Works Section */}
       <Container maxW="container.xl" py={{ base: 16, md: 24 }}>
