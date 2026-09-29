@@ -668,37 +668,38 @@ describe('Spec 5 — Sitemap', () => {
     expect(fs.existsSync(SITEMAP_PATH)).toBe(true);
   });
 
-  it('has exactly 4 <url> entries', () => {
+  it('has exactly 5 <url> entries', () => {
     const urlBlocks = sitemapXml.match(/<url>/g) ?? [];
-    if (urlBlocks.length !== 4) {
+    if (urlBlocks.length !== 5) {
       throw new Error(
-        `SPEC 5 FAILURE — expected 4 <url> entries, found ${urlBlocks.length}. ` +
-        'Check whether /how-it-works or /pricing were incorrectly added.'
+        `SPEC 5 FAILURE — expected 5 <url> entries, found ${urlBlocks.length}. ` +
+        'Check whether /how-it-works or /pricing were incorrectly added, or whether /sample-match-report is missing.'
       );
     }
-    expect(urlBlocks).toHaveLength(4);
+    expect(urlBlocks).toHaveLength(5);
   });
 
-  it('the four <loc> values are exactly the spec-defined URLs (no /how-it-works or /pricing)', () => {
+  it('the five <loc> values are exactly the spec-defined URLs (no /how-it-works or /pricing)', () => {
     const locs = Array.from(sitemapXml.matchAll(/<loc>([\s\S]*?)<\/loc>/g)).map(m => m[1].trim());
     const expected = [
       'https://onlyjobs.app/',
       'https://onlyjobs.app/privacy-policy',
       'https://onlyjobs.app/terms-conditions',
       'https://onlyjobs.app/refund-policy',
+      'https://onlyjobs.app/sample-match-report',
     ];
-    // Order matters: the spec lists these four in this sequence.
+    // Order matters: the spec lists these five in this sequence.
     expect(locs).toEqual(expected);
 
-    // Explicit ban on the two routes the spec says must NOT appear:
+    // Explicit ban on routes the spec says must NOT appear:
     expect(locs.some(l => l.includes('/how-it-works'))).toBe(false);
     expect(locs.some(l => l.includes('/pricing'))).toBe(false);
   });
 
   it('every <url> has a <lastmod> matching the W3C date format YYYY-MM-DD', () => {
     const lastmods = Array.from(sitemapXml.matchAll(/<lastmod>([\s\S]*?)<\/lastmod>/g)).map(m => m[1].trim());
-    // There must be one lastmod per url (4 total).
-    expect(lastmods).toHaveLength(4);
+    // There must be one lastmod per url (5 total).
+    expect(lastmods).toHaveLength(5);
     const invalid = lastmods.filter(d => !/^\d{4}-\d{2}-\d{2}$/.test(d));
     if (invalid.length > 0) {
       throw new Error(
