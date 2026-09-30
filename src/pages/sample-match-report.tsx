@@ -354,7 +354,7 @@ export default function SampleMatchReportPage() {
 
           <Box w="full">
             <Heading as="h2" size="lg" mb={4}>
-              Jobs under your bar never reach you (illustration)
+              Jobs under your bar aren&apos;t sent to you (illustration)
             </Heading>
             <Box borderLeftWidth="3px" borderLeftColor="gray.300" pl={4} py={1}>
               <Text mb={2}>
@@ -367,9 +367,9 @@ export default function SampleMatchReportPage() {
                 rotation breaks her schedule preference.
               </Text>
               <Text fontSize="sm" color="gray.600">
-                It scored below Dana&apos;s 80% threshold. Below-threshold jobs are recorded as
-                skipped in the system and do not appear in the app - not in Today, not
-                anywhere else.
+                It scored below Dana&apos;s 80% threshold, so it was not in her daily matches.
+                She still paid $0.30 for the three that cleared the bar; this one did not add
+                another charge.
               </Text>
             </Box>
           </Box>

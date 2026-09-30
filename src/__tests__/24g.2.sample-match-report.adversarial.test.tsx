@@ -810,26 +810,110 @@ describe("Group D — Body / Content", () => {
     expect(text).toContain("81");
   });
 
-  it("D4: score 74 appears in the below-threshold aside (contains 'skipped' and 'do not appear'/'don't appear')", () => {
-    const allEls = Array.from(container.querySelectorAll("*"));
-    const asideEl = allEls.find(
-      (el) =>
-        /skipped/i.test(el.textContent ?? "") &&
-        /don't appear|do not appear/i.test(el.textContent ?? "")
+  it("D4: below-threshold aside (located by heading) contains 74, charge frame, and no old/overcorrection copy", () => {
+    const allH2s = Array.from(container.querySelectorAll("h2"));
+    const asideHeading = allH2s.find((h) =>
+      /jobs under your bar aren't sent to you/i.test(h.textContent ?? "")
     );
-    if (!asideEl) {
+    if (!asideHeading) {
       throw new Error(
-        `D4 FINDING — could not locate the below-threshold aside. ` +
-          `Expected an element containing both "skipped" and "do not appear"/"don't appear".`
+        `D4 FINDING — "Jobs under your bar aren't sent to you" h2 not found; cannot verify aside content.`
       );
     }
-    if (!asideEl.textContent?.includes("74")) {
+    const asideSection = asideHeading.parentElement;
+    if (!asideSection) {
+      throw new Error(`D4 FINDING — aside heading has no parent element.`);
+    }
+    const asideText = asideSection.textContent ?? "";
+
+    // MUST contain "74"
+    if (!asideText.includes("74")) {
       throw new Error(
         `D4 FAILURE — below-threshold aside does NOT contain "74". ` +
-          `Aside text excerpt: "${asideEl.textContent?.substring(0, 200)}"`
+          `Aside text: "${asideText.substring(0, 200)}"`
       );
     }
-    expect(asideEl.textContent).toMatch(/74/);
+    expect(asideText).toContain("74");
+
+    // MUST say it was not in the daily matches
+    if (!/not in her daily matches/i.test(asideText)) {
+      throw new Error(
+        `D4 FAILURE — aside does not contain "not in her daily matches". ` +
+          `Aside text: "${asideText.substring(0, 300)}"`
+      );
+    }
+    expect(asideText).toMatch(/not in her daily matches/i);
+
+    // MUST contain charge frame: "$0.30" and "did not add another charge"
+    if (!asideText.includes("$0.30")) {
+      throw new Error(
+        `D4 FAILURE — aside does not contain "$0.30". ` +
+          `Aside text: "${asideText.substring(0, 300)}"`
+      );
+    }
+    expect(asideText).toContain("$0.30");
+
+    if (!/did not add another charge/i.test(asideText)) {
+      throw new Error(
+        `D4 FAILURE — aside does not contain "did not add another charge". ` +
+          `Aside text: "${asideText.substring(0, 300)}"`
+      );
+    }
+    expect(asideText).toMatch(/did not add another charge/i);
+
+    // ASIDE MUST NOT: old copy
+    if (/do not appear in the app/i.test(asideText)) {
+      throw new Error(
+        `D4 FAILURE — aside contains old copy "do not appear in the app". ` +
+          `Aside text: "${asideText.substring(0, 300)}"`
+      );
+    }
+    expect(asideText).not.toMatch(/do not appear in the app/i);
+
+    if (/not anywhere else/i.test(asideText)) {
+      throw new Error(
+        `D4 FAILURE — aside contains old copy "not anywhere else". ` +
+          `Aside text: "${asideText.substring(0, 300)}"`
+      );
+    }
+    expect(asideText).not.toMatch(/not anywhere else/i);
+
+    // ASIDE MUST NOT: overcorrection (no-charge / free day)
+    const overcorrections: RegExp[] = [
+      /paid \$0(?!\.\d*[1-9])/i,
+      /she paid \$0(?!\.\d*[1-9])/i,
+      /no charge that day/i,
+      /wasn't charged that day/i,
+    ];
+    for (const pattern of overcorrections) {
+      if (pattern.test(asideText)) {
+        throw new Error(
+          `D4 FAILURE — aside contains overcorrection phrase matching ${pattern}. ` +
+            `Aside text: "${asideText.substring(0, 300)}"`
+        );
+      }
+      expect(asideText).not.toMatch(pattern);
+    }
+
+    // ASIDE MUST NOT: Browse/All Jobs/on-demand/$0.05/browsable/out there
+    // All string checks are case-insensitive so variants like "BROWSE" or "Browsable" also fail.
+    const forbiddenPhrases: Array<[RegExp, string]> = [
+      [/browse/i, "Browse"],
+      [/all jobs/i, "All Jobs"],
+      [/on-demand/i, "on-demand"],
+      [/\$0\.05/, "$0.05"],
+      [/browsable/i, "browsable"],
+      [/out there/i, "out there"],
+    ];
+    for (const [pattern, label] of forbiddenPhrases) {
+      if (pattern.test(asideText)) {
+        throw new Error(
+          `D4 FAILURE — aside contains forbidden phrase "${label}". ` +
+            `Aside text: "${asideText.substring(0, 300)}"`
+        );
+      }
+      expect(asideText).not.toMatch(pattern);
+    }
   });
 
   it("D5: score 74 does NOT appear inside any match-card container; '74%' appears only in the below-threshold aside", () => {
@@ -837,11 +921,11 @@ describe("Group D — Body / Content", () => {
     // that eventually reaches the VStack containing both match cards and the aside.
     const allH2s = Array.from(container.querySelectorAll("h2"));
     const asideHeading = allH2s.find((h) =>
-      /jobs under your bar never reach you/i.test(h.textContent ?? "")
+      /jobs under your bar aren't sent to you/i.test(h.textContent ?? "")
     );
     if (!asideHeading) {
       throw new Error(
-        `D5 FINDING — "Jobs under your bar never reach you" h2 not found; cannot verify 74 placement.`
+        `D5 FINDING — "Jobs under your bar aren't sent to you" h2 not found; cannot verify 74 placement.`
       );
     }
     const asideSection = asideHeading.parentElement;
@@ -923,10 +1007,22 @@ describe("Group D — Body / Content", () => {
     expect(didntFit).toHaveLength(3);
   });
 
-  it("D8: below-threshold aside contains 'skipped' and 'do not appear'/'don't appear'", () => {
+  it("D8: full page does not contain old below-threshold copy (revert detector)", () => {
     const text = container.textContent ?? "";
-    expect(text.toLowerCase()).toMatch(/skipped/);
-    expect(text.toLowerCase()).toMatch(/don't appear|do not appear/);
+    // These exact phrases are from the old copy that was replaced; their presence means a revert
+    if (/do not appear in the app/i.test(text)) {
+      throw new Error(
+        `D8 FAILURE — "do not appear in the app" found on page. Old copy reverted.`
+      );
+    }
+    expect(text).not.toMatch(/do not appear in the app/i);
+
+    if (/not anywhere else/i.test(text)) {
+      throw new Error(
+        `D8 FAILURE — "not anywhere else" found on page. Old copy reverted.`
+      );
+    }
+    expect(text).not.toMatch(/not anywhere else/i);
   });
 
   it("D9: below-threshold aside does NOT contain 'Our take' (match-card chrome)", () => {
@@ -935,7 +1031,7 @@ describe("Group D — Body / Content", () => {
     // because the match cards do contain "Our take". Select the aside precisely instead.
     const allH2s = Array.from(container.querySelectorAll("h2"));
     const asideHeading = allH2s.find((h) =>
-      /jobs under your bar never reach you/i.test(h.textContent ?? "")
+      /jobs under your bar aren't sent to you/i.test(h.textContent ?? "")
     );
     if (!asideHeading) {
       // Cannot locate aside — log and skip (D4 covers the aside-existence assertion)
