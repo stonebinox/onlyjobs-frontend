@@ -1182,15 +1182,15 @@ describe("Group G — Sitemap", () => {
     expect(fs.existsSync(SITEMAP_PATH)).toBe(true);
   });
 
-  it("G2: sitemap contains exactly 5 <url> entries", () => {
+  it("G2: sitemap contains exactly 6 <url> entries", () => {
     const count = (sitemapXml.match(/<url>/g) ?? []).length;
-    if (count !== 5) {
+    if (count !== 6) {
       throw new Error(
-        `G2 FAILURE — expected 5 <url> entries, found ${count}. ` +
+        `G2 FAILURE — expected 6 <url> entries, found ${count}. ` +
           `The 24g.1 suite owns the full list; this test focuses on the new entry being present.`
       );
     }
-    expect(count).toBe(5);
+    expect(count).toBe(6);
   });
 
   it("G3: sitemap includes <loc>https://onlyjobs.app/sample-match-report</loc>", () => {
@@ -1203,6 +1203,30 @@ describe("Group G — Sitemap", () => {
       );
     }
     expect(hasEntry).toBe(true);
+  });
+
+  it("G5: sitemap includes <loc>https://onlyjobs.app/how-it-works</loc>", () => {
+    const hasEntry = sitemapXml.includes(
+      "<loc>https://onlyjobs.app/how-it-works</loc>"
+    );
+    if (!hasEntry) {
+      throw new Error(
+        `G5 FAILURE — <loc>https://onlyjobs.app/how-it-works</loc> not found in sitemap.xml. ` +
+          `The /how-it-works page must be present in the sitemap.`
+      );
+    }
+    expect(hasEntry).toBe(true);
+  });
+
+  it("G6: sitemap does NOT include /pricing", () => {
+    const hasEntry = sitemapXml.includes("/pricing");
+    if (hasEntry) {
+      throw new Error(
+        `G6 FAILURE — /pricing found in sitemap.xml. ` +
+          `The /pricing page is a client-side redirect and must NOT appear in the sitemap.`
+      );
+    }
+    expect(hasEntry).toBe(false);
   });
 
   it("G4: /sample-match-report entry has a <lastmod> in YYYY-MM-DD format", () => {

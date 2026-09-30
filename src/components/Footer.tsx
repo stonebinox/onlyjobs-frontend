@@ -114,6 +114,9 @@ export const Footer = ({ minimal = false }: FooterProps) => {
             <ContactLink href="/refund-policy" color="semantic.primary">
               Refund Policy
             </ContactLink>
+            <ContactLink href="/how-it-works" color="semantic.primary">
+              How it works
+            </ContactLink>
             <ContactLink href="/sample-match-report" color="semantic.primary">
               Sample Report
             </ContactLink>

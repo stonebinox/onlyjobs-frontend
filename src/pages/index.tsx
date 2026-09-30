@@ -442,6 +442,11 @@ export default function Home() {
             >
               Smart matching in four steps
             </Heading>
+            <Link href="/how-it-works">
+              <Text fontSize="sm" color="primary.500" fontWeight="medium">
+                How it works in detail &rarr;
+              </Text>
+            </Link>
           </VStack>
 
           <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={{ base: 6, md: 8 }} width="100%">
@@ -664,6 +669,11 @@ export default function Home() {
               <Text color="text.secondary" fontSize={{ base: "md", md: "lg" }}>
                 Start free. Only pay when we find you matches.
               </Text>
+              <Link href="/how-it-works#pricing">
+                <Text fontSize="sm" color="accent.600" fontWeight="medium">
+                  Full pricing details &rarr;
+                </Text>
+              </Link>
             </VStack>
 
             <Box
