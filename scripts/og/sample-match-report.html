@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      background: #16202A;
+      font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 48px 0;
+    }
+
+    .wordmark {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .wordmark-dot {
+      width: 8px;
+      height: 8px;
+      background: #2D77D2;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .sample-badge {
+      background: #1D4E89;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 9999px;
+    }
+
+    /* Main content */
+    .content {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 48px;
+      gap: 56px;
+    }
+
+    /* Left column */
+    .left {
+      flex: 0 0 490px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .headline {
+      font-size: 42px;
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -1px;
+      color: #fff;
+    }
+
+    .headline em {
+      font-style: normal;
+      color: #6CA0E0;
+    }
+
+    .subline {
+      font-size: 18px;
+      line-height: 1.5;
+      color: #9CA3AF;
+      font-weight: 400;
+    }
+
+    .cta-row {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .price-pill {
+      background: rgba(29, 78, 137, 0.25);
+      border: 1px solid rgba(45, 119, 210, 0.4);
+      border-radius: 9999px;
+      padding: 6px 16px;
+      font-size: 14px;
+      color: #6CA0E0;
+      font-weight: 500;
+    }
+
+    /* Right column - match card */
+    .right {
+      flex: 1;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 30px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2);
+      color: #16202A;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+
+    .score-ring {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: conic-gradient(#1B7A4B calc(88% * 3.6deg), #E5E7EB 0deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .score-ring::after {
+      content: '';
+      position: absolute;
+      inset: 6px;
+      background: #fff;
+      border-radius: 50%;
+    }
+
+    .score-text {
+      position: relative;
+      z-index: 1;
+      font-size: 13px;
+      font-weight: 800;
+      color: #1B7A4B;
+      line-height: 1;
+    }
+
+    .card-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #16202A;
+      line-height: 1.25;
+    }
+
+    .card-meta {
+      font-size: 13px;
+      color: #6B7280;
+      margin-bottom: 20px;
+      padding-left: 68px;
+    }
+
+    .card-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-fits .section-label { color: #1B7A4B; }
+    .section-miss  .section-label { color: #8A6D1F; }
+
+    .section-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .section-fits .section-icon { background: #DCFCE7; color: #1B7A4B; }
+    .section-miss  .section-icon { background: #FEF3C7; color: #8A6D1F; }
+
+    .section-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #374151;
+      border-left: 3px solid;
+      padding-left: 10px;
+    }
+
+    .section-fits .section-text { border-color: #86EFAC; }
+    .section-miss  .section-text { border-color: #FCD34D; }
+
+    .card-divider {
+      height: 1px;
+      background: #F3F4F6;
+    }
+
+    /* Bottom bar */
+    .bottombar {
+      padding: 0 48px 26px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bottom-dot {
+      width: 5px;
+      height: 5px;
+      background: #374151;
+      border-radius: 50%;
+    }
+
+    .bottom-text {
+      font-size: 13px;
+      color: #4B5563;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="wordmark">
+      <span class="wordmark-dot"></span>
+      OnlyJobs
+    </div>
+    <div class="sample-badge">Sample Report</div>
+  </div>
+
+  <div class="content">
+
+    <div class="left">
+      <div class="headline">
+        Why each job fits<br>
+        <em> - and what doesn't.</em>
+      </div>
+      <div class="subline">
+        A sample OnlyJobs match report.<br>
+        Fewer jobs. Real reasons. Honest trade-offs.
+      </div>
+      <div class="cta-row">
+        <div class="price-pill">$0.30 · only on match days</div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="card">
+        <div class="card-header">
+          <div class="score-ring">
+            <div class="score-text">88%</div>
+          </div>
+          <div class="card-title">Support Operations Lead</div>
+        </div>
+        <div class="card-meta">Remote (US) &nbsp;·&nbsp; $68,000-$78,000</div>
+
+        <div class="card-sections">
+          <div class="section-fits">
+            <div class="section-label">
+              <div class="section-icon">✓</div>
+              Why it fits
+            </div>
+            <div class="section-text">
+              Your help-center rebuild is exactly the job -<br>
+              they want to cut repeat contacts, and you already did it.
+            </div>
+          </div>
+
+          <div class="card-divider"></div>
+
+          <div class="section-miss">
+            <div class="section-label">
+              <div class="section-icon">!</div>
+              What didn't fit
+            </div>
+            <div class="section-text">
+              On-call about once a quarter - you want predictable hours.<br>
+              That's the main thing holding this below 90%.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="bottombar">
+    <div class="bottom-dot"></div>
+    <div class="bottom-text">onlyjobs.app &nbsp;·&nbsp; matches scored against your profile, reasons included, what didn't fit explained</div>
+  </div>
+
+</body>
+</html>

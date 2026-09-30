@@ -62,7 +62,7 @@ function MatchCard({
         </Heading>
       </HStack>
       <Text color="gray.600" mb={4} fontSize="sm">
-        {company} &mdash; {location} &mdash; {salary}
+        {company} - {location} - {salary}
       </Text>
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mb={4}>
         <Box>
@@ -181,7 +181,7 @@ export default function SampleMatchReportPage() {
               <strong>This is an illustrative example.</strong> &ldquo;Dana&rdquo; is a made-up job
               seeker, and the companies and jobs are fictional. The kinds of reasons and the pricing
               match the product. This page spreads them into two columns so a cold visitor can scan;
-              in the app, each match comes with a short 2&ndash;3 sentence reasoning.
+              in the app, each match comes with a short 2-3 sentence reasoning.
             </Text>
           </Box>
 
@@ -263,13 +263,13 @@ export default function SampleMatchReportPage() {
               title="Support Operations Lead"
               company="Northbank Billing (fictional), a 60-person medical billing software company"
               location="Remote (US)"
-              salary="$68,000&ndash;$78,000"
+              salary="$68,000-$78,000"
               score={88}
               whyItFits={[
                 "Your help-center rebuild is the job. The role owns the knowledge base and macros and asks for someone who can 'cut repeat contacts.' That's exactly what you did with the reschedule tickets.",
                 "Your outage story matches a stated duty. The lead writes customer updates during incidents, and you've done it hourly, under pressure.",
                 "They measure what you care about: resolution rate and satisfaction, with no handle-time targets. That's the opposite of the job you left.",
-                "Culture: their careers page describes an async, written-first team working Monday–Friday.",
+                "Culture: their careers page describes an async, written-first team working Monday-Friday.",
               ]}
               whatDidntFit={[
                 "You'd be on call about once a quarter for incidents. You told us you want predictable hours. It's rare, but it isn't zero, and it's the main thing holding this below 90%.",
@@ -284,7 +284,7 @@ export default function SampleMatchReportPage() {
               title="Customer Experience Team Lead"
               company="Scioto Schedule Co. (fictional), a 25-person scheduling app for home-service businesses"
               location="Hybrid, Columbus (2 days/week)"
-              salary="$60,000&ndash;$70,000"
+              salary="$60,000-$70,000"
               score={85}
               whyItFits={[
                 "You know this product category. You've supported scheduling software, so their customers' 'reschedule' problems are ones you've already solved.",
@@ -306,11 +306,11 @@ export default function SampleMatchReportPage() {
               title="Member Support Manager"
               company="Olentangy Member Services (fictional)"
               location="Remote (Ohio residents)"
-              salary="$70,000&ndash;$80,000"
+              salary="$70,000-$80,000"
               score={81}
               whyItFits={[
                 "Escalations are the core of the role. You'd handle member complaints front-line staff can't resolve, which is what you did in the billing outage.",
-                "Your schedule: Monday–Friday, 8 to 5 Eastern, no weekends.",
+                "Your schedule: Monday-Friday, 8 to 5 Eastern, no weekends.",
                 "Outcome over speed: the posting emphasizes 'member outcomes' and first-contact resolution.",
                 "Best pay of the three, fully above your floor.",
               ]}
@@ -358,7 +358,7 @@ export default function SampleMatchReportPage() {
             </Heading>
             <Box borderLeftWidth="3px" borderLeftColor="gray.300" pl={4} py={1}>
               <Text mb={2}>
-                <strong>Senior Support Specialist, a fintech startup (fictional) &mdash; Remote &mdash; 74% match</strong>
+                <strong>Senior Support Specialist, a fintech startup (fictional) - Remote - 74% match</strong>
               </Text>
               <Text fontSize="sm" mb={3}>
                 On keywords this looked close. But its main performance metric is average handle
@@ -368,7 +368,7 @@ export default function SampleMatchReportPage() {
               </Text>
               <Text fontSize="sm" color="gray.600">
                 It scored below Dana&apos;s 80% threshold. Below-threshold jobs are recorded as
-                skipped in the system and do not appear in the app &mdash; not in Today, not
+                skipped in the system and do not appear in the app - not in Today, not
                 anywhere else.
               </Text>
             </Box>

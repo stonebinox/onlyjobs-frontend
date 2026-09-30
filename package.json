@@ -11,7 +11,8 @@
     "test": "jest",
     "e2e:visual": "playwright test landing.visual",
     "e2e:authed": "playwright test authed.visual",
-    "e2e:all": "playwright test"
+    "e2e:all": "playwright test",
+    "og:sample": "node scripts/og/shoot-og.mjs"
   },
   "dependencies": {
     "@chakra-ui/next-js": "^2.1.5",
