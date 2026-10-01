@@ -1278,15 +1278,27 @@ describe("Group G — Sitemap", () => {
     expect(fs.existsSync(SITEMAP_PATH)).toBe(true);
   });
 
-  it("G2: sitemap contains exactly 7 <url> entries", () => {
+  it("G2: sitemap contains exactly 8 <url> entries", () => {
     const count = (sitemapXml.match(/<url>/g) ?? []).length;
-    if (count !== 7) {
+    if (count !== 8) {
       throw new Error(
-        `G2 FAILURE — expected 7 <url> entries, found ${count}. ` +
+        `G2 FAILURE — expected 8 <url> entries, found ${count}. ` +
           `The 24g.1 suite owns the full list; this test focuses on the new entry being present.`
       );
     }
-    expect(count).toBe(7);
+    expect(count).toBe(8);
+  });
+
+  it("G2b: sitemap includes <loc>https://onlyjobs.app/ai-job-tools</loc>", () => {
+    const hasEntry = sitemapXml.includes(
+      "<loc>https://onlyjobs.app/ai-job-tools</loc>"
+    );
+    if (!hasEntry) {
+      throw new Error(
+        `G2b FAILURE — <loc>https://onlyjobs.app/ai-job-tools</loc> not found in sitemap.xml.`
+      );
+    }
+    expect(hasEntry).toBe(true);
   });
 
   it("G3: sitemap includes <loc>https://onlyjobs.app/sample-match-report</loc>", () => {

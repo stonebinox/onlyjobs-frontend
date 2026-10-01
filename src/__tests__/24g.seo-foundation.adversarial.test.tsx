@@ -668,18 +668,18 @@ describe('Spec 5 — Sitemap', () => {
     expect(fs.existsSync(SITEMAP_PATH)).toBe(true);
   });
 
-  it('has exactly 7 <url> entries', () => {
+  it('has exactly 8 <url> entries', () => {
     const urlBlocks = sitemapXml.match(/<url>/g) ?? [];
-    if (urlBlocks.length !== 7) {
+    if (urlBlocks.length !== 8) {
       throw new Error(
-        `SPEC 5 FAILURE — expected 7 <url> entries, found ${urlBlocks.length}. ` +
-        'Check whether /pricing was incorrectly added, whether /how-it-works is present, whether /sample-match-report is missing, or whether /about is missing.'
+        `SPEC 5 FAILURE — expected 8 <url> entries, found ${urlBlocks.length}. ` +
+        'Check whether /pricing was incorrectly added, whether /how-it-works is present, whether /sample-match-report is missing, whether /about is missing, or whether /ai-job-tools is missing.'
       );
     }
-    expect(urlBlocks).toHaveLength(7);
+    expect(urlBlocks).toHaveLength(8);
   });
 
-  it('the seven <loc> values are exactly the spec-defined URLs (/how-it-works and /about present, /pricing absent)', () => {
+  it('the eight <loc> values are exactly the spec-defined URLs (/how-it-works, /about, and /ai-job-tools present, /pricing absent)', () => {
     const locs = Array.from(sitemapXml.matchAll(/<loc>([\s\S]*?)<\/loc>/g)).map(m => m[1].trim());
     const expected = [
       'https://onlyjobs.app/',
@@ -689,22 +689,25 @@ describe('Spec 5 — Sitemap', () => {
       'https://onlyjobs.app/sample-match-report',
       'https://onlyjobs.app/how-it-works',
       'https://onlyjobs.app/about',
+      'https://onlyjobs.app/ai-job-tools',
     ];
-    // Order matters: the spec lists these seven in this sequence.
+    // Order matters: the spec lists these eight in this sequence.
     expect(locs).toEqual(expected);
 
     // /how-it-works MUST be present:
     expect(locs.some(l => l.includes('/how-it-works'))).toBe(true);
     // /about MUST be present:
     expect(locs.some(l => l.includes('/about'))).toBe(true);
+    // /ai-job-tools MUST be present:
+    expect(locs.some(l => l.includes('/ai-job-tools'))).toBe(true);
     // /pricing must NOT appear:
     expect(locs.some(l => l.includes('/pricing'))).toBe(false);
   });
 
   it('every <url> has a <lastmod> matching the W3C date format YYYY-MM-DD', () => {
     const lastmods = Array.from(sitemapXml.matchAll(/<lastmod>([\s\S]*?)<\/lastmod>/g)).map(m => m[1].trim());
-    // There must be one lastmod per url (7 total).
-    expect(lastmods).toHaveLength(7);
+    // There must be one lastmod per url (8 total).
+    expect(lastmods).toHaveLength(8);
     const invalid = lastmods.filter(d => !/^\d{4}-\d{2}-\d{2}$/.test(d));
     if (invalid.length > 0) {
       throw new Error(
