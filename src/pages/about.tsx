@@ -196,7 +196,7 @@ export default function AboutPage() {
             </Heading>
             <VStack align="start" spacing={4} w="full">
               <Text>
-                It&apos;s me - Anoop Santhanam, a full-stack engineer of 12+ years and a former
+                It&apos;s me - Anoop Santhanam, a full-stack engineer of 15+ years and a former
                 founder - running this mostly on my own, a few hours every day making the matching
                 and the sources better. OnlyJobs is operated by{" "}
                 <strong>Aurora Designs LLP</strong>, based in Bangalore, India, and built for job

@@ -1184,6 +1184,46 @@ describe("Group D — Body / Copy", () => {
     }
     expect(text).not.toContain("testimonial");
   });
+
+  it('D16: REQUIRED present-tense tenure "full-stack engineer of 15+ years" (onlyjobs-24g.11)', () => {
+    // Apostrophe-tolerant: jsdom decodes &apos; to ' in textContent.
+    const text = container.textContent ?? "";
+    const ok =
+      text.includes("full-stack engineer of 15+ years") ||
+      text.includes("full‑stack engineer of 15+ years");
+    if (!ok) {
+      throw new Error(
+        `D16 FAILURE — "full-stack engineer of 15+ years" not found.\n` +
+          `  textContent excerpt: "${text.substring(0, 400)}"`
+      );
+    }
+    expect(ok).toBe(true);
+  });
+
+  it('D17: HISTORICAL layoff "after 12+ years" preserved (onlyjobs-24g.11 — do NOT blanket-replace)', () => {
+    const text = container.textContent ?? "";
+    const ok = text.includes("after 12+ years");
+    if (!ok) {
+      throw new Error(
+        `D17 FAILURE — "after 12+ years" not found in rendered text.\n` +
+          `  This is the historical layoff narrative line and must NOT have been changed.\n` +
+          `  textContent excerpt: "${text.substring(0, 600)}"`
+      );
+    }
+    expect(ok).toBe(true);
+  });
+
+  it('D18: FORBIDDEN stale tenure "full-stack engineer of 12+ years" absent (onlyjobs-24g.11)', () => {
+    const text = container.textContent ?? "";
+    if (text.includes("full-stack engineer of 12+ years")) {
+      throw new Error(
+        `D18 FAILURE — "full-stack engineer of 12+ years" still present.\n` +
+          `  The present-tense bio must read "15+ years", not "12+ years".\n` +
+          `  (The historical layoff line "after 12+ years" is different and is allowed.)`
+      );
+    }
+    expect(text).not.toContain("full-stack engineer of 12+ years");
+  });
 });
 
 // ── Group E: Links and CTAs ───────────────────────────────────────────────────

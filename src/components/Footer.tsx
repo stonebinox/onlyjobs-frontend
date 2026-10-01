@@ -11,19 +11,43 @@ import {
 import Link from "next/link";
 import styled from "styled-components";
 
-import theme from "@/theme/theme";
-
 const ContactLink = styled(Link)`
-  color: ${theme.colors.semantic.primary};
+  color: #abc9ed; /* primary.200 - light brand blue, AAA on the dark footer */
+  text-decoration: underline;
   font-size: 0.75rem;
+  &:visited {
+    color: #abc9ed;
+  }
+  &:hover,
+  &:focus-visible {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
   @media (min-width: 48em) {
     font-size: 0.875rem;
   }
 `;
 
 const MinimalLink = styled(Link)`
-  color: ${theme.colors.semantic.primary};
+  color: #abc9ed; /* primary.200 - light brand blue, AAA on the dark footer */
+  text-decoration: underline;
   font-size: 0.65rem;
+  &:visited {
+    color: #abc9ed;
+  }
+  &:hover,
+  &:focus-visible {
+    color: #ffffff;
+    text-decoration: underline;
+  }
+  &:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
   @media (min-width: 48em) {
     font-size: 0.75rem;
   }
@@ -105,34 +129,31 @@ export const Footer = ({ minimal = false }: FooterProps) => {
             justify="center"
             spacing={{ base: 2, md: 4 }}
           >
-            <ContactLink href="/privacy-policy" color="semantic.primary">
+            <ContactLink href="/privacy-policy">
               Privacy Policy
             </ContactLink>
-            <ContactLink href="/terms-conditions" color="semantic.primary">
+            <ContactLink href="/terms-conditions">
               Terms &amp; Conditions
             </ContactLink>
-            <ContactLink href="/refund-policy" color="semantic.primary">
+            <ContactLink href="/refund-policy">
               Refund Policy
             </ContactLink>
-            <ContactLink href="/how-it-works" color="semantic.primary">
+            <ContactLink href="/how-it-works">
               How it works
             </ContactLink>
-            <ContactLink href="/sample-match-report" color="semantic.primary">
+            <ContactLink href="/sample-match-report">
               Sample Report
             </ContactLink>
-            <ContactLink href="/about" color="semantic.primary">
+            <ContactLink href="/about">
               About
             </ContactLink>
-            <ContactLink href="/ai-job-tools" color="semantic.primary">
+            <ContactLink href="/ai-job-tools">
               How OnlyJobs is different
             </ContactLink>
-            <ContactLink href="/blog" color="semantic.primary">
+            <ContactLink href="/blog">
               Blog
             </ContactLink>
-            <ContactLink
-              href="mailto:contact@auroradesignshq.com"
-              color="semantic.primary"
-            >
+            <ContactLink href="mailto:contact@auroradesignshq.com">
               Contact Us
             </ContactLink>
           </HStack>
