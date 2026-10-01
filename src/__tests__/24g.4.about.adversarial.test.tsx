@@ -1490,27 +1490,6 @@ describe("Group H — Sitemap", () => {
     expect(lastmod).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
-  it("H5: sitemap has exactly 8 <url> entries", () => {
-    const count = (sitemapXml.match(/<url>/g) ?? []).length;
-    if (count !== 8) {
-      throw new Error(
-        `H5 FAILURE — expected 8 <url> entries, found ${count}.\n` +
-          `  Expected: /, /privacy-policy, /terms-conditions, /refund-policy,\n` +
-          `             /sample-match-report, /how-it-works, /about, /ai-job-tools.`
-      );
-    }
-    expect(count).toBe(8);
-
-    const hasAiJobTools = sitemapXml.includes(
-      "<loc>https://onlyjobs.app/ai-job-tools</loc>"
-    );
-    if (!hasAiJobTools) {
-      throw new Error(
-        `H5 FAILURE — <loc>https://onlyjobs.app/ai-job-tools</loc> not found in sitemap.xml.`
-      );
-    }
-    expect(hasAiJobTools).toBe(true);
-  });
 });
 
 // ── DISCLOSURE ────────────────────────────────────────────────────────────────

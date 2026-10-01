@@ -126,6 +126,9 @@ export const Footer = ({ minimal = false }: FooterProps) => {
             <ContactLink href="/ai-job-tools" color="semantic.primary">
               How OnlyJobs is different
             </ContactLink>
+            <ContactLink href="/blog" color="semantic.primary">
+              Blog
+            </ContactLink>
             <ContactLink
               href="mailto:contact@auroradesignshq.com"
               color="semantic.primary"

@@ -655,7 +655,7 @@ describe('Homepage render tests — Specs 2, 3, 4', () => {
   });
 });
 
-// ─── Spec 5: Sitemap has exactly 4 URLs with correct locs and lastmod ─────────
+// ─── Spec 5: Sitemap has exactly 11 URLs with correct locs and lastmod ────────
 
 describe('Spec 5 — Sitemap', () => {
   let sitemapXml: string;
@@ -668,18 +668,18 @@ describe('Spec 5 — Sitemap', () => {
     expect(fs.existsSync(SITEMAP_PATH)).toBe(true);
   });
 
-  it('has exactly 8 <url> entries', () => {
+  it('has exactly 11 <url> entries', () => {
     const urlBlocks = sitemapXml.match(/<url>/g) ?? [];
-    if (urlBlocks.length !== 8) {
+    if (urlBlocks.length !== 11) {
       throw new Error(
-        `SPEC 5 FAILURE — expected 8 <url> entries, found ${urlBlocks.length}. ` +
-        'Check whether /pricing was incorrectly added, whether /how-it-works is present, whether /sample-match-report is missing, whether /about is missing, or whether /ai-job-tools is missing.'
+        `SPEC 5 FAILURE — expected 11 <url> entries, found ${urlBlocks.length}. ` +
+        'Check whether /pricing was incorrectly added, whether /blog, /blog/applied-to-hundreds-of-jobs, /blog/job-search-burnout are present, whether /how-it-works is present, whether /sample-match-report is missing, whether /about is missing, or whether /ai-job-tools is missing.'
       );
     }
-    expect(urlBlocks).toHaveLength(8);
+    expect(urlBlocks).toHaveLength(11);
   });
 
-  it('the eight <loc> values are exactly the spec-defined URLs (/how-it-works, /about, and /ai-job-tools present, /pricing absent)', () => {
+  it('the eleven <loc> values are exactly the spec-defined URLs (blog entries present, /pricing absent)', () => {
     const locs = Array.from(sitemapXml.matchAll(/<loc>([\s\S]*?)<\/loc>/g)).map(m => m[1].trim());
     const expected = [
       'https://onlyjobs.app/',
@@ -690,8 +690,11 @@ describe('Spec 5 — Sitemap', () => {
       'https://onlyjobs.app/how-it-works',
       'https://onlyjobs.app/about',
       'https://onlyjobs.app/ai-job-tools',
+      'https://onlyjobs.app/blog',
+      'https://onlyjobs.app/blog/applied-to-hundreds-of-jobs',
+      'https://onlyjobs.app/blog/job-search-burnout',
     ];
-    // Order matters: the spec lists these eight in this sequence.
+    // Order matters: the spec lists these eleven in this sequence.
     expect(locs).toEqual(expected);
 
     // /how-it-works MUST be present:
@@ -700,14 +703,19 @@ describe('Spec 5 — Sitemap', () => {
     expect(locs.some(l => l.includes('/about'))).toBe(true);
     // /ai-job-tools MUST be present:
     expect(locs.some(l => l.includes('/ai-job-tools'))).toBe(true);
+    // /blog MUST be present:
+    expect(locs.some(l => l === 'https://onlyjobs.app/blog')).toBe(true);
+    // blog posts MUST be present:
+    expect(locs.some(l => l.includes('/blog/applied-to-hundreds-of-jobs'))).toBe(true);
+    expect(locs.some(l => l.includes('/blog/job-search-burnout'))).toBe(true);
     // /pricing must NOT appear:
     expect(locs.some(l => l.includes('/pricing'))).toBe(false);
   });
 
   it('every <url> has a <lastmod> matching the W3C date format YYYY-MM-DD', () => {
     const lastmods = Array.from(sitemapXml.matchAll(/<lastmod>([\s\S]*?)<\/lastmod>/g)).map(m => m[1].trim());
-    // There must be one lastmod per url (8 total).
-    expect(lastmods).toHaveLength(8);
+    // There must be one lastmod per url (11 total).
+    expect(lastmods).toHaveLength(11);
     const invalid = lastmods.filter(d => !/^\d{4}-\d{2}-\d{2}$/.test(d));
     if (invalid.length > 0) {
       throw new Error(
@@ -717,6 +725,33 @@ describe('Spec 5 — Sitemap', () => {
     }
     for (const d of lastmods) {
       expect(d).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it('the 3 new blog <url> entries each have lastmod "2026-10-01"', () => {
+    const newLocs = [
+      'https://onlyjobs.app/blog',
+      'https://onlyjobs.app/blog/applied-to-hundreds-of-jobs',
+      'https://onlyjobs.app/blog/job-search-burnout',
+    ];
+    // Split on </url> boundaries so each chunk contains exactly one <url> block.
+    const urlBlocks = sitemapXml.split('</url>').filter(b => b.includes('<url>'));
+    for (const loc of newLocs) {
+      const block = urlBlocks.find(b => b.includes(`<loc>${loc}</loc>`));
+      if (!block) {
+        throw new Error(`SPEC 5 FAILURE — could not find <url> block for ${loc}.`);
+      }
+      const lastmodMatch = block.match(/<lastmod>([\s\S]*?)<\/lastmod>/);
+      if (!lastmodMatch) {
+        throw new Error(`SPEC 5 FAILURE — <lastmod> missing from ${loc} entry.`);
+      }
+      const lastmod = lastmodMatch[1].trim();
+      if (lastmod !== '2026-10-01') {
+        throw new Error(
+          `SPEC 5 FAILURE — ${loc} lastmod is "${lastmod}", expected "2026-10-01".`
+        );
+      }
+      expect(lastmod).toBe('2026-10-01');
     }
   });
 });
