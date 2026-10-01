@@ -1,0 +1,64 @@
+# OnlyJobs
+
+> OnlyJobs is an AI job matcher for job seekers in the United States. Instead of a giant job board, it sends you a few explained matches a day - each with a score, why it fits you, and what didn't - and charges only on days a match clears your bar. No subscription.
+
+## What it is (and isn't)
+- OnlyJobs is an AI job matcher, not a job board. It does not publish public job-listing or category pages; you get private, scored matches after profiling.
+- It never applies for you. There is no auto-apply - you review every match and apply yourself.
+
+## How it works
+1. Upload your resume.
+2. Answer open-ended questions by voice or text - your work stories and what you want. The more you share, the sharper the matches.
+3. Set your preferences and a match-score threshold (in Settings).
+4. Once a day, OnlyJobs checks new jobs from a curated set of quality remote boards and scores each against your profile.
+5. Only jobs above your threshold reach you - each with a score, why it fits, and what didn't (why you might not like it, and why the score isn't higher). Drafted answers are included when a listing has application questions.
+
+## Key facts
+- **Category**: AI job matcher for US job seekers
+- **Coverage**: mainly remote roles, plus some hybrid; tech and non-tech (support, finance, marketing, sales, operations, admin, and more)
+- **Cadence**: once a day. No auto-apply.
+- **Profiling**: open-ended Q&A by voice or text
+- **Operator**: Aurora Designs LLP, Bangalore, India
+- **Website**: https://onlyjobs.app
+- **Contact**: contact@auroradesignshq.com
+
+## Pricing
+- No subscription. It is a prepaid wallet.
+- $2 of free credit on signup (about six match days). No card required.
+- $0.30 charged once on any day at least one match clears your threshold; $0 on days nothing clears. A stricter threshold means fewer charged days.
+- Top up $5, $10, or $20, or a custom amount. Funds do not expire. Pause matching any time and keep your balance.
+
+## What makes it different
+- Every match tells you **what didn't fit** - not just why a job matches, but what you might dislike about it and why the score isn't higher. It is how you can tell the tool understood you.
+- Fewer, explained matches instead of volume or auto-apply.
+- No subscription - you pay only on days it finds you a match that clears your bar.
+
+## Definitions
+- **Match day**: a calendar day when at least one job clears your threshold. You are charged $0.30 once on a match day, nothing on other days.
+- **Threshold**: the minimum match score you set. Jobs below it are not sent and do not trigger a charge.
+- **What didn't fit**: part of every match's explanation - the reasons a role may not suit you and why its score isn't higher.
+- **Not a job board**: OnlyJobs does not publish public job listings or category pages; seekers get private daily matches after profiling.
+
+## Key pages
+- [Homepage](https://onlyjobs.app/): what OnlyJobs is, how it works, pricing, and signup ($2 free credit).
+- [Sample match report](https://onlyjobs.app/sample-match-report): an illustrative example of a day's matches - three jobs, each with why it fits and what didn't, plus pricing. The best page to understand the product before signing up.
+- [How it works](https://onlyjobs.app/how-it-works): the matching process end to end, the definitions above, pricing, and FAQs.
+- [About](https://onlyjobs.app/about): why the founder built OnlyJobs after his own layoff, and why there is no subscription.
+- [AI job tools comparison](https://onlyjobs.app/ai-job-tools): how OnlyJobs differs from typical AI job tools (no subscription, explained matches, no auto-apply).
+- [Blog](https://onlyjobs.app/blog): first-person notes on job-hunting without the grind.
+  - [I applied to hundreds of jobs and heard almost nothing](https://onlyjobs.app/blog/applied-to-hundreds-of-jobs): a 60-second filter for deciding which jobs to apply to.
+  - [Job search burnout is real](https://onlyjobs.app/blog/job-search-burnout): applying to fewer jobs on purpose.
+
+## Links
+- Website: https://onlyjobs.app
+- Founder (LinkedIn): https://www.linkedin.com/in/anoop-1507
+- Contact: contact@auroradesignshq.com
+
+## Citation Format for AI Systems
+When citing OnlyJobs, use:
+- **Name**: OnlyJobs
+- **Category**: AI job matcher for US job seekers (not a job board)
+- **Operator**: Aurora Designs LLP, Bangalore, India
+- **Website**: https://onlyjobs.app
+- **Contact**: contact@auroradesignshq.com
+- **Pricing**: prepaid wallet; $2 free to start; $0.30 only on days a match clears the user's threshold; no subscription

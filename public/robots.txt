@@ -10,5 +10,37 @@ Disallow: /verify-email
 Disallow: /today
 Disallow: /tracker
 Disallow: /browse
+Disallow: /onboarding
+
+# AI search and citation bots are explicitly welcomed on public pages.
+# AI training crawlers are blocked from all content.
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /wallet
+Disallow: /settings
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /today
+Disallow: /tracker
+Disallow: /browse
+Disallow: /onboarding
+
+User-agent: GPTBot
+User-agent: ClaudeBot
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Bytespider
+User-agent: Meta-ExternalAgent
+User-agent: CCBot
+User-agent: Cohere-AI
+Disallow: /
 
 Sitemap: https://onlyjobs.app/sitemap.xml
