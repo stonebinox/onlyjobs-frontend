@@ -1278,15 +1278,15 @@ describe("Group G — Sitemap", () => {
     expect(fs.existsSync(SITEMAP_PATH)).toBe(true);
   });
 
-  it("G2: sitemap contains exactly 6 <url> entries", () => {
+  it("G2: sitemap contains exactly 7 <url> entries", () => {
     const count = (sitemapXml.match(/<url>/g) ?? []).length;
-    if (count !== 6) {
+    if (count !== 7) {
       throw new Error(
-        `G2 FAILURE — expected 6 <url> entries, found ${count}. ` +
+        `G2 FAILURE — expected 7 <url> entries, found ${count}. ` +
           `The 24g.1 suite owns the full list; this test focuses on the new entry being present.`
       );
     }
-    expect(count).toBe(6);
+    expect(count).toBe(7);
   });
 
   it("G3: sitemap includes <loc>https://onlyjobs.app/sample-match-report</loc>", () => {
@@ -1323,6 +1323,19 @@ describe("Group G — Sitemap", () => {
       );
     }
     expect(hasEntry).toBe(false);
+  });
+
+  it("G7: sitemap includes <loc>https://onlyjobs.app/about</loc>", () => {
+    const hasEntry = sitemapXml.includes(
+      "<loc>https://onlyjobs.app/about</loc>"
+    );
+    if (!hasEntry) {
+      throw new Error(
+        `G7 FAILURE — <loc>https://onlyjobs.app/about</loc> not found in sitemap.xml. ` +
+          `The /about page must be present in the sitemap.`
+      );
+    }
+    expect(hasEntry).toBe(true);
   });
 
   it("G4: /sample-match-report entry has a <lastmod> in YYYY-MM-DD format", () => {

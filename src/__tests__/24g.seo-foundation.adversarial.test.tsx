@@ -668,18 +668,18 @@ describe('Spec 5 — Sitemap', () => {
     expect(fs.existsSync(SITEMAP_PATH)).toBe(true);
   });
 
-  it('has exactly 6 <url> entries', () => {
+  it('has exactly 7 <url> entries', () => {
     const urlBlocks = sitemapXml.match(/<url>/g) ?? [];
-    if (urlBlocks.length !== 6) {
+    if (urlBlocks.length !== 7) {
       throw new Error(
-        `SPEC 5 FAILURE — expected 6 <url> entries, found ${urlBlocks.length}. ` +
-        'Check whether /pricing was incorrectly added, whether /how-it-works is present, or whether /sample-match-report is missing.'
+        `SPEC 5 FAILURE — expected 7 <url> entries, found ${urlBlocks.length}. ` +
+        'Check whether /pricing was incorrectly added, whether /how-it-works is present, whether /sample-match-report is missing, or whether /about is missing.'
       );
     }
-    expect(urlBlocks).toHaveLength(6);
+    expect(urlBlocks).toHaveLength(7);
   });
 
-  it('the six <loc> values are exactly the spec-defined URLs (/how-it-works present, /pricing absent)', () => {
+  it('the seven <loc> values are exactly the spec-defined URLs (/how-it-works and /about present, /pricing absent)', () => {
     const locs = Array.from(sitemapXml.matchAll(/<loc>([\s\S]*?)<\/loc>/g)).map(m => m[1].trim());
     const expected = [
       'https://onlyjobs.app/',
@@ -688,20 +688,23 @@ describe('Spec 5 — Sitemap', () => {
       'https://onlyjobs.app/refund-policy',
       'https://onlyjobs.app/sample-match-report',
       'https://onlyjobs.app/how-it-works',
+      'https://onlyjobs.app/about',
     ];
-    // Order matters: the spec lists these six in this sequence.
+    // Order matters: the spec lists these seven in this sequence.
     expect(locs).toEqual(expected);
 
     // /how-it-works MUST be present:
     expect(locs.some(l => l.includes('/how-it-works'))).toBe(true);
+    // /about MUST be present:
+    expect(locs.some(l => l.includes('/about'))).toBe(true);
     // /pricing must NOT appear:
     expect(locs.some(l => l.includes('/pricing'))).toBe(false);
   });
 
   it('every <url> has a <lastmod> matching the W3C date format YYYY-MM-DD', () => {
     const lastmods = Array.from(sitemapXml.matchAll(/<lastmod>([\s\S]*?)<\/lastmod>/g)).map(m => m[1].trim());
-    // There must be one lastmod per url (6 total).
-    expect(lastmods).toHaveLength(6);
+    // There must be one lastmod per url (7 total).
+    expect(lastmods).toHaveLength(7);
     const invalid = lastmods.filter(d => !/^\d{4}-\d{2}-\d{2}$/.test(d));
     if (invalid.length > 0) {
       throw new Error(
