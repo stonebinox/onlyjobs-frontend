@@ -31,6 +31,7 @@ import { Logo } from "@/components/Logo";
 import { SEO } from "@/components/SEO";
 import { isSafeReturnTo } from "@/utils/safe-return-to";
 import { PENCIL } from "@/theme/palette";
+import { trackEvent } from "@/utils/analytics";
 
 const float = keyframes`
   0%, 100% { transform: translateY(0px); }
@@ -189,11 +190,11 @@ export default function Home() {
         <Container maxW="container.xl" py={{ base: 12, md: 20 }} position="relative">
           <Stack
             align="center"
-            spacing={{ base: 10, md: 16 }}
+            spacing={{ base: 2, md: 16 }}
             direction={{ base: "column", lg: "row" }}
           >
             {/* Left: Hero Text */}
-            <Stack flex={1} spacing={{ base: 6, md: 8 }} maxW="600px">
+            <Stack flex={1} spacing={{ base: 4, md: 8 }} maxW="600px">
               <Heading
                 as="h1"
                 lineHeight={1.1}
@@ -227,6 +228,15 @@ export default function Home() {
                 Built by a dev who was tired of the same broken job search. No
                 auto-apply, no spray-and-pray. Just smarter matching.
               </Text>
+              <Link
+                href="/sample-match-report"
+                data-testid="hero-sample-match-report"
+                onClick={() => trackEvent("hero_sample_report_click")}
+              >
+                <Text fontSize="sm" color="primary.500" fontWeight="medium">
+                  See a sample match report &rarr;
+                </Text>
+              </Link>
             </Stack>
 
             {/* Right: Login Form */}
