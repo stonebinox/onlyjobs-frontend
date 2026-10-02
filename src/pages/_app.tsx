@@ -23,12 +23,14 @@ import theme from "../theme/theme";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GuideProvider } from "@/contexts/GuideContext";
 import { initAnalytics, trackPageView } from "@/utils/analytics";
+import { captureFirstTouch } from "@/utils/attribution";
 import { CookieConsent } from "@/components/CookieConsent";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
   useEffect(() => {
+    try { captureFirstTouch(); } catch { /* fail-open */ }
     initAnalytics();
     trackPageView(window.location.pathname + window.location.search);
 

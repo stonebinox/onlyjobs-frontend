@@ -47,6 +47,40 @@ const PrivacyPolicyPage = () => {
         </li>
         <li>Support messages: emails, chat transcripts, attachments.</li>
       </ul>
+      <strong>Signup source and attribution</strong>
+      <p>
+        When you create an account, we record a small set of first-party
+        attribution data to understand which channels bring new users to
+        OnlyJobs. Specifically, we store:
+      </p>
+      <ul>
+        <li>
+          The referring website&apos;s domain (host only - for example
+          &quot;google.com&quot;) - never the full URL, search query, or any
+          path or query string from the referring site.
+        </li>
+        <li>
+          Any UTM campaign tags present in the link you arrived through (for
+          example utm_source, utm_medium, utm_campaign).
+        </li>
+        <li>
+          The first page path you landed on within OnlyJobs (path only - for
+          example &quot;/jobs&quot; - no query string or fragment).
+        </li>
+        <li>
+          A derived channel label - whether you arrived via a campaign link
+          (UTM), a referral, or directly - based on the above signals.
+        </li>
+        <li>The timestamp you first visited the site.</li>
+      </ul>
+      <p>
+        This information is stored as a first-party record associated with your
+        account. Its sole purpose is to help us understand which channels bring
+        new users so we can improve OnlyJobs - it is not used for advertising,
+        and we run no advertising pixels or third-party ad trackers. This record
+        is kept for the life of your account and deleted within 30 days of
+        account deletion (account deletion removes it with your account).
+      </p>
       <strong>How we use data:</strong>
       <ul>
         <li>Match you to roles and explain the match reasons.</li>

@@ -52,6 +52,16 @@ const authFetch = async (url: string, options: RequestInit = {}): Promise<Respon
 export const createApiClient = () => {
   const authenticateUser = async (email: string, password: string) => {
     try {
+      const body: Record<string, unknown> = { email, password };
+      try {
+        const { buildAttributionPayload } = await import("@/utils/attribution");
+        const attribution = buildAttributionPayload();
+        if (attribution !== undefined) {
+          body.attribution = attribution;
+        }
+      } catch {
+        // attribution assembly must never abort the request
+      }
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/auth`,
         {
@@ -59,7 +69,7 @@ export const createApiClient = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ email, password }),
+          body: JSON.stringify(body),
         }
       );
 
