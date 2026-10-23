@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 
 import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
+import { RejectionSignalSummary } from "@/types/RejectionSignalSummary";
 import { trackEvent } from "@/utils/analytics";
 
 // Reason categories matching the backend
@@ -39,7 +40,11 @@ const SUBMIT_ERROR = "Couldn't save your answer. Please try again.";
 
 interface ApplicationStatusBannerProps {
   jobResult: JobResult | null;
-  onStatusUpdate?: (matchId: string, applied: boolean) => void;
+  onStatusUpdate?: (
+    matchId: string,
+    applied: boolean,
+    signal?: RejectionSignalSummary | null
+  ) => void;
   onClose?: () => void;
 }
 
@@ -133,7 +138,7 @@ export const ApplicationStatusBanner = ({
           jobResult.applied = false;
         }
         closeReasonModal();
-        onStatusUpdate?.(jobResult._id, false);
+        onStatusUpdate?.(jobResult._id, false, response?.signal ?? null);
         if (onClose) {
           setTimeout(() => {
             onClose();

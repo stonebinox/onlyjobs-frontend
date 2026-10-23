@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 
 import { AllJobsTab } from "@/components/AllJobsTab";
 import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
+import { useRejectionSignalToast } from "@/components/Today/RejectionSignalToast";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +33,8 @@ const BrowsePage = () => {
     openDrawer: openJobQuestionsDrawer,
     closeDrawer,
   } = useApplyReturnPrompt();
+
+  const showSignalToast = useRejectionSignalToast();
 
   const auth = useAuth();
   const router = useRouter();
@@ -168,6 +171,9 @@ const BrowsePage = () => {
         isOpen={isJobDrawerOpen}
         onClose={closeDrawer}
         jobResult={selectedJobResult}
+        onStatusUpdate={(matchId, applied, signal) => {
+          if (!applied) showSignalToast(matchId, signal);
+        }}
       />
     </>
   );

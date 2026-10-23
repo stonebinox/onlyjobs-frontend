@@ -30,6 +30,7 @@ import {
 import { Fragment, ReactNode, useState } from "react";
 import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
+import { RejectionSignalSummary } from "@/types/RejectionSignalSummary";
 import { Salary } from "@/types/Salary";
 import { numberFormatter } from "@/utils/text-formatter";
 import { trackEvent } from "@/utils/analytics";
@@ -50,7 +51,7 @@ type ReasonCategory = keyof typeof REASON_CATEGORIES;
 
 export interface BriefEntryProps {
   entry: JobResult;
-  onSkipped: (matchId: string) => void;
+  onSkipped: (matchId: string, signal?: RejectionSignalSummary | null) => void;
   onOpenListing?: (jobResult: JobResult) => void;
   onClickRecorded?: (matchId: string) => void;
   aiSection?: ReactNode;
@@ -132,7 +133,7 @@ export const BriefEntry = ({ entry, onSkipped, onOpenListing, onClickRecorded, a
       setSelectedReason(null);
       setReasonDetails("");
       // Only remove the card after confirmed API success.
-      onSkipped(matchId);
+      onSkipped(matchId, result?.signal ?? null);
     } catch {
       setSkipError("Failed to skip. Try again.");
     } finally {

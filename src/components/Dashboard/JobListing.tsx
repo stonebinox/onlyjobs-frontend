@@ -31,6 +31,7 @@ import {
   FiExternalLink,
 } from "react-icons/fi";
 
+import { useRejectionSignalToast } from "@/components/Today/RejectionSignalToast";
 import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
 import { Salary } from "@/types/Salary";
@@ -81,6 +82,7 @@ const JobListing = ({
   const [reasonDetails, setReasonDetails] = useState("");
   const { markMatchClick, markMatchAsSkipped } = createApiClient();
   const toast = useToast();
+  const showSignalToast = useRejectionSignalToast();
   const {
     isOpen: isReasonModalOpen,
     onOpen: openReasonModal,
@@ -120,7 +122,7 @@ const JobListing = ({
 
     setIsSkipping(true);
     try {
-      await markMatchAsSkipped(
+      const result = await markMatchAsSkipped(
         matchId,
         selectedReason,
         reasonDetails.trim() || undefined
@@ -128,6 +130,7 @@ const JobListing = ({
       setSkippedLocally(true);
       closeReasonModal();
       trackEvent("match_skipped", { reason: selectedReason });
+      showSignalToast(matchId, result?.signal ?? null);
     } catch (error) {
       console.error("Error skipping match:", error);
     } finally {

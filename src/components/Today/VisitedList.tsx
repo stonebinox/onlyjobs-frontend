@@ -22,6 +22,7 @@ import { useState } from "react";
 
 import { createApiClient } from "@/lib/apiClient";
 import { JobResult } from "@/types/JobResult";
+import { RejectionSignalSummary } from "@/types/RejectionSignalSummary";
 import { trackEvent } from "@/utils/analytics";
 import { isSafeUrl } from "@/utils/brief-utils";
 
@@ -41,7 +42,7 @@ interface VisitedListProps {
   error: string | null;
   onOpenDrawer: (row: JobResult) => void;
   onApplied: (matchId: string) => void;
-  onSkipped: (matchId: string) => void;
+  onSkipped: (matchId: string, signal?: RejectionSignalSummary | null) => void;
 }
 
 export const VisitedList = ({
@@ -127,7 +128,7 @@ export const VisitedList = ({
       }
       trackEvent("match_skipped", { reason: selectedReason });
       closeSkipModal();
-      onSkipped(matchId);
+      onSkipped(matchId, result?.signal ?? null);
     } catch {
       setSkipError("Failed to skip. Try again.");
     } finally {

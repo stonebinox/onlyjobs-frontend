@@ -1296,6 +1296,28 @@ export const createApiClient = () => {
     }
   };
 
+  const revokeBlock = async (matchId: string) => {
+    try {
+      const response = await authFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/revoke-block`,
+        {
+          method: "POST",
+          body: JSON.stringify({ matchId }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to revoke block");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Revoke block error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const unskipMatch = async (matchId: string) => {
     try {
       const response = await authFetch(
@@ -1449,6 +1471,7 @@ export const createApiClient = () => {
     getOutOfCreditPreview,
     getTracker,
     unskipMatch,
+    revokeBlock,
     getSkipped,
     getVisited,
   };

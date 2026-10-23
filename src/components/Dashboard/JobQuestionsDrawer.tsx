@@ -1,4 +1,5 @@
 import { JobResult } from "@/types/JobResult";
+import { RejectionSignalSummary } from "@/types/RejectionSignalSummary";
 import {
   Drawer,
   DrawerBody,
@@ -17,7 +18,11 @@ interface JobQuestionsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   jobResult: JobResult | null;
-  onStatusUpdate?: (matchId: string, applied: boolean) => void;
+  onStatusUpdate?: (
+    matchId: string,
+    applied: boolean,
+    signal?: RejectionSignalSummary | null
+  ) => void;
 }
 
 export const JobQuestionsDrawer = ({

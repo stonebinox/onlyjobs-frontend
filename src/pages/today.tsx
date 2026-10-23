@@ -14,6 +14,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { BriefEntry } from "@/components/Today/BriefEntry";
+import {
+  SignalMessage,
+  isCompanyScope,
+  signalMessage,
+  useRejectionSignalToast,
+} from "@/components/Today/RejectionSignalToast";
 import { REASON_LABELS, VisitedList } from "@/components/Today/VisitedList";
 import { ResumeRequiredBanner } from "@/components/Dashboard/ResumeRequiredBanner";
 import { JobChatSection } from "@/components/Dashboard/JobChatSection";
@@ -26,6 +32,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient, OutOfCreditPreviewResponse } from "@/lib/apiClient";
 import { useApplyReturnPrompt } from "@/hooks/useApplyReturnPrompt";
 import { JobResult } from "@/types/JobResult";
+import { RejectionSignalSummary } from "@/types/RejectionSignalSummary";
 import { User } from "@/types/User";
 import { isSafeUrl } from "@/utils/brief-utils";
 import { resolveMinScore, filterMatches } from "@/utils/today-selection";
@@ -94,6 +101,7 @@ const TodayPage = () => {
     getUserProfile,
     getOutOfCreditPreview,
     unskipMatch,
+    revokeBlock,
     getSkipped,
     getVisited,
     updateUserProfile,
@@ -302,6 +310,8 @@ const TodayPage = () => {
     );
   }, []);
 
+  const showSignalToast = useRejectionSignalToast();
+
   const showAppliedToast = () => {
     toast({
       duration: 5000,
@@ -331,13 +341,18 @@ const TodayPage = () => {
     });
   };
 
-  const handleApplyAnswer = (matchId: string, applied: boolean) => {
+  const handleApplyAnswer = (
+    matchId: string,
+    applied: boolean,
+    signal?: RejectionSignalSummary | null
+  ) => {
     if (view === "visited") {
       setVisitedJobs((prev) => prev.filter((j) => j._id !== matchId));
     } else {
       removeMatch(matchId);
     }
     if (applied) showAppliedToast();
+    else showSignalToast(matchId, signal);
   };
 
   const handleVisitedApplied = (matchId: string) => {
@@ -345,11 +360,18 @@ const TodayPage = () => {
     showAppliedToast();
   };
 
-  const handleVisitedSkipped = (matchId: string) => {
+  const handleVisitedSkipped = (
+    matchId: string,
+    signal?: RejectionSignalSummary | null
+  ) => {
     setVisitedJobs((prev) => prev.filter((j) => j._id !== matchId));
+    showSignalToast(matchId, signal);
   };
 
-  const handleSkipped = (matchId: string) => {
+  const handleSkipped = (
+    matchId: string,
+    signal?: RejectionSignalSummary | null
+  ) => {
     // Stash the entry before removing (latest state, including a local clicked flag)
     const entry = allFilteredRef.current.find((e) => e._id === matchId);
 
@@ -372,9 +394,13 @@ const TodayPage = () => {
           gap={3}
           shadow="md"
         >
-          <Text fontSize="sm" flex={1} color="gray.600">
-            Job skipped.
-          </Text>
+          <SignalMessage
+            message={signal ? signalMessage(signal) : "Job skipped."}
+            company={signal && isCompanyScope(signal) ? signal.company : null}
+            matchId={entry._id}
+            revokeBlock={revokeBlock}
+            onClose={onClose}
+          />
           <Button
             size="sm"
             variant="ghost"
