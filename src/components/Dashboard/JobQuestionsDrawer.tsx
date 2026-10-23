@@ -17,7 +17,7 @@ interface JobQuestionsDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   jobResult: JobResult | null;
-  onStatusUpdate?: () => void;
+  onStatusUpdate?: (matchId: string, applied: boolean) => void;
 }
 
 export const JobQuestionsDrawer = ({

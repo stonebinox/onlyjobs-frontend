@@ -207,8 +207,8 @@ describe('resolveDashboardRedirect — pure function', () => {
     expect(resolveDashboardRedirect('?tab=matches')).toBe('/today');
   });
 
-  it('tab=viewed → /today', () => {
-    expect(resolveDashboardRedirect('?tab=viewed')).toBe('/today');
+  it('tab=viewed → /today?view=visited', () => {
+    expect(resolveDashboardRedirect('?tab=viewed')).toBe('/today?view=visited');
   });
 
   it('tab=skipped → /today?view=skipped', () => {

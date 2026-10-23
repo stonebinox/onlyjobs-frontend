@@ -8,11 +8,13 @@ import {
   VStack,
   useToast,
 } from "@chakra-ui/react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import NextLink from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { BriefEntry } from "@/components/Today/BriefEntry";
+import { REASON_LABELS, VisitedList } from "@/components/Today/VisitedList";
 import { ResumeRequiredBanner } from "@/components/Dashboard/ResumeRequiredBanner";
 import { JobChatSection } from "@/components/Dashboard/JobChatSection";
 import { JobQuestionsDrawer } from "@/components/Dashboard/JobQuestionsDrawer";
@@ -48,19 +50,11 @@ const formatHeaderDate = (): string => {
   return `${dayName}, ${day} ${month}`;
 };
 
-const REASON_LABELS: Record<string, string> = {
-  salary: "Salary too low",
-  location: "Location/remote policy",
-  skills_gap: "Missing required skills",
-  company_type: "Company size/stage",
-  role_mismatch: "Role doesn't match goals",
-  job_inactive: "Job no longer available",
-  other: "Other",
-};
+const BRIEF_SIZE = 5;
 
 const TodayPage = () => {
   const [allFiltered, setAllFiltered] = useState<JobResult[]>([]);
-  const [displayJobs, setDisplayJobs] = useState<JobResult[]>([]);
+  const [visibleCount, setVisibleCount] = useState(BRIEF_SIZE);
   const [loading, setLoading] = useState(true);
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -68,16 +62,22 @@ const TodayPage = () => {
   const [skippedJobs, setSkippedJobs] = useState<JobResult[]>([]);
   const [skippedLoading, setSkippedLoading] = useState(false);
   const [skippedError, setSkippedError] = useState<string | null>(null);
+  const [visitedJobs, setVisitedJobs] = useState<JobResult[]>([]);
+  const [visitedLoading, setVisitedLoading] = useState(false);
+  const [visitedError, setVisitedError] = useState<string | null>(null);
   const [cvUploading, setCvUploading] = useState(false);
 
   // Always tracks the latest allFiltered for use inside toast callbacks
   const allFilteredRef = useRef<JobResult[]>([]);
+  // matchIds whose click was recorded; survives the entry being skipped (removed from state)
+  const clickedIdsRef = useRef<Set<string>>(new Set());
   const cvFileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     selectedJobResult: applyDrawerJob,
     isDrawerOpen: isApplyDrawerOpen,
     registerPending,
+    openDrawer: openApplyDrawer,
     closeDrawer: closeApplyDrawer,
   } = useApplyReturnPrompt();
 
@@ -85,6 +85,7 @@ const TodayPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const toast = useToast();
+  const reduceMotion = useReducedMotion();
   const view = searchParams.get("view");
 
   const {
@@ -94,6 +95,7 @@ const TodayPage = () => {
     getOutOfCreditPreview,
     unskipMatch,
     getSkipped,
+    getVisited,
     updateUserProfile,
     uploadCV,
   } = createApiClient();
@@ -174,8 +176,8 @@ const TodayPage = () => {
       return;
     }
 
-    if (view === "skipped") {
-      // Skipped subview data is loaded by the other effect
+    if (view === "skipped" || view === "visited") {
+      // Subview data is loaded by the other effects
       setLoading(false);
       return;
     }
@@ -211,7 +213,7 @@ const TodayPage = () => {
         // Filter before cap — never the other way around
         const filtered = filterMatches(response as JobResult[]);
         setAllFiltered(filtered);
-        setDisplayJobs(filtered.slice(0, 5));
+        setVisibleCount(BRIEF_SIZE);
       } catch (err) {
         console.error("Error loading today page:", err);
       } finally {
@@ -242,6 +244,25 @@ const TodayPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.isReady, auth?.isLoggedIn, view]);
 
+  // Load visited subview data — only when that view is active, never in the brief's init
+  useEffect(() => {
+    if (!auth?.isReady || !auth?.isLoggedIn || view !== "visited") return;
+
+    setVisitedLoading(true);
+    setVisitedError(null);
+    getVisited()
+      .then((result: any) => {
+        if (!result || "error" in result) {
+          setVisitedError("Failed to load opened jobs");
+        } else {
+          setVisitedJobs(result as JobResult[]);
+        }
+      })
+      .catch(() => setVisitedError("Failed to load opened jobs"))
+      .finally(() => setVisitedLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth?.isReady, auth?.isLoggedIn, view]);
+
   const handleSaveLocation = async (location: string): Promise<boolean> => {
     const result = await updateUserProfile(undefined, undefined, undefined, undefined, location || null);
     if (result && "error" in result) {
@@ -269,12 +290,70 @@ const TodayPage = () => {
     setSkippedJobs((prev) => prev.filter((j) => j._id !== matchId));
   };
 
-  const handleSkipped = (matchId: string) => {
-    // Stash the entry before removing (always in displayJobs since BriefEntry only renders displayJobs)
-    const entry = displayJobs.find((e) => e._id === matchId);
-
-    setDisplayJobs((prev) => prev.filter((e) => e._id !== matchId));
+  // Single removal path: backfill is automatic because the visible list is a slice.
+  const removeMatch = useCallback((matchId: string) => {
     setAllFiltered((prev) => prev.filter((e) => e._id !== matchId));
+  }, []);
+
+  const handleClickRecorded = useCallback((matchId: string) => {
+    clickedIdsRef.current.add(matchId);
+    setAllFiltered((prev) =>
+      prev.map((e) => (e._id === matchId ? { ...e, clicked: true } : e))
+    );
+  }, []);
+
+  const showAppliedToast = () => {
+    toast({
+      duration: 5000,
+      isClosable: true,
+      render: ({ onClose }) => (
+        <Box
+          bg="white"
+          border="1px solid"
+          borderColor="gray.200"
+          borderRadius="lg"
+          p={3}
+          display="flex"
+          alignItems="center"
+          gap={3}
+          shadow="md"
+        >
+          <Text fontSize="sm" flex={1} color="gray.600">
+            Marked applied.
+          </Text>
+          <NextLink href="/tracker" onClick={onClose}>
+            <Text as="span" fontSize="sm" color="primary.600" fontWeight="medium">
+              View in tracker
+            </Text>
+          </NextLink>
+        </Box>
+      ),
+    });
+  };
+
+  const handleApplyAnswer = (matchId: string, applied: boolean) => {
+    if (view === "visited") {
+      setVisitedJobs((prev) => prev.filter((j) => j._id !== matchId));
+    } else {
+      removeMatch(matchId);
+    }
+    if (applied) showAppliedToast();
+  };
+
+  const handleVisitedApplied = (matchId: string) => {
+    setVisitedJobs((prev) => prev.filter((j) => j._id !== matchId));
+    showAppliedToast();
+  };
+
+  const handleVisitedSkipped = (matchId: string) => {
+    setVisitedJobs((prev) => prev.filter((j) => j._id !== matchId));
+  };
+
+  const handleSkipped = (matchId: string) => {
+    // Stash the entry before removing (latest state, including a local clicked flag)
+    const entry = allFilteredRef.current.find((e) => e._id === matchId);
+
+    removeMatch(matchId);
 
     if (!entry) return;
 
@@ -312,8 +391,8 @@ const TodayPage = () => {
                 onClose();
                 return;
               }
-              // Not eligible: missing job or already clicked
-              if (!entry.job || entry.clicked) {
+              // Not eligible: missing job or already clicked (checked now, not at skip time)
+              if (!entry.job || entry.clicked || clickedIdsRef.current.has(entry._id)) {
                 onClose();
                 return;
               }
@@ -322,7 +401,6 @@ const TodayPage = () => {
                 (a, b) => b.matchScore - a.matchScore
               );
               setAllFiltered(updated);
-              setDisplayJobs(updated.slice(0, 5));
               onClose();
             }}
           >
@@ -340,11 +418,18 @@ const TodayPage = () => {
       : null;
   const showWalletWarning = walletDays !== null && walletDays < 10;
 
-  const countLabel =
-    COUNT_WORDS[displayJobs.length] ?? String(displayJobs.length);
+  const displayJobs = allFiltered.slice(0, visibleCount);
 
-  // Jobs beyond the displayed five
+  // Headline stays the brief count, not the expanded list length
+  const briefCount = Math.min(displayJobs.length, BRIEF_SIZE);
+  const countLabel = COUNT_WORDS[briefCount] ?? String(briefCount);
+
   const moreCount = allFiltered.length - displayJobs.length;
+  const nextBatch = Math.min(BRIEF_SIZE, moreCount);
+  const showMoreLabel =
+    nextBatch === moreCount
+      ? `Show ${nextBatch} more`
+      : `Show ${nextBatch} more (${moreCount} remaining)`;
 
   const headerDate = formatHeaderDate();
 
@@ -464,6 +549,70 @@ const TodayPage = () => {
     );
   }
 
+  // ── Visited (opened) subview ───────────────────────────────────────────────
+  if (view === "visited") {
+    if (!auth?.isReady || !auth?.isLoggedIn) {
+      return (
+        <Center minH="100vh">
+          <Spinner size="xl" />
+        </Center>
+      );
+    }
+
+    return (
+      <>
+        <SEO
+          title="Opened Jobs | OnlyJobs"
+          description="Jobs you have opened"
+          noindex
+        />
+        <DashboardLayout>
+          <Box maxW="680px" mx="auto" py={{ base: 4, md: 8 }} px={{ base: 2, md: 0 }}>
+            <VStack align="start" spacing={6}>
+              <Box>
+                <NextLink href="/today">
+                  <Text
+                    as="span"
+                    color="primary.600"
+                    fontWeight="medium"
+                    fontSize="sm"
+                    cursor="pointer"
+                    _hover={{ textDecoration: "underline" }}
+                  >
+                    ← Back to today
+                  </Text>
+                </NextLink>
+                <Heading
+                  as="h1"
+                  size="lg"
+                  fontFamily="heading"
+                  color="text.primary"
+                  mt={3}
+                >
+                  Opened jobs
+                </Heading>
+              </Box>
+              <VisitedList
+                rows={visitedJobs}
+                loading={visitedLoading}
+                error={visitedError}
+                onOpenDrawer={openApplyDrawer}
+                onApplied={handleVisitedApplied}
+                onSkipped={handleVisitedSkipped}
+              />
+            </VStack>
+          </Box>
+        </DashboardLayout>
+        <JobQuestionsDrawer
+          isOpen={isApplyDrawerOpen}
+          onClose={closeApplyDrawer}
+          jobResult={applyDrawerJob}
+          onStatusUpdate={handleApplyAnswer}
+        />
+      </>
+    );
+  }
+
   // ── Daily brief ────────────────────────────────────────────────────────────
   return (
     <>
@@ -530,18 +679,43 @@ const TodayPage = () => {
               {/* Entries */}
               {displayJobs.length > 0 ? (
                 <>
-                  {displayJobs.map((entry) => (
-                    <BriefEntry
-                      key={entry._id}
-                      entry={entry}
-                      onSkipped={handleSkipped}
-                      onOpenListing={registerPending}
-                      aiSection={<JobChatSection matchId={entry._id} />}
-                    />
-                  ))}
+                  <AnimatePresence initial={false}>
+                    {displayJobs.map((entry) => (
+                      <motion.div
+                        key={entry._id}
+                        layout={!reduceMotion}
+                        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={
+                          reduceMotion
+                            ? { opacity: 0, transition: { duration: 0 } }
+                            : { opacity: 0, x: -24, transition: { duration: 0.2 } }
+                        }
+                        style={{ width: "100%" }}
+                      >
+                        <BriefEntry
+                          entry={entry}
+                          onSkipped={handleSkipped}
+                          onOpenListing={registerPending}
+                          onClickRecorded={handleClickRecorded}
+                          aiSection={<JobChatSection matchId={entry._id} />}
+                        />
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
 
                   {/* Footer */}
                   <Box pt={2}>
+                    {moreCount > 0 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        mb={3}
+                        onClick={() => setVisibleCount((c) => c + BRIEF_SIZE)}
+                      >
+                        {showMoreLabel}
+                      </Button>
+                    )}
                     <Text color="text.secondary">
                       {"That's today."}
                       {moreCount > 0 && (
@@ -564,6 +738,19 @@ const TodayPage = () => {
                         display="block"
                       >
                         See skipped jobs →
+                      </Text>
+                    </NextLink>
+                    <NextLink href="/today?view=visited">
+                      <Text
+                        as="span"
+                        color="text.tertiary"
+                        fontSize="sm"
+                        cursor="pointer"
+                        _hover={{ textDecoration: "underline" }}
+                        mt={1}
+                        display="block"
+                      >
+                        See opened jobs →
                       </Text>
                     </NextLink>
                   </Box>
@@ -609,6 +796,19 @@ const TodayPage = () => {
                         See skipped jobs →
                       </Text>
                     </NextLink>
+                    <NextLink href="/today?view=visited">
+                      <Text
+                        as="span"
+                        color="text.tertiary"
+                        fontSize="sm"
+                        cursor="pointer"
+                        _hover={{ textDecoration: "underline" }}
+                        mt={1}
+                        display="block"
+                      >
+                        See opened jobs →
+                      </Text>
+                    </NextLink>
                   </Box>
                 </>
               )}
@@ -620,6 +820,7 @@ const TodayPage = () => {
         isOpen={isApplyDrawerOpen}
         onClose={closeApplyDrawer}
         jobResult={applyDrawerJob}
+        onStatusUpdate={handleApplyAnswer}
       />
     </>
   );

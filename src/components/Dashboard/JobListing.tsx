@@ -116,6 +116,7 @@ const JobListing = ({
 
   const handleSkipSubmit = async () => {
     if (!selectedReason) return;
+    if (selectedReason === "other" && !reasonDetails.trim()) return;
 
     setIsSkipping(true);
     try {
@@ -527,7 +528,10 @@ const JobListing = ({
             <Button
               colorScheme="blue"
               onClick={handleSkipSubmit}
-              isDisabled={!selectedReason}
+              isDisabled={
+                !selectedReason ||
+                (selectedReason === "other" && !reasonDetails.trim())
+              }
               isLoading={isSkipping}
               loadingText="Skipping..."
               size={{ base: "md", sm: "sm" }}

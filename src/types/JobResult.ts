@@ -17,6 +17,7 @@ export type JobResult = {
   applicationOutcome?: string;
   outcomeRecordedAt?: string;
   skipReason?: { category: string; details?: string; analyzedAt?: string };
+  notAppliedReason?: { category: string; details?: string };
   freshness?: string;
   job: Job | null;
 };

@@ -1152,8 +1152,8 @@ describe("footer — contract 6", () => {
     });
   });
 
-  it('shows "more scored lower" count text when more matches exist than are shown (no link)', async () => {
-    // 12 eligible matches → only 5 shown → informational count text should appear, no dashboard link.
+  it('shows "more scored lower" count text and a Show-more control when more matches exist than are shown (no dashboard link)', async () => {
+    // 12 eligible matches → only 5 shown → informational count text + working "Show 5 more" button, no dashboard link.
     mockGetMatches.mockResolvedValue(
       Array.from({ length: 12 }, (_, i) => makeMatch(90 - i))
     );
@@ -1162,6 +1162,9 @@ describe("footer — contract 6", () => {
     await waitFor(() => {
       expect(screen.getByText(/more scored lower/i)).toBeInTheDocument();
     });
+    expect(
+      screen.getByRole('button', { name: 'Show 5 more (7 remaining)' })
+    ).toBeInTheDocument();
 
     // The "more scored lower" text must NOT be wrapped in a link to /dashboard or anywhere.
     const dashLinks = Array.from(document.querySelectorAll('a')).filter((a) => {

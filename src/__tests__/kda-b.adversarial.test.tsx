@@ -466,8 +466,8 @@ describe('A — resolveDashboardRedirect: maps URL search string to redirect tar
     expect(resolveDashboardRedirect('?tab=matches')).toBe('/today');
   });
 
-  it('A-6b: "?tab=viewed" → /today', () => {
-    expect(resolveDashboardRedirect('?tab=viewed')).toBe('/today');
+  it('A-6b: "?tab=viewed" → /today?view=visited', () => {
+    expect(resolveDashboardRedirect('?tab=viewed')).toBe('/today?view=visited');
   });
 
   it('A-6c: "?tab=skipped" → /today?view=skipped', () => {
@@ -826,10 +826,10 @@ describe('C — /dashboard adapter: calls router.replace() with correct target',
     expect(mockReplace).toHaveBeenCalledWith('/today');
   });
 
-  it('C-4b: "?tab=viewed" → router.replace("/today")', async () => {
+  it('C-4b: "?tab=viewed" → router.replace("/today?view=visited")', async () => {
     setSearch('?tab=viewed');
     await renderAndWaitForReplace();
-    expect(mockReplace).toHaveBeenCalledWith('/today');
+    expect(mockReplace).toHaveBeenCalledWith('/today?view=visited');
   });
 
   // ── C-5: order independence ───────────────────────────────────────────────

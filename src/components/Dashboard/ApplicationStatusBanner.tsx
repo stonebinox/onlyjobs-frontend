@@ -35,9 +35,11 @@ const REASON_CATEGORIES = {
 
 type ReasonCategory = keyof typeof REASON_CATEGORIES;
 
+const SUBMIT_ERROR = "Couldn't save your answer. Please try again.";
+
 interface ApplicationStatusBannerProps {
   jobResult: JobResult | null;
-  onStatusUpdate?: () => void;
+  onStatusUpdate?: (matchId: string, applied: boolean) => void;
   onClose?: () => void;
 }
 
@@ -54,6 +56,7 @@ export const ApplicationStatusBanner = ({
     null
   );
   const [reasonDetails, setReasonDetails] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { markMatchApplied } = createApiClient();
   const {
     isOpen: isReasonModalOpen,
@@ -65,6 +68,7 @@ export const ApplicationStatusBanner = ({
     setHasAnswered(false);
     setSelectedReason(null);
     setReasonDetails("");
+    setSubmitError(null);
     closeReasonModal();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobResult?._id]);
@@ -75,18 +79,20 @@ export const ApplicationStatusBanner = ({
   }
 
   const handleYesClick = async () => {
+    if (submittingButton !== null) return;
     setSubmittingButton("yes");
+    setSubmitError(null);
     try {
       const response = await markMatchApplied(jobResult._id, true);
-      if (!response.error) {
+      if (response?.error) {
+        setSubmitError(SUBMIT_ERROR);
+      } else {
         trackEvent("match_applied");
         setHasAnswered(true);
         if (jobResult) {
           jobResult.applied = true;
         }
-        if (onStatusUpdate) {
-          onStatusUpdate();
-        }
+        onStatusUpdate?.(jobResult._id, true);
         if (onClose) {
           setTimeout(() => {
             onClose();
@@ -95,6 +101,7 @@ export const ApplicationStatusBanner = ({
       }
     } catch (error) {
       console.error("Error updating applied status:", error);
+      setSubmitError(SUBMIT_ERROR);
     } finally {
       setSubmittingButton(null);
     }
@@ -106,9 +113,11 @@ export const ApplicationStatusBanner = ({
   };
 
   const handleReasonSubmit = async () => {
-    if (!selectedReason) return;
+    if (!selectedReason || submittingButton !== null) return;
+    if (selectedReason === "other" && !reasonDetails.trim()) return;
 
     setSubmittingButton("no");
+    setSubmitError(null);
     try {
       const response = await markMatchApplied(
         jobResult._id,
@@ -116,15 +125,15 @@ export const ApplicationStatusBanner = ({
         selectedReason,
         reasonDetails.trim() || undefined
       );
-      if (!response.error) {
+      if (response?.error) {
+        setSubmitError(SUBMIT_ERROR);
+      } else {
         setHasAnswered(true);
         if (jobResult) {
           jobResult.applied = false;
         }
         closeReasonModal();
-        if (onStatusUpdate) {
-          onStatusUpdate();
-        }
+        onStatusUpdate?.(jobResult._id, false);
         if (onClose) {
           setTimeout(() => {
             onClose();
@@ -133,6 +142,7 @@ export const ApplicationStatusBanner = ({
       }
     } catch (error) {
       console.error("Error updating applied status:", error);
+      setSubmitError(SUBMIT_ERROR);
     } finally {
       setSubmittingButton(null);
     }
@@ -174,6 +184,11 @@ export const ApplicationStatusBanner = ({
             No
           </Button>
         </HStack>
+        {submitError && !isReasonModalOpen && (
+          <Text role="alert" fontSize="sm" color="red.500">
+            {submitError}
+          </Text>
+        )}
       </VStack>
       <Divider />
 
@@ -231,6 +246,11 @@ export const ApplicationStatusBanner = ({
                 rows={3}
               />
             )}
+            {submitError && (
+              <Text role="alert" fontSize="sm" color="red.500" mt={3}>
+                {submitError}
+              </Text>
+            )}
           </ModalBody>
 
           <ModalFooter>
@@ -245,7 +265,10 @@ export const ApplicationStatusBanner = ({
             <Button
               colorScheme="blue"
               onClick={handleReasonSubmit}
-              isDisabled={!selectedReason}
+              isDisabled={
+                !selectedReason ||
+                (selectedReason === "other" && !reasonDetails.trim())
+              }
               isLoading={submittingButton === "no"}
               loadingText="Submitting..."
               size={{ base: "md", sm: "sm" }}

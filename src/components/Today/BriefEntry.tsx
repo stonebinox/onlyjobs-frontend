@@ -52,6 +52,7 @@ export interface BriefEntryProps {
   entry: JobResult;
   onSkipped: (matchId: string) => void;
   onOpenListing?: (jobResult: JobResult) => void;
+  onClickRecorded?: (matchId: string) => void;
   aiSection?: ReactNode;
 }
 
@@ -68,7 +69,7 @@ const getSalaryString = (salary: Salary): string => {
 };
 
 
-export const BriefEntry = ({ entry, onSkipped, onOpenListing, aiSection }: BriefEntryProps) => {
+export const BriefEntry = ({ entry, onSkipped, onOpenListing, onClickRecorded, aiSection }: BriefEntryProps) => {
   const [isSkipping, setIsSkipping] = useState(false);
   const [skipError, setSkipError] = useState<string | null>(null);
   const [selectedReason, setSelectedReason] = useState<ReasonCategory | null>(null);
@@ -91,8 +92,6 @@ export const BriefEntry = ({ entry, onSkipped, onOpenListing, aiSection }: Brief
   const vc = getVerdictRing(verdict);
 
   const metaParts = [
-    title,
-    company,
     salaryStr || null,
     location && location.length > 0 ? location.join(", ") : null,
   ].filter(Boolean);
@@ -108,15 +107,18 @@ export const BriefEntry = ({ entry, onSkipped, onOpenListing, aiSection }: Brief
       const result = await markMatchClick(matchId);
       if (result && "error" in result) {
         toast({ title: "Could not record visit", status: "warning", duration: 3000, isClosable: true });
+      } else {
+        onClickRecorded?.(matchId);
       }
     } catch {
       toast({ title: "Could not record visit", status: "warning", duration: 3000, isClosable: true });
     }
-    // Card stays visible regardless — no local state change.
+    // Card stays visible regardless; the parent only marks it clicked on success.
   };
 
   const handleSkipSubmit = async () => {
     if (!selectedReason) return;
+    if (selectedReason === "other" && !reasonDetails.trim()) return;
     setIsSkipping(true);
     setSkipError(null);
     try {
@@ -190,10 +192,22 @@ export const BriefEntry = ({ entry, onSkipped, onOpenListing, aiSection }: Brief
             {reasoning}
           </Text>
 
-          {/* 3. Job metadata line */}
-          <Text fontSize="sm" color="text.secondary" lineHeight="short">
-            {metaParts.join(" · ")}
-          </Text>
+          {/* 3. Title and company, each on their own line */}
+          <Box width="100%">
+            <Text fontSize="md" fontWeight="semibold" color="text.primary" lineHeight="short">
+              {title}
+            </Text>
+            <Text fontSize="sm" color="text.secondary" lineHeight="short" noOfLines={1}>
+              {company}
+            </Text>
+          </Box>
+
+          {/* 3b. Salary and location */}
+          {metaParts.length > 0 && (
+            <Text fontSize="sm" color="text.secondary" lineHeight="short">
+              {metaParts.join(" · ")}
+            </Text>
+          )}
 
           {/* 4. Odds line — always shown; neutral copy when date is missing or unparseable */}
           <Text fontSize="sm" color={oddsColor}>
@@ -276,7 +290,10 @@ export const BriefEntry = ({ entry, onSkipped, onOpenListing, aiSection }: Brief
               colorScheme="red"
               onClick={handleSkipSubmit}
               isLoading={isSkipping}
-              isDisabled={!selectedReason}
+              isDisabled={
+                !selectedReason ||
+                (selectedReason === "other" && !reasonDetails.trim())
+              }
             >
               Skip this job
             </Button>

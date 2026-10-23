@@ -218,7 +218,7 @@ const makeJob = (id: string, score = 80) => ({
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   skipped: false,
-  applied: false,
+  applied: null,
   job: {
     _id: `job-${id}`,
     title: `Role ${id}`,

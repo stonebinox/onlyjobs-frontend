@@ -10,6 +10,7 @@ export const resolveDashboardRedirect = (search: string): string => {
   if (tab === "applied") return "/tracker";
   if (tab === "alljobs") return "/browse";
   if (tab === "skipped") return "/today?view=skipped";
+  if (tab === "viewed" || tab === "visited") return "/today?view=visited";
   return "/today";
 };
 

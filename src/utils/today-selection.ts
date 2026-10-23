@@ -5,9 +5,10 @@ import { JobResult } from "@/types/JobResult";
 export const resolveMinScore = (minScore: number | undefined): number =>
   minScore ?? 30;
 
-// Removes entries with a missing job, already-clicked, or skipped, then sorts by score.
+// Removes entries with a missing job, already-clicked, skipped, or answered (applied true/false),
+// then sorts by score.
 // The caller applies the display cap (slice) after this — filtering must always precede capping.
 export const filterMatches = (entries: JobResult[]): JobResult[] =>
   entries
-    .filter((e) => e.job !== null && !e.clicked && !e.skipped)
+    .filter((e) => e.job !== null && !e.clicked && !e.skipped && (e.applied === null || e.applied === undefined))
     .sort((a, b) => b.matchScore - a.matchScore);

@@ -1318,6 +1318,25 @@ export const createApiClient = () => {
     }
   };
 
+  const getVisited = async () => {
+    try {
+      const response = await authFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/visited`,
+        { method: "GET" }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to fetch visited matches");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Get visited error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
   const getSkipped = async () => {
     try {
       const response = await authFetch(
@@ -1431,5 +1450,6 @@ export const createApiClient = () => {
     getTracker,
     unskipMatch,
     getSkipped,
+    getVisited,
   };
 };

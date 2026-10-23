@@ -295,8 +295,8 @@ describe('B — regression: other resolveDashboardRedirect branches unaffected b
     expect(resolveDashboardRedirect('?tab=matches')).toBe('/today');
   });
 
-  it('B-6: "?tab=viewed" → /today [regression: viewed tab unchanged]', () => {
-    expect(resolveDashboardRedirect('?tab=viewed')).toBe('/today');
+  it('B-6: "?tab=viewed" → /today?view=visited [viewed tab now routes to the visited subview]', () => {
+    expect(resolveDashboardRedirect('?tab=viewed')).toBe('/today?view=visited');
   });
 
   it('B-7: "?tab=unknown_xyz" → /today [regression: unknown tabs still default]', () => {
