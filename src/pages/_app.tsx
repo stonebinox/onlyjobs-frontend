@@ -3,7 +3,7 @@ import { AppProps } from "next/app";
 import Head from "next/head";
 import Script from "next/script";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 // Self-hosted fonts via @fontsource — no build-time network fetch
 import "@fontsource/plus-jakarta-sans/latin-400.css";
@@ -24,17 +24,29 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { GuideProvider } from "@/contexts/GuideContext";
 import { initAnalytics, trackPageView } from "@/utils/analytics";
 import { captureFirstTouch } from "@/utils/attribution";
+import { captureMetaClick } from "@/utils/metaClick";
+import { trackPixelPageView } from "@/lib/metaPixel";
 import { CookieConsent } from "@/components/CookieConsent";
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
+  // StrictMode re-runs effects; refs survive, so the initial pixel PageView fires once per load.
+  const initialPixelFired = useRef(false);
 
   useEffect(() => {
     try { captureFirstTouch(); } catch { /* fail-open */ }
+    captureMetaClick();
     initAnalytics();
     trackPageView(window.location.pathname + window.location.search);
+    if (!initialPixelFired.current) {
+      initialPixelFired.current = true;
+      trackPixelPageView(window.location.pathname + window.location.search);
+    }
 
-    const handleRouteChange = (url: string) => trackPageView(url);
+    const handleRouteChange = (url: string) => {
+      trackPageView(url);
+      trackPixelPageView(url);
+    };
     router.events.on("routeChangeComplete", handleRouteChange);
     return () => router.events.off("routeChangeComplete", handleRouteChange);
   }, [router.events]);

@@ -37,7 +37,7 @@ export const CookieConsent = () => {
     >
       <Flex align="center" gap={4} flexWrap={{ base: "wrap", md: "nowrap" }}>
         <Text fontSize="sm" color="text.secondary" flex={1}>
-          We use cookies and local storage to keep you signed in and improve your experience.{" "}
+          We use cookies and local storage to keep you signed in and improve your experience. We also use advertising measurement tools (the Meta Pixel and Conversions API) to see whether our ads lead to sign-ups.{" "}
           <Link href="/privacy-policy" color="primary.500" fontWeight="medium">
             Privacy policy
           </Link>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useEffect } from "react";
 import {
   Box,
   Container,
@@ -14,6 +15,7 @@ import {
 import { SEO } from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import { Footer } from "@/components/Footer";
+import { trackPixelEvent } from "@/lib/metaPixel";
 
 interface MatchCardProps {
   matchNumber: number;
@@ -138,6 +140,10 @@ const JSON_LD = {
 };
 
 export default function SampleMatchReportPage() {
+  useEffect(() => {
+    trackPixelEvent("ViewContent");
+  }, []);
+
   return (
     <>
       <SEO

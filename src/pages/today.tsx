@@ -30,6 +30,7 @@ import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { SEO } from "@/components/SEO";
 import { useAuth } from "@/contexts/AuthContext";
 import { createApiClient, OutOfCreditPreviewResponse } from "@/lib/apiClient";
+import { trackPixelCustomEvent } from "@/lib/metaPixel";
 import { useApplyReturnPrompt } from "@/hooks/useApplyReturnPrompt";
 import { JobResult } from "@/types/JobResult";
 import { RejectionSignalSummary } from "@/types/RejectionSignalSummary";
@@ -79,6 +80,7 @@ const TodayPage = () => {
   // matchIds whose click was recorded; survives the entry being skipped (removed from state)
   const clickedIdsRef = useRef<Set<string>>(new Set());
   const cvFileInputRef = useRef<HTMLInputElement>(null);
+  const activationReportedRef = useRef(false);
 
   const {
     selectedJobResult: applyDrawerJob,
@@ -106,6 +108,7 @@ const TodayPage = () => {
     getVisited,
     updateUserProfile,
     uploadCV,
+    reportActivation,
   } = createApiClient();
 
   const ALLOWED_CV_TYPES = [
@@ -232,6 +235,37 @@ const TodayPage = () => {
     init();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auth?.isReady, auth?.isLoggedIn, view]);
+
+  // Activation: reported once, only after the brief has rendered at least one match card
+  useEffect(() => {
+    if (
+      view ||
+      loading ||
+      !auth?.isReady ||
+      !auth?.isLoggedIn ||
+      allFiltered.length === 0 ||
+      activationReportedRef.current
+    ) {
+      return;
+    }
+    activationReportedRef.current = true;
+    (async () => {
+      try {
+        const result = await reportActivation();
+        if (
+          result &&
+          "activated" in result &&
+          result.activated === true &&
+          typeof result.metaEventId === "string"
+        ) {
+          trackPixelCustomEvent("Activated", {}, result.metaEventId);
+        }
+      } catch {
+        // activation reporting must never affect the brief
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [view, loading, auth?.isReady, auth?.isLoggedIn, allFiltered.length]);
 
   // Load skipped subview data
   useEffect(() => {

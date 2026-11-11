@@ -3,6 +3,7 @@ import type { User } from "@/types/User";
 import { createContext, useContext, useEffect, useState } from "react";
 import { identifyUser, resetAnalyticsUser, setFirstTouchPersonPropertiesOnce, setUserPersonProperties, trackEvent } from "@/utils/analytics";
 import { buildAttributionPayload } from "@/utils/attribution";
+import { trackPixelEvent } from "@/lib/metaPixel";
 
 async function syncPersonProperties(getUserProfile: () => Promise<unknown>): Promise<void> {
   try {
@@ -47,6 +48,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUserId(response.id);
       setIsLoggedIn(true);
       if (response.isNewUser) {
+        if (response.isNewUser === true && typeof response.metaEventId === "string" && response.metaEventId.length > 0) {
+          trackPixelEvent("CompleteRegistration", {}, response.metaEventId);
+        }
         try {
           const ft = buildAttributionPayload();
           // order: set_once person props -> identify -> signup_complete

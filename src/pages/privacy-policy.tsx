@@ -12,7 +12,7 @@ const PrivacyPolicyPage = () => {
       />
       <Box p={8}>
       <Heading size="lg">Privacy Policy (OnlyJobs)</Heading>
-      <strong>Last updated: 25 Dec 2025</strong>
+      <strong>Last updated: 11 Nov 2026</strong>
       <p>
         OnlyJobs (“we”, “us”, “our”) helps candidates discover and evaluate jobs
         with AI-assisted tools. This policy explains what we collect, why, and
@@ -75,12 +75,42 @@ const PrivacyPolicyPage = () => {
       </ul>
       <p>
         This information is stored as a first-party record associated with your
-        account. Its sole purpose is to help us understand which channels bring
-        new users so we can improve OnlyJobs - it is not used for advertising,
-        and we run no advertising pixels or third-party ad trackers. This record
+        account. Its purpose is to help us understand which channels bring new
+        users so we can improve OnlyJobs. It is separate from the advertising
+        measurement described in the next section. This record
         is kept for the life of your account and deleted within 30 days of
         account deletion (account deletion removes it with your account).
       </p>
+      <strong>Advertising measurement (Meta Pixel and Conversions API)</strong>
+      <p>
+        We advertise OnlyJobs on Facebook and Instagram. To measure whether our
+        ads lead to sign-ups and payments, we use the Meta Pixel in your browser
+        and Meta&apos;s Conversions API from our servers.
+      </p>
+      <ul>
+        <li>
+          Cookies: the Meta Pixel sets cookies (_fbp, and _fbc if you arrive
+          from a Meta ad). We also keep the ad click identifier from the link
+          you arrived through, for up to 7 days.
+        </li>
+        <li>
+          What is sent: the pages you view on OnlyJobs (not password-reset,
+          email-verification or legal pages), and events such as page view,
+          sign-up, first job brief shown, and wallet top-up (with amount).
+          Through the Conversions API we also send your email address in hashed
+          form, a hashed account ID, your IP address and your browser user
+          agent.
+        </li>
+        <li>
+          What is not sent: your CV, profile answers, job matches, or card and
+          bank details.
+        </li>
+        <li>
+          Meta Platforms, Inc. (United States) and Meta Platforms Ireland
+          Limited (Ireland) process this data on our behalf. You can block
+          these cookies in your browser settings.
+        </li>
+      </ul>
       <strong>How we use data:</strong>
       <ul>
         <li>Match you to roles and explain the match reasons.</li>
@@ -106,8 +136,8 @@ const PrivacyPolicyPage = () => {
       <strong>Sharing</strong>
       <ul>
         <li>
-          Processors: hosting, analytics, error tracking, email, and AI
-          infrastructure providers that process data on our behalf under
+          Processors: hosting, analytics, advertising measurement, error
+          tracking, email, and AI infrastructure providers that process data on our behalf under
           contract.
         </li>
         <li>
@@ -126,7 +156,7 @@ const PrivacyPolicyPage = () => {
       <strong>Retention</strong>
       <ul>
         <li>Account & profile data: while your account is active.</li>
-        <li>Logs/analytics: typically 12–24 months.</li>
+        <li>Logs/analytics: typically 12-24 months.</li>
         <li>Payment records: as required by tax/accounting law.</li>
       </ul>
       <p>
@@ -136,8 +166,8 @@ const PrivacyPolicyPage = () => {
       </p>
       <strong>Cookies</strong>
       <p>
-        We use necessary cookies and, with consent, analytics. You can control
-        cookies in your browser. See our short Cookie Notice below.
+        We use necessary cookies, analytics, and the advertising measurement
+        cookies described above. You can control cookies in your browser.
       </p>
       <strong>AI features</strong>
       <p>

@@ -82,8 +82,8 @@ export const Footer = ({ minimal = false }: FooterProps) => {
               © {new Date().getFullYear()} OnlyJobs
             </Text>
             <HStack spacing={{ base: 2, md: 3 }} flexWrap="wrap">
-              <MinimalLink href="/privacy-policy">Privacy</MinimalLink>
-              <MinimalLink href="/terms-conditions">Terms</MinimalLink>
+              <MinimalLink as="a" href="/privacy-policy">Privacy</MinimalLink>
+              <MinimalLink as="a" href="/terms-conditions">Terms</MinimalLink>
               <MinimalLink href="mailto:contact@auroradesignshq.com">
                 Contact
               </MinimalLink>
@@ -129,13 +129,13 @@ export const Footer = ({ minimal = false }: FooterProps) => {
             justify="center"
             spacing={{ base: 2, md: 4 }}
           >
-            <ContactLink href="/privacy-policy">
+            <ContactLink as="a" href="/privacy-policy">
               Privacy Policy
             </ContactLink>
-            <ContactLink href="/terms-conditions">
+            <ContactLink as="a" href="/terms-conditions">
               Terms &amp; Conditions
             </ContactLink>
-            <ContactLink href="/refund-policy">
+            <ContactLink as="a" href="/refund-policy">
               Refund Policy
             </ContactLink>
             <ContactLink href="/how-it-works">

@@ -1,3 +1,5 @@
+import { getMetaClickPayload } from "@/utils/metaClick";
+
 export interface OutOfCreditPreviewCandidate {
   title: string;
   company: string;
@@ -62,6 +64,8 @@ export const createApiClient = () => {
       } catch {
         // attribution assembly must never abort the request
       }
+      const metaClick = getMetaClickPayload();
+      if (metaClick) body.metaClick = metaClick;
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/auth`,
         {
@@ -236,6 +240,21 @@ export const createApiClient = () => {
       return data;
     } catch (error) {
       console.error("Fetch matches error:", error);
+      return { error: (error as Error).message };
+    }
+  };
+
+  const reportActivation = async (): Promise<
+    { activated?: boolean; metaEventId?: string } | { error: string }
+  > => {
+    try {
+      const response = await authFetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/matches/activation`,
+        { method: "POST" }
+      );
+      if (!response.ok) throw new Error("Failed to report activation");
+      return await response.json();
+    } catch (error) {
       return { error: (error as Error).message };
     }
   };
@@ -914,7 +933,7 @@ export const createApiClient = () => {
         `${process.env.NEXT_PUBLIC_API_URL}/wallet/create-order`,
         {
           method: "POST",
-          body: JSON.stringify({ amount }),
+          body: JSON.stringify({ amount, metaClick: getMetaClickPayload() }),
         }
       );
 
@@ -1448,6 +1467,7 @@ export const createApiClient = () => {
     getWalletBalance,
     createPaymentOrder,
     verifyPayment,
+    reportActivation,
     recordFailureAttempt,
     getTransactions,
     checkWalletBalance,

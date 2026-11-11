@@ -51,6 +51,7 @@ import DashboardLayout from "../components/Layout/DashboardLayout";
 import { createApiClient } from "@/lib/apiClient";
 import { PENCIL } from "@/theme/palette";
 import { trackEvent } from "@/utils/analytics";
+import { trackPixelEvent } from "@/lib/metaPixel";
 import Guide from "@/components/Guide/Guide";
 import { walletGuideConfig } from "@/config/guides/walletGuide";
 
@@ -259,6 +260,17 @@ const WalletPage = () => {
               await fetchTransactions();
               setCustomAmount("");
               trackEvent("wallet_topup", { amount: topUpAmount });
+              if (
+                typeof verifyResult.metaEventId === "string" &&
+                typeof verifyResult.value === "number" &&
+                typeof verifyResult.currency === "string"
+              ) {
+                trackPixelEvent(
+                  "Purchase",
+                  { value: verifyResult.value, currency: verifyResult.currency },
+                  verifyResult.metaEventId
+                );
+              }
               setModalMessage(
                 "Payment successful! Your wallet has been credited."
               );
