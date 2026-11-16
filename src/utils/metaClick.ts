@@ -11,6 +11,11 @@ interface StoredMetaClick {
 }
 
 const KEY = "oj_meta_click";
+// In-memory copy so the click survives when localStorage and cookies are both blocked
+// (e.g. in-app browsers) for the lifetime of the page session.
+let inMemory: StoredMetaClick | null = null;
+// True when the last capture could not be read back from localStorage or the cookie.
+let memoryOnly = false;
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_FBCLID = 512;
 // fbc/fbp are "fb.1.<ms>.<fbclid>": room for a 512-char fbclid plus prefix.
@@ -52,14 +57,22 @@ function parseStored(raw: string | null | undefined): StoredMetaClick | null {
   }
 }
 
-function readStored(): StoredMetaClick | null {
+function readPersisted(): StoredMetaClick | null {
   try {
     const fromStorage = parseStored(localStorage.getItem(KEY));
     if (fromStorage) return fromStorage;
   } catch {
-    // storage blocked; fall through to cookie
+    // storage blocked - fall through to the cookie
   }
   return parseStored(readCookie(KEY));
+}
+
+function readStored(): StoredMetaClick | null {
+  const persisted = readPersisted();
+  if (persisted) return persisted;
+  // Only trust the in-memory copy when capture could not persist it anywhere; a click
+  // that was persisted and later cleared by the user must not be resurrected.
+  return memoryOnly && inMemory ? parseStored(JSON.stringify(inMemory)) : null;
 }
 
 export function captureMetaClick(): void {
@@ -70,7 +83,10 @@ export function captureMetaClick(): void {
     if (readStored()) return; // keep the first non-expired click
 
     const capturedAt = Date.now();
-    const serialized = JSON.stringify({ fbclid, fbc: `fb.1.${capturedAt}.${fbclid}`, capturedAt });
+    const record: StoredMetaClick = { fbclid, fbc: `fb.1.${capturedAt}.${fbclid}`, capturedAt };
+    const serialized = JSON.stringify(record);
+    inMemory = record;
+    memoryOnly = false;
     try {
       localStorage.setItem(KEY, serialized);
     } catch {
@@ -81,6 +97,8 @@ export function captureMetaClick(): void {
     } catch {
       // ignore
     }
+    // Verify by reading back: setItem/cookie writes can fail silently.
+    memoryOnly = !readPersisted();
   } catch {
     // never throw
   }

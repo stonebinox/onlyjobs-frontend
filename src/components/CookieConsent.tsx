@@ -1,20 +1,19 @@
 import { Box, Button, Flex, Text, Link } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-
-const CONSENT_KEY = "oj_cookie_consent";
+import { isConsentBannerShowing, recordConsentDismissed } from "@/utils/cookieConsent";
 
 export const CookieConsent = () => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== "undefined" && !localStorage.getItem(CONSENT_KEY)) {
+    if (isConsentBannerShowing()) {
       setVisible(true);
     }
   }, []);
 
   const dismiss = () => {
-    localStorage.setItem(CONSENT_KEY, "1");
     setVisible(false);
+    recordConsentDismissed();
   };
 
   if (!visible) return null;

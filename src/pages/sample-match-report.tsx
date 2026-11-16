@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   Box,
   Container,
@@ -9,13 +9,13 @@ import {
   HStack,
   SimpleGrid,
   Divider,
-  Button,
   Badge,
 } from "@chakra-ui/react";
 import { SEO } from "@/components/SEO";
 import { JsonLd } from "@/components/JsonLd";
 import { Footer } from "@/components/Footer";
 import { trackPixelEvent } from "@/lib/metaPixel";
+import { SampleReportCta, STICKY_BAR_HEIGHT, StickySampleReportCta, useStickyCtaVisible } from "@/components/SampleReportCta";
 
 interface MatchCardProps {
   matchNumber: number;
@@ -140,6 +140,10 @@ const JSON_LD = {
 };
 
 export default function SampleMatchReportPage() {
+  const topCtaRef = useRef<HTMLAnchorElement>(null);
+  const bottomCtaRef = useRef<HTMLAnchorElement>(null);
+  const stickyVisible = useStickyCtaVisible(topCtaRef, bottomCtaRef);
+
   useEffect(() => {
     trackPixelEvent("ViewContent");
   }, []);
@@ -198,6 +202,13 @@ export default function SampleMatchReportPage() {
             part is where you can tell it actually understands you. Here is one fictional
             person&apos;s day.
           </Text>
+
+          <Box w="full">
+            <SampleReportCta placement="top" buttonRef={topCtaRef} />
+            <Text fontSize="sm" color="gray.500" mt={2}>
+              No card needed.
+            </Text>
+          </Box>
 
           <Divider />
 
@@ -521,15 +532,9 @@ export default function SampleMatchReportPage() {
               Fewer, better matches from something that actually gets you. No subscription: pay only
               on days we find you jobs, and you control it.
             </Text>
-            <Button
-              as="a"
-              href="/?utm_source=site&utm_medium=sample-report&utm_content=bottom-cta#signup"
-              colorScheme="blue"
-              size="lg"
-              mb={3}
-            >
-              Get my first matches, $2 free &rarr;
-            </Button>
+            <Box mb={3}>
+              <SampleReportCta placement="bottom" buttonRef={bottomCtaRef} />
+            </Box>
             <Text fontSize="sm" color="gray.500">
               No card needed. About 6 match days free.
             </Text>
@@ -543,6 +548,9 @@ export default function SampleMatchReportPage() {
           </Text>
         </VStack>
       </Container>
+
+      <Box display={{ base: "block", md: "none" }} h={stickyVisible ? STICKY_BAR_HEIGHT : 0} aria-hidden />
+      <StickySampleReportCta visible={stickyVisible} />
 
       <Footer />
     </>
